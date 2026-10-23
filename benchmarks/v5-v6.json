@@ -1,0 +1,119 @@
+{
+  "note": "Local Chromium SwiftShader, 1280x800 DPR1. Same 10 enemies, 24 projectiles, 60 particles. Fast reduces internal render resolution; Auto compared at same resolution as v5. These timings do not guarantee user hardware FPS.",
+  "results": {
+    "v5": {
+      "quality": "default",
+      "hardware": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "webgl": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "canvas": {
+          "width": 1010,
+          "height": 730,
+          "cssWidth": 1010,
+          "cssHeight": 730
+        },
+        "pixelRatio": 1
+      },
+      "cases": {
+        "hub": {
+          "objects": {
+            "enemies": 0,
+            "projectiles": 0,
+            "particles": 0
+          },
+          "medianRafFrameMs": 250,
+          "medianRenderCalls": 219,
+          "medianTriangles": 11966
+        },
+        "combat": {
+          "objects": {
+            "enemies": 10,
+            "projectiles": 24,
+            "particles": 60
+          },
+          "medianRafFrameMs": 300,
+          "medianRenderCalls": 478,
+          "medianTriangles": 35274
+        }
+      },
+      "errors": []
+    },
+    "v6-auto": {
+      "quality": "default",
+      "hardware": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "webgl": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "canvas": {
+          "width": 1010,
+          "height": 730,
+          "cssWidth": 1010,
+          "cssHeight": 730
+        },
+        "pixelRatio": 1
+      },
+      "cases": {
+        "hub": {
+          "objects": {
+            "enemies": 0,
+            "projectiles": 0,
+            "particles": 0
+          },
+          "medianRafFrameMs": 83.20000000000027,
+          "medianRenderCalls": 78,
+          "medianTriangles": 9518
+        },
+        "combat": {
+          "objects": {
+            "enemies": 10,
+            "projectiles": 24,
+            "particles": 60
+          },
+          "medianRafFrameMs": 83.39999999999964,
+          "medianRenderCalls": 133,
+          "medianTriangles": 17158
+        }
+      },
+      "errors": []
+    },
+    "v6-fast": {
+      "quality": "fast",
+      "hardware": {
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "vendor": "Google Inc. (Google)",
+        "webgl": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "canvas": {
+          "width": 656,
+          "height": 474,
+          "cssWidth": 1010,
+          "cssHeight": 730
+        },
+        "pixelRatio": 0.65
+      },
+      "cases": {
+        "hub": {
+          "objects": {
+            "enemies": 0,
+            "projectiles": 0,
+            "particles": 0
+          },
+          "medianRafFrameMs": 33.30000000000018,
+          "medianRenderCalls": 78,
+          "medianTriangles": 9518
+        },
+        "combat": {
+          "objects": {
+            "enemies": 10,
+            "projectiles": 24,
+            "particles": 60
+          },
+          "medianRafFrameMs": 33.40000000000009,
+          "medianRenderCalls": 133,
+          "medianTriangles": 17158
+        }
+      },
+      "errors": []
+    }
+  }
+}
