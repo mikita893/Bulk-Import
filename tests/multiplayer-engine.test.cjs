@@ -2,7 +2,7 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const {createMatch,stepMatch,snapshotMatch,normalizeInput,continueMatch,buyTeamUpgrade,setPlayerConnected,finishMatch}=require('../multiplayer/engine.cjs');
-const {VS_STATS,MAPS,MISSIONS,UPGRADES,LIMITS}=require('../multiplayer/shared.cjs');
+const {VS_STATS,FACTION_KITS,versusStats,MAPS,MISSIONS,UPGRADES,LIMITS}=require('../multiplayer/shared.cjs');
 const roster=[{id:'sf',name:'Admin',team:'salesforce'},{id:'xls',name:'Arkusz',team:'excel'}];
 function input(seq,values={}){return {seq,mx:0,mz:0,ax:0,az:0,fire:false,dash:false,ability:false,interact:false,...values}}
 function tick(m,seconds,inputs=()=>({})){for(let n=0;n<Math.ceil(seconds*30)&&m.phase==='playing';n++)stepMatch(m,1/30,typeof inputs==='function'?inputs(n):inputs);return m}
@@ -15,9 +15,9 @@ test('untrusted input rejects nonfinite values and cannot set position or damage
  assert(Math.hypot(clean.mx,clean.mz)<=1.00000001);assert.equal(clean.ax,100);assert.equal(clean.az,-100);assert.equal(clean.x,undefined);assert.equal(clean.damage,undefined);assert.equal(raw.mx,5);
 });
 
-test('VS has symmetric fixed stats, mirrored cover and equal-team capacity',()=>{
+test('VS keeps equal core weapons and survivability with distinct kits, mirrored cover and equal-team capacity',()=>{
  const m=createMatch({mode:'versus',players:roster,upgrades:{damage:5,armor:5,shield:5},seed:1});
- assert.deepEqual(m.players[0].stats,VS_STATS);assert.deepEqual(m.players[1].stats,VS_STATS);assert.equal(m.upgrades.damage,0);assert.equal(m.players[0].x,-m.players[1].x);
+ for(const p of m.players){assert.deepEqual(p.stats,versusStats(p.team));for(const key of ['maxHp','maxShield','damage','interval','speed','sprintSpeed','projectileSpeed','projectileLife','shieldRegen','rechargeDelay','armor'])assert.equal(p.stats[key],VS_STATS[key],key+' stays fair')}assert.notEqual(FACTION_KITS.salesforce.ability.name,FACTION_KITS.excel.ability.name);assert.notEqual(m.players[0].stats.dashDuration,m.players[1].stats.dashDuration);assert.equal(m.upgrades.damage,0);assert.equal(m.players[0].x,-m.players[1].x);
  for(const o of MAPS.arena)assert(MAPS.arena.some(v=>v.x===-o.x&&v.z===o.z&&v.w===o.w&&v.d===o.d));
  assert.throws(()=>createMatch({mode:'versus',players:roster.slice(0,1)}));assert.throws(()=>createMatch({mode:'versus',players:[...roster,{id:'extra',team:'salesforce'}]}));
  const six=[];for(const team of ['salesforce','excel'])for(let i=0;i<3;i++)six.push({id:team+i,team});assert.equal(createMatch({mode:'versus',players:six}).players.length,6);

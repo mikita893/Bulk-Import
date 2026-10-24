@@ -178,7 +178,7 @@ function createRoomService(options={}){
       }
       if(room.match.phase==='playing'){
         const inputs={};
-        for(const p of room.players){const s=p.session;if(s.ws&&s.input&&now-s.inputTime<350){inputs[p.id]=s.input;s.input={...s.input,dash:false,ability:false};}}
+        for(const p of room.players){const s=p.session;if(s.ws&&s.input&&now-s.inputTime<350){inputs[p.id]=s.input;s.input={...s.input,dash:false,ability:false,secondary:false};}}
         engine.stepMatch(room.match,Math.min(.1,Math.max(0,dt)),inputs);
       }
       if(room.match.phase!==room.lastPhase){room.lastPhase=room.match.phase;syncCampaign(room);broadcastRoom(room);broadcastCheckpoint(room);broadcastState(room);}
@@ -217,5 +217,5 @@ function createRoomService(options={}){
   function disconnectAll(){for(const s of connections)s.ws?.terminate();rooms.clear();sessions.clear();connections.clear()}
   return {rooms,sessions,connections,tick,broadcastRoom,broadcastState,broadcastStates,connect,heartbeat,disconnectAll};
 }
-function publicConfig(){return {protocol:1,version:11,limits:{coop:3,versus:6,team:3},missions:missions(),upgrades:shared.UPGRADES,teams:shared.FACTIONS,stats:shared.VS_STATS,versus:{scoreLimit:15,duration:360}}}
+function publicConfig(){return {protocol:1,version:shared.VERSION,limits:{coop:3,versus:6,team:3},missions:missions(),upgrades:shared.UPGRADES,teams:shared.FACTIONS,factionKits:shared.FACTION_KITS,stats:shared.VS_STATS,versus:{scoreLimit:15,duration:360}}}
 module.exports={createRoomService,validateCheckpoint,freshProgress,publicConfig,MAX_SESSIONS};

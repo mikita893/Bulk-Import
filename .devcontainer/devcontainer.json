@@ -3,7 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
   "forwardPorts": [3000],
   "portsAttributes": {
-    "3000": {"label": "Bulk Import v11", "onAutoForward": "notify", "protocol": "http"}
+    "3000": {"label": "Bulk Import v12", "onAutoForward": "notify", "protocol": "http"}
   },
   "postCreateCommand": "npm ci --ignore-scripts",
   "postStartCommand": "npm start > /tmp/bulk-import-server.log 2>&1 &"

@@ -19,7 +19,7 @@ class Peer{
 async function setup(t){const app=createGameServer({port:0,host:'127.0.0.1'});const info=await app.listen();const origin='http://127.0.0.1:'+info.port,url='ws://127.0.0.1:'+info.port+'/ws';const peers=[];t.after(async()=>{await Promise.allSettled(peers.map(p=>p.close()));await app.close()});return {app,origin,url,peers,async peer(){const p=await Peer.connect(url);peers.push(p);return p}}}
 function stateAfter(peer,predicate,after=peer.mark()){return peer.wait(m=>m.t==='state'&&predicate(m.state),after).then(m=>m.state)}
 function errorAfter(peer,message){return peer.command(message,m=>m.t==='error')}
-function input(seq,extra={}){return {t:'input',seq,mx:0,mz:0,ax:0,az:0,fire:false,dash:false,ability:false,interact:false,...extra}}
+function input(seq,extra={}){return {t:'input',seq,mx:0,mz:0,ax:0,az:0,fire:false,dash:false,ability:false,secondary:false,interact:false,...extra}}
 
 // These assertions exercise actual sockets and the server's public protocol. Private
 // room access below is test setup only; no equivalent admin message exists on the wire.
@@ -81,4 +81,32 @@ test('co-op lobby, portable checkpoint validation, host controls and preserved s
  const revived=await stateAfter(host,s=>s.players.some(p=>p.id===friend.id&&p.alive&&!p.downed),after);assert(revived.players.find(p=>p.id===friend.id).hp>0,'Holding E revives a teammate on the authoritative server');host.send(input(11));
  stored.match.phase='finished';stored.match.result={outcome:'victory',mission:0,nextMission:1};env.app.tick(1/30);
  after=host.mark();host.send({t:'next'});const next=await stateAfter(host,s=>s.mode==='coop'&&s.mission===1&&s.phase==='playing',after);assert.notEqual(next.missionName,initial.missionName);assert.notDeepEqual(next.obstacles,initial.obstacles,'Co-op missions change map layouts');
+});
+
+
+test('v12 real sockets replicate distinct faction Q/F, counterplay and preserved skill state',async t=>{
+ const env=await setup(t),sf=await env.peer(),xl=await env.peer();
+ const config=await (await fetch(env.origin+'/api/config')).json();assert.equal(config.version,12);assert(config.factionKits?.salesforce&&config.factionKits?.excel,'Public faction kits describe distinct mechanics');
+ const {room}=await sf.command({t:'create',name:'Apex administrator',mode:'versus'});await xl.command({t:'join',code:room.code,name:'Tabela przestawna'});await sf.command({t:'team',team:'salesforce'});await xl.command({t:'team',team:'excel'});await sf.command({t:'ready',ready:true});await xl.command({t:'ready',ready:true});let after=sf.mark();sf.send({t:'start'});await stateAfter(sf,s=>s.phase==='playing',after);
+ const match=env.app.rooms.get(room.code).match,a=match.players.find(p=>p.id===sf.id),b=match.players.find(p=>p.id===xl.id);
+ const resetPositions=()=>{match.obstacles=[];match.projectiles=[];match.effects=[];a.x=-7;a.z=14;b.x=7;b.z=14;for(const p of [a,b]){p.inv=0;p.spawnProtected=false;p.hp=140;p.shield=40;p.abilityCooldown=0;p.secondaryCooldown=0;p.barrierRemaining=0;p.barrierHp=0;p.slowRemaining=0;p.undoPending=0}};
+ resetPositions();
+ // Apex is a travelling query; pivot is an aimed, delayed rectangular table.
+ after=sf.mark();sf.send(input(10,{ability:true,ax:7,az:14}));const apex=await stateAfter(sf,s=>s.projectiles.some(p=>p.kind==='apex'),after);assert(apex.players.find(p=>p.id===sf.id).abilityCooldown>8);await stateAfter(xl,s=>s.projectiles.some(p=>p.kind==='apex'));
+ a.inv=0;a.hp=140;a.shield=40;const sfPivotMark=sf.mark();after=xl.mark();xl.send(input(10,{ability:true,ax:-5,az:14}));const marked=await stateAfter(xl,s=>s.effects?.some(e=>e.kind==='pivot'&&e.phase==='warning'),after);const table=marked.effects.find(e=>e.kind==='pivot');assert.equal(table.width,6);assert.equal(table.depth,5);assert(table.remaining>.4,'Pivot must be readable before it resolves');assert.equal(marked.players.find(p=>p.id===sf.id).hp,140);assert.equal(marked.players.find(p=>p.id===sf.id).shield,40);
+ await stateAfter(sf,s=>s.effects?.some(e=>e.kind==='pivot'&&e.phase==='warning'),sfPivotMark);
+ // A dash/move out of the warning remains a real counter; no homing target.
+ a.x=-15;a.z=14;const safeTotal=a.hp+a.shield;await stateAfter(sf,s=>!s.effects?.some(e=>e.kind==='pivot'&&e.phase==='warning'));assert.equal(a.hp+a.shield,safeTotal,'Escaping the warned rectangle avoids damage');
+ // Directional Permission Set blocks incoming shots, instead of healing damage.
+ resetPositions();after=sf.mark();sf.send(input(20,{secondary:true,ax:7,az:14}));const guarded=await stateAfter(sf,s=>s.players.find(p=>p.id===sf.id)?.barrierRemaining>1,after);const ownGuard=guarded.players.find(p=>p.id===sf.id);assert.equal(ownGuard.barrierHp,42);assert(ownGuard.secondaryCooldown>11);assert.equal(a.hp+a.shield,180);
+ after=sf.mark();xl.send(input(20,{fire:true,ax:-7,az:14}));const blocked=await stateAfter(sf,s=>{const p=s.players.find(p=>p.id===sf.id);return p.barrierHp<42&&p.barrierHp>0},after);xl.send(input(21));const protectedPlayer=blocked.players.find(p=>p.id===sf.id);assert.equal(protectedPlayer.hp+protectedPlayer.shield,180,'Frontal barrier absorbs actual wire-fired shots');const remaining=protectedPlayer.barrierHp;
+ await errorAfter(sf,input(21,{secondary:'true'}));after=sf.mark();sf.send(input(22,{secondary:true,ax:7,az:14}));const noSpam=await stateAfter(sf,s=>s.players.find(p=>p.id===sf.id).secondaryCooldown<ownGuard.secondaryCooldown,after);assert(noSpam.players.find(p=>p.id===sf.id).barrierHp<=remaining,'A fresh packet cannot bypass F cooldown');
+ // Ctrl+Z requires real recent damage, and returns at most the capped loss.
+ match.projectiles=[];b.hp=140;b.shield=0;b.inv=0;b.spawnProtected=false;b.secondaryCooldown=0;const beforeHit=b.hp+b.shield;after=xl.mark();sf.send(input(30,{fire:true,ax:7,az:14}));await stateAfter(xl,s=>{const p=s.players.find(p=>p.id===xl.id);return p.hp+p.shield<beforeHit},after);sf.send(input(31));match.projectiles=[];const wounded=b.hp+b.shield;after=xl.mark();xl.send(input(30,{secondary:true,ax:-7,az:14}));const undo=await stateAfter(xl,s=>s.players.find(p=>p.id===xl.id)?.undoPending>0,after);assert(undo.players.find(p=>p.id===xl.id).secondaryCooldown>11);const restored=await stateAfter(xl,s=>{const p=s.players.find(p=>p.id===xl.id);return p.hp+p.shield>wounded},after);const restoredPlayer=restored.players.find(p=>p.id===xl.id);assert(restoredPlayer.hp+restoredPlayer.shield<=wounded+28+.001,'Ctrl+Z recovery stays bounded');assert(restored.effects.some(e=>e.kind==='rewind')||restoredPlayer.rewindFlash>0);
+ // Cover blocks query projectiles and the table impact line of sight.
+ resetPositions();match.obstacles=[{x:0,z:14,w:2,d:12}];a.x=-4;b.x=4;after=sf.mark();sf.send(input(40,{ability:true,ax:4,az:14}));xl.send(input(40,{ability:true,ax:-4,az:14}));await stateAfter(sf,s=>s.players.find(p=>p.id===sf.id).abilityCooldown>0&&s.players.find(p=>p.id===xl.id).abilityCooldown>0,after);for(let i=0;i<40;i++)env.app.tick(1/30);assert.equal(a.hp+a.shield,180,'Cover protects against table impact');assert.equal(b.hp+b.shield,180,'Cover stops Apex queries');
+ // Reconnecting preserves resources and active F state rather than granting resets.
+ match.obstacles=[];match.projectiles=[];match.effects=[];a.hp=91;a.shield=7;a.secondaryCooldown=7.2;a.barrierRemaining=1.5;a.barrierHp=14;a.barrierAngle=Math.PI/2;
+ const stableId=sf.id,token=sf.token;await sf.close();const resumed=await env.peer();after=resumed.mark();resumed.send({t:'join',code:room.code,name:'Apex administrator',token});await resumed.wait(m=>m.t==='welcome'&&m.id===stableId,after);const preserved=await stateAfter(resumed,s=>s.players.some(p=>p.id===stableId&&p.connected),after);const p=preserved.players.find(p=>p.id===stableId);assert.equal(p.hp,91);assert.equal(p.shield,7);assert(p.secondaryCooldown<=7.2&&p.secondaryCooldown>6.5);assert.equal(p.barrierHp,0,'Disconnect cancels the active shield without refunding its cooldown');assert.equal(p.barrierRemaining,0);
+ a.hp=0;a.shield=0;a.alive=false;a.respawnIn=.01;env.app.tick(1/30);assert.equal(a.barrierRemaining,0,'Respawn clears the prior Permission Set');assert.equal(a.barrierHp,0);assert.equal(a.undoPending,0);assert.equal(a.secondaryCooldown,0);
 });

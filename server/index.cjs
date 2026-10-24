@@ -1,5 +1,6 @@
 'use strict';
 const http=require('node:http');
+const {VERSION}=require('../multiplayer/shared.cjs');
 const fs=require('node:fs');
 const path=require('node:path');
 const {WebSocketServer}=require('ws');
@@ -15,12 +16,12 @@ function createGameServer(options={}){
     const headers={'X-Content-Type-Options':'nosniff','Referrer-Policy':'same-origin'};
     if(!['GET','HEAD'].includes(req.method)){res.writeHead(405,{...headers,Allow:'GET, HEAD'});res.end();return;}
     let pathname;try{pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname)}catch{res.writeHead(400,headers);res.end('Invalid URL');return;}
-    if(pathname==='/healthz'){res.writeHead(200,{...headers,'Content-Type':'application/json','Cache-Control':'no-store'});res.end(req.method==='HEAD'?'':JSON.stringify({ok:true,version:11,rooms:rooms.size}));return;}
+    if(pathname==='/healthz'){res.writeHead(200,{...headers,'Content-Type':'application/json','Cache-Control':'no-store'});res.end(req.method==='HEAD'?'':JSON.stringify({ok:true,version:VERSION,rooms:rooms.size}));return;}
     if(pathname==='/api/info'||pathname==='/api/config'){res.writeHead(200,{...headers,'Content-Type':'application/json','Cache-Control':'public, max-age=60'});res.end(req.method==='HEAD'?'':JSON.stringify(publicConfig()));return;}
     let file;
     if(pathname==='/'||pathname==='/index.html')file='index.html';
     else if(/^\/Bulk-Import(?:-[A-Za-z0-9-]+)?\.html$/.test(pathname))file=pathname.slice(1);
-    else if(pathname==='/multiplayer'||pathname==='/play')file='Bulk-Import-Multiplayer-v11.html';
+    else if(pathname==='/multiplayer'||pathname==='/play')file='Bulk-Import-Multiplayer-v12.html';
     else if(pathname==='/favicon.ico'){res.writeHead(204,headers);res.end();return;}
     else{res.writeHead(404,headers);res.end('Not found');return;}
     fs.readFile(path.join(ROOT,file),(err,body)=>{if(err){res.writeHead(404,headers);res.end('Not found');return;}res.writeHead(200,{...headers,'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-cache'});res.end(req.method==='HEAD'?'':body)});

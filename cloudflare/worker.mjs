@@ -1,4 +1,5 @@
 import roomModule from '../server/rooms.cjs';
+import shared from '../multiplayer/shared.cjs';
 const { createRoomService, publicConfig, MAX_SESSIONS } = roomModule;
 
 // One named object owns the rooms. A room can never split across Worker isolates or regions.
@@ -34,7 +35,7 @@ export class GameRooms {
   async fetch(request) {
     const url = new URL(request.url);
     const headers = {'X-Content-Type-Options':'nosniff','Cache-Control':'no-store'};
-    if (url.pathname === '/healthz') return Response.json({ok:true,version:11,rooms:this.service.rooms.size},{headers});
+    if (url.pathname === '/healthz') return Response.json({ok:true,version:shared.VERSION,rooms:this.service.rooms.size},{headers});
     if (url.pathname === '/api/info' || url.pathname === '/api/config') return Response.json(publicConfig(),{headers});
     if (url.pathname !== '/ws') return new Response('Not found',{status:404,headers});
     if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('WebSocket upgrade required',{status:426,headers});
@@ -72,7 +73,7 @@ export default {
       return env.GAME_ROOMS.get(id).fetch(request);
     }
     if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405,headers:{Allow:'GET, HEAD'}});
-    if(url.pathname==='/multiplayer'||url.pathname==='/play')url.pathname='/Bulk-Import-Multiplayer-v11.html';
+    if(url.pathname==='/multiplayer'||url.pathname==='/play')url.pathname='/Bulk-Import-Multiplayer-v12.html';
     return env.ASSETS.fetch(new Request(url,request));
   }
 };

@@ -7,17 +7,17 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 class BulkArenaRenderer{
  constructor(canvas){
   this.canvas=canvas;this.state=null;this.localId=null;this.quality='auto';this.adaptiveRatio=1;this.averageFrameMs=16.7;this.qualityClock=0;this.zoomFactor=1;this.mapKey='';this.frameTime=0;
-  this.players=new Map();this.enemies=new Map();this.pools=new Map();this.materials=new Map();this.floorTextures=new Map();this.staticGeometries=[];this.stamp=0;this.contextLost=false;
+  this.players=new Map();this.enemies=new Map();this.pools=new Map();this.materials=new Map();this.floorTextures=new Map();this.kitTextures=new Map();this.staticGeometries=[];this.stamp=0;this.contextLost=false;
   this.renderer=new THREE.WebGLRenderer({canvas,antialias:false,stencil:false,alpha:false,powerPreference:'high-performance',precision:'mediump'});
   this.renderer.setClearColor(0x06101b);this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.shadowMap.enabled=false;
   this.scene=new THREE.Scene();this.scene.fog=new THREE.FogExp2(0x091725,.008);
   this.camera=new THREE.PerspectiveCamera(48,1,.1,240);this.camera.position.set(0,29,29);this.camera.lookAt(0,0,-2);
   this.scene.add(new THREE.HemisphereLight(0xc9edff,0x263c45,2.1));const sun=new THREE.DirectionalLight(0xe4f7ff,2.8);sun.position.set(-20,35,10);this.scene.add(sun);
-  this.G={box:new THREE.BoxGeometry(1,1,1),sphere:new THREE.SphereGeometry(1,10,8),cylinder:new THREE.CylinderGeometry(1,1,1,8),cone:new THREE.ConeGeometry(1,1,8),plane:new THREE.PlaneGeometry(1,1)};
+  this.G={box:new THREE.BoxGeometry(1,1,1),sphere:new THREE.SphereGeometry(1,10,8),cylinder:new THREE.CylinderGeometry(1,1,1,8),cone:new THREE.ConeGeometry(1,1,8),plane:new THREE.PlaneGeometry(1,1),barrier:new THREE.CylinderGeometry(2,2,2.85,18,1,true,-Math.PI/3,Math.PI*2/3),barrierArc:new THREE.RingGeometry(1.94,2.03,24,1,-Math.PI*5/6,Math.PI*2/3),rewindRing:new THREE.RingGeometry(.91,1,28)};
   this.sharedGeometry=new Set(Object.values(this.G));
   this.environment=new THREE.Group();this.actors=new THREE.Group();this.effects=new THREE.Group();this.scene.add(this.environment,this.actors,this.effects);
   this.ray=new THREE.Raycaster();this.ground=new THREE.Plane(new THREE.Vector3(0,1,0),0);this.pointer=new THREE.Vector2();this.aimPoint=new THREE.Vector3();this.target=new THREE.Vector3();this.instance=new THREE.Object3D();this.color=new THREE.Color();this.quat=new THREE.Quaternion();this.walk=0;
-  this._setupInstances();this._setupStars();this._setupSupport();this._buildArena('demo','port',[]);this.resize();
+  this._setupInstances();this._setupKitEffects();this._setupStars();this._setupSupport();this._buildArena('demo','port',[]);this.resize();
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();this.contextLost=true});canvas.addEventListener('webglcontextrestored',()=>{this.contextLost=false;this.resize()});
  }
  material(color,emissive=0,basic=false){const key=color+':'+emissive+':'+basic;if(!this.materials.has(key))this.materials.set(key,basic?new THREE.MeshBasicMaterial({color,toneMapped:false}):new THREE.MeshLambertMaterial({color,emissive,emissiveIntensity:.7}));return this.materials.get(key)}
@@ -41,6 +41,26 @@ class BulkArenaRenderer{
   this.warningRings=new THREE.InstancedMesh(this.warningRingGeometry,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.85,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}),24);
   this.warningFills=new THREE.InstancedMesh(this.warningFillGeometry,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.16,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}),24);
   for(const obj of [this.warningRings,this.warningFills]){obj.instanceMatrix.setUsage(THREE.DynamicDrawUsage);obj.frustumCulled=false;obj.count=0;this.effects.add(obj)}
+ }
+ _kitTexture(key,draw,width=256,height=256){
+  if(this.kitTextures.has(key))return this.kitTextures.get(key);
+  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;draw(canvas.getContext('2d'),width,height);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;this.kitTextures.set(key,texture);return texture;
+ }
+ _setupKitEffects(){
+  const sheet=this._kitTexture('sheet',(a,w,h)=>{a.fillStyle='#effff1';a.fillRect(0,0,w,h);a.fillStyle='#1f7043';a.fillRect(0,0,w,35);a.font='bold 22px Arial';a.textAlign='center';a.textBaseline='middle';a.fillStyle='#e8fff1';a.fillText('=PIVOT()',w/2,18);a.strokeStyle='#559368';a.lineWidth=2;for(let x=0;x<=w;x+=w/4){a.beginPath();a.moveTo(x,35);a.lineTo(x,h);a.stroke()}for(let y=35;y<=h;y+=36){a.beginPath();a.moveTo(0,y);a.lineTo(w,y);a.stroke()}a.fillStyle='#28623d';a.font='bold 22px monospace';a.fillText('SUMA: AUĆ',w/2,105);a.font='17px monospace';a.fillText('#REF!',w/2,150)},256,192);
+  const pivot=this._kitTexture('pivot',(a,w,h)=>{a.clearRect(0,0,w,h);a.fillStyle='rgba(255,255,255,.16)';a.fillRect(0,0,w,h);a.strokeStyle='rgba(255,255,255,.95)';a.lineWidth=9;a.strokeRect(5,5,w-10,h-10);a.lineWidth=3;for(let x=0;x<=w;x+=w/4){a.beginPath();a.moveTo(x,0);a.lineTo(x,h);a.stroke()}for(let y=0;y<=h;y+=h/4){a.beginPath();a.moveTo(0,y);a.lineTo(w,y);a.stroke()}a.fillStyle='#ffffff';a.font='bold 34px monospace';a.textAlign='center';a.fillText('TABELA PRZESTAWNA',w/2,67);a.font='bold 42px monospace';a.fillText('SUMA: AUĆ!',w/2,147);a.font='26px monospace';a.fillText('ZMIEN WIERSZ!',w/2,213)},512,256);
+  const query=this._kitTexture('query',(a,w,h)=>{a.fillStyle='rgba(4,23,33,.88)';a.fillRect(0,0,w,h);a.strokeStyle='#bfffff';a.lineWidth=4;a.strokeRect(2,2,w-4,h-4);a.fillStyle='#ffffff';a.textAlign='center';a.textBaseline='middle';a.font='bold 34px monospace';a.fillText('SELECT *',w/2,h/2)},320,80);
+  const rewind=this._kitTexture('rewind',(a,w,h)=>{a.clearRect(0,0,w,h);a.strokeStyle='#ffffff';a.lineWidth=12;a.beginPath();a.arc(w/2,h/2,90,-1.3,3.3);a.stroke();a.beginPath();a.moveTo(39,105);a.lineTo(27,159);a.lineTo(84,148);a.stroke();a.fillStyle='#ffffff';a.font='bold 49px Arial';a.textAlign='center';a.textBaseline='middle';a.fillText('Ctrl+Z',w/2,h/2)},256,256);
+  const barrier=this._kitTexture('barrier',(a,w,h)=>{a.clearRect(0,0,w,h);a.fillStyle='rgba(255,255,255,.2)';a.fillRect(0,0,w,h);a.strokeStyle='rgba(255,255,255,.8)';a.lineWidth=3;for(let y=-18;y<h+20;y+=32)for(let x=-18;x<w+22;x+=38){a.beginPath();for(let j=0;j<=6;j++){const t=j*Math.PI/3;a.lineTo(x+(y%64?19:0)+Math.cos(t)*21,y+Math.sin(t)*21)}a.stroke()}},128,128);
+  const instance=(geometry,material,count)=>{const obj=new THREE.InstancedMesh(geometry,material,count);obj.instanceMatrix.setUsage(THREE.DynamicDrawUsage);obj.frustumCulled=false;obj.count=0;this.effects.add(obj);return obj};
+  this.sheetInstances=instance(this.G.plane,new THREE.MeshBasicMaterial({map:sheet,side:THREE.DoubleSide,toneMapped:false}),220);
+  this.queryInstances=instance(this.G.plane,new THREE.MeshBasicMaterial({map:query,transparent:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}),24);
+  this.pivotInstances=instance(this.G.plane,new THREE.MeshBasicMaterial({map:pivot,transparent:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}),36);
+  this.apexInstances=instance(this.G.box,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,depthWrite:false,toneMapped:false}),36);
+  this.pivotSlams=instance(this.G.plane,new THREE.MeshBasicMaterial({map:sheet,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}),36);
+  this.rewindInstances=instance(this.G.plane,new THREE.MeshBasicMaterial({map:rewind,transparent:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}),24);
+  this.barrierTexture=barrier;this.rewindTexture=rewind;
  }
  _setupStars(){
   const data=new Float32Array(600*3);let seed=90210;for(let n=0;n<600;n++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const a=seed/4294967296*Math.PI*2;seed=(Math.imul(seed,1664525)+1013904223)>>>0;const y=18+seed/4294967296*80;seed=(Math.imul(seed,1664525)+1013904223)>>>0;const r=55+seed/4294967296*70;data[n*3]=Math.cos(a)*r;data[n*3+1]=y;data[n*3+2]=Math.sin(a)*r}
@@ -109,10 +129,28 @@ class BulkArenaRenderer{
    const material=new THREE.MeshBasicMaterial({color:0x72ffbc,transparent:true,opacity:.15,depthWrite:false,wireframe:false,toneMapped:false});const shell=new THREE.Mesh(new THREE.SphereGeometry(1,16,10),material);shell.scale.set(2.55,3,2.2);shell.position.set(0,3,0);root.add(shell);model.shell=shell;model.shellMaterial=material;
    const label=this._label('NIETYKALNY / WEZWIJ MARCA','#a0ffd2',6.7);label.position.set(0,7.5,0);root.add(label);model.shieldLabel=label;
   }
+  if(player)this._setupPlayerKit(model);
   return model;
  }
- _acquire(type,player){const pool=this.pools.get(type);const model=pool&&pool.length?pool.pop():this._makeModel(type,player);model.root.visible=true;model.body.rotation.set(0,0,0);this.actors.add(model.root);return model}
- _destroyModel(model){this._disposeGeometry(model.root);if(model.label){model.label.material.map.dispose();model.label.material.dispose()}if(model.shieldLabel){model.shieldLabel.material.map.dispose();model.shieldLabel.material.dispose()}model.ringMat.dispose();if(model.shellMaterial)model.shellMaterial.dispose()}
+ _setupPlayerKit(model){
+  const root=model.root,barrier=new THREE.Group(),rewind=new THREE.Group(),trail=new THREE.Group();root.add(barrier,rewind,trail);
+  const barrierMaterial=new THREE.MeshBasicMaterial({map:this.barrierTexture,color:0x78e9ff,transparent:true,opacity:.36,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
+  this.mesh(barrier,this.G.barrier,barrierMaterial,0,1.48,0);
+  const lip=this.mesh(barrier,this.G.barrierArc,this.material(0x9bf3ff,0,true),0,.065,0);lip.rotation.x=-Math.PI/2;
+  const top=this.mesh(barrier,this.G.barrierArc,this.material(0x9bf3ff,0,true),0,2.9,0);top.rotation.x=-Math.PI/2;
+  for(const s of [-1,1])this.box(barrier,this.material(0x9bf3ff,0,true),s*Math.sin(Math.PI/3)*2,1.48,Math.cos(Math.PI/3)*2,.07,2.85,.07);
+  const rewindMaterial=new THREE.MeshBasicMaterial({color:0x9dffb3,transparent:true,opacity:.85,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
+  for(let n=0;n<3;n++){const ring=this.mesh(rewind,this.G.rewindRing,rewindMaterial,0,.12+n*.38,0,1.1+n*.24,1.1+n*.24,1);ring.rotation.x=-Math.PI/2}
+  const rewindGlyphMaterial=new THREE.MeshBasicMaterial({map:this.rewindTexture,color:0xbaffc7,transparent:true,opacity:.9,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
+  const glyph=this.mesh(rewind,this.G.plane,rewindGlyphMaterial,0,2.2,0,2.5,2.5,1);
+  const excel=model.type==='excelPlayer',dashMaterial=new THREE.MeshBasicMaterial({color:excel?0x77f59c:0x78eaff,transparent:true,opacity:.6,depthWrite:false,toneMapped:false});
+  if(excel){for(let n=0;n<3;n++){this.box(trail,dashMaterial,0,.08,-.5-n*.85,.8,.055,.72);this.box(trail,this.material(0xc0ffd3,0,true),0,.12,-.5-n*.85,.04,.02,.68)}}
+  else for(let n=0;n<3;n++)this.box(trail,dashMaterial,0,.12,-.6-n*1.35,.5-n*.1,.06,1.65);
+  barrier.visible=rewind.visible=trail.visible=false;
+  model.kit={barrier,barrierMaterial,rewind,rewindMaterial,rewindGlyphMaterial,glyph,trail,dashMaterial,dashFade:0};
+ }
+ _acquire(type,player){const pool=this.pools.get(type);const model=pool&&pool.length?pool.pop():this._makeModel(type,player);model.root.visible=true;model.body.rotation.set(0,0,0);if(model.kit){model.kit.dashFade=0;model.kit.barrier.visible=model.kit.rewind.visible=model.kit.trail.visible=false}this.actors.add(model.root);return model}
+ _destroyModel(model){this._disposeGeometry(model.root);if(model.label){model.label.material.map.dispose();model.label.material.dispose()}if(model.shieldLabel){model.shieldLabel.material.map.dispose();model.shieldLabel.material.dispose()}model.ringMat.dispose();if(model.shellMaterial)model.shellMaterial.dispose();if(model.kit)for(const key of ['barrierMaterial','rewindMaterial','rewindGlyphMaterial','dashMaterial'])model.kit[key].dispose()}
  _retire(model){this.actors.remove(model.root);model.data=null;let pool=this.pools.get(model.type);if(!pool){pool=[];this.pools.set(model.type,pool)}if(pool.length<(model.player?6:8))pool.push(model);else this._destroyModel(model)}
  _syncEntities(list,table,player){
   const stamp=this.stamp;
@@ -136,13 +174,66 @@ class BulkArenaRenderer{
   const model=this._makeHumanoid('helper',0x3b84a2);const root=model.root;const ring=new THREE.Mesh(new THREE.RingGeometry(1.7,1.9,28),new THREE.MeshBasicMaterial({color:0x77dfff,transparent:true,opacity:.8,side:THREE.DoubleSide,depthWrite:false,toneMapped:false}));ring.rotation.x=-Math.PI/2;ring.position.y=.04;root.add(ring);const label=this._label('MARC BENIOFF / E','#a8ebff',5.8);label.position.set(0,4,0);root.add(label);this.actors.add(root);root.visible=false;this.supportModel={...model,ring,label};
  }
  _syncEffects(time){
-  const state=this.state;let n=0;
-  for(const b of state&&state.projectiles||[]){if(n>=220)break;this.instance.position.set(b.x,1.45,b.z);this.instance.rotation.set(0,Math.atan2(b.vx,b.vz),0);const hostile=b.team==='enemy';this.instance.scale.set(b.duplicate?.24:hostile?.19:.09,b.duplicate?.2:hostile?.17:.09,b.duplicate?.7:hostile?.6:.95);this.instance.updateMatrix();this.projectileInstances.setMatrixAt(n,this.instance.matrix);this.color.setHex(b.duplicate?0xff7ab8:hostile?(ENEMY_COLORS[b.type]||0xff9b7e):(TEAM_COLORS[b.team]||0xb6fff1));this.projectileInstances.setColorAt(n++,this.color)}this.projectileInstances.count=n;this.projectileInstances.instanceMatrix.needsUpdate=true;if(this.projectileInstances.instanceColor)this.projectileInstances.instanceColor.needsUpdate=true;
+  const state=this.state;let n=0,sheets=0,queries=0;
+  for(const b of state&&state.projectiles||[]){
+   if(n+sheets>=220)break;const table=b.kind==='table'||b.team==='excel'&&b.kind!=='apex',apex=b.kind==='apex'||b.type==='apex';
+   this.instance.position.set(b.x,1.45,b.z);
+   if(table){this.instance.quaternion.copy(this.camera.quaternion);this.instance.rotateZ(Math.sin(time*6+b.x*.23)*.35);this.instance.scale.set(.87,.64,1);this.instance.updateMatrix();this.sheetInstances.setMatrixAt(sheets++,this.instance.matrix);continue}
+   this.instance.rotation.set(0,Math.atan2(b.vx,b.vz),0);const hostile=b.team==='enemy';this.instance.scale.set(apex?.3:b.duplicate?.24:hostile?.19:.09,apex?.22:b.duplicate?.2:hostile?.17:.09,apex?1.9:b.duplicate?.7:hostile?.6:.95);this.instance.updateMatrix();this.projectileInstances.setMatrixAt(n,this.instance.matrix);this.color.setHex(apex?0xa4ffff:b.duplicate?0xff7ab8:hostile?(ENEMY_COLORS[b.type]||0xff9b7e):(TEAM_COLORS[b.team]||0xb6fff1));this.projectileInstances.setColorAt(n++,this.color);
+   if(apex&&queries<24){this.instance.position.set(b.x,1.95,b.z);this.instance.quaternion.copy(this.camera.quaternion);this.instance.scale.set(1.75,.43,1);this.instance.updateMatrix();this.queryInstances.setMatrixAt(queries++,this.instance.matrix)}
+  }
+  this.projectileInstances.count=n;this.projectileInstances.instanceMatrix.needsUpdate=true;if(this.projectileInstances.instanceColor)this.projectileInstances.instanceColor.needsUpdate=true;
+  this.sheetInstances.count=sheets;this.sheetInstances.instanceMatrix.needsUpdate=true;this.queryInstances.count=queries;
   n=0;
   for(const p of state&&state.pickups||[]){if(!p.ready||n>=57)continue;for(let part=0;part<3;part++){this.instance.position.set(p.x,.32+(part? .22:0),p.z);this.instance.rotation.set(0,0,0);this.instance.scale.set(part===0?1.05:part===1?.65:.15,part===0?.38:.055,part===0?.8:part===1?.15:.65);this.instance.updateMatrix();this.pickupInstances.setMatrixAt(n,this.instance.matrix);this.color.setHex(part?0x7effc3:0xb8cfd0);this.pickupInstances.setColorAt(n++,this.color)}}this.pickupInstances.count=n;this.pickupInstances.instanceMatrix.needsUpdate=true;if(this.pickupInstances.instanceColor)this.pickupInstances.instanceColor.needsUpdate=true;
   n=0;
   for(const w of state&&state.warnings||[]){if(n>=24)break;this.instance.position.set(w.x,.055,w.z);this.instance.rotation.set(-Math.PI/2,0,0);this.instance.scale.set(w.r,w.r,1);this.instance.updateMatrix();this.warningRings.setMatrixAt(n,this.instance.matrix);this.warningFills.setMatrixAt(n,this.instance.matrix);this.color.setHex(w.kind==='nova'?0xffcb76:w.kind&&w.kind.includes('Duplicate')?0xff77aa:0xff737b);this.color.multiplyScalar(.75+Math.sin(time*13)*.2);this.warningRings.setColorAt(n,this.color);this.warningFills.setColorAt(n,this.color);n++}for(const obj of [this.warningRings,this.warningFills]){obj.count=n;obj.instanceMatrix.needsUpdate=true;if(obj.instanceColor)obj.instanceColor.needsUpdate=true}
+  this._syncKitEffects(time);
   const support=state&&state.support,helper=this.supportModel;helper.root.visible=!!(support&&support.active);if(helper.root.visible){helper.root.position.set(support.x,.15+Math.sin(time*2)*.04,support.z);helper.ring.rotation.z=time*.5;const me=this.players.get(this.localId);if(me)helper.body.rotation.y=Math.atan2(me.x-support.x,me.z-support.z)}
+ }
+ _effectRayLength(x,z,angle,maxRange){
+  const dx=Math.sin(angle),dz=Math.cos(angle);let range=maxRange;
+  if(dx>1e-7)range=Math.min(range,(25-x)/dx);else if(dx<-1e-7)range=Math.min(range,(-25-x)/dx);
+  if(dz>1e-7)range=Math.min(range,(21-z)/dz);else if(dz<-1e-7)range=Math.min(range,(-21-z)/dz);
+  for(const o of this.state&&this.state.obstacles||[]){
+   let low=0,high=range;const minX=o.x-o.w/2-.18,maxX=o.x+o.w/2+.18,minZ=o.z-o.d/2-.18,maxZ=o.z+o.d/2+.18;
+   if(Math.abs(dx)<1e-7){if(x<minX||x>maxX)continue}else{const a=(minX-x)/dx,b=(maxX-x)/dx;low=Math.max(low,Math.min(a,b));high=Math.min(high,Math.max(a,b));if(high<low)continue}
+   if(Math.abs(dz)<1e-7){if(z<minZ||z>maxZ)continue}else{const a=(minZ-z)/dz,b=(maxZ-z)/dz;low=Math.max(low,Math.min(a,b));high=Math.min(high,Math.max(a,b));if(high<low)continue}
+   if(high>=low&&low>=0)range=Math.min(range,low);
+  }
+  return Math.max(0,range);
+ }
+ _syncKitEffects(time){
+  let pivots=0,lines=0,slams=0,rewinds=0,queries=this.queryInstances.count;
+  const localTeam=this.players.get(this.localId)?.data?.team;
+  for(const fx of this.state&&this.state.effects||[]){
+   if(!fx||!Number.isFinite(fx.x)||!Number.isFinite(fx.z))continue;
+   const heading=Number.isFinite(fx.angle)?fx.angle:0,friendly=localTeam&&fx.team===localTeam,impact=fx.phase==='impact';
+   const remaining=clamp((fx.remaining||0)/(fx.total||1),0,1);
+   this.color.setHex(friendly?0x7bdcff:0xff6a83);
+   if(fx.kind==='pivot'&&pivots<36){
+    const width=clamp(fx.width||6,1,12),depth=clamp(fx.depth||5,1,12);
+    this.instance.position.set(fx.x,.075,fx.z);this.instance.rotation.set(-Math.PI/2,heading,0,'YXZ');this.instance.scale.set(width,depth,1);this.instance.updateMatrix();this.pivotInstances.setMatrixAt(pivots,this.instance.matrix);this.color.multiplyScalar(impact?1:.78+Math.sin(time*13)*.15);this.pivotInstances.setColorAt(pivots++,this.color);
+    if(impact&&slams<36){this.instance.position.y=.2+Math.sin(remaining*Math.PI)*1.8;this.instance.rotation.set(-Math.PI/2+.22*Math.sin(remaining*Math.PI),heading,0,'YXZ');this.instance.scale.set(width*.92,depth*.92,1);this.instance.updateMatrix();this.pivotSlams.setMatrixAt(slams++,this.instance.matrix)}
+   }else if(fx.kind==='apexCast'&&lines<36){
+    const depth=this._effectRayLength(fx.x,fx.z,heading,clamp(fx.depth||18,.1,24));
+    this.instance.position.set(fx.x+Math.sin(heading)*depth/2,.11,fx.z+Math.cos(heading)*depth/2);this.instance.rotation.set(0,heading,0);this.instance.scale.set(clamp(fx.width||.6,.1,2),impact?.12:.04,depth);this.instance.updateMatrix();this.apexInstances.setMatrixAt(lines,this.instance.matrix);this.apexInstances.setColorAt(lines++,this.color);
+    if(queries<24){this.instance.position.y=1.6;this.instance.quaternion.copy(this.camera.quaternion);this.instance.scale.set(2.7,.68,1);this.instance.updateMatrix();this.queryInstances.setMatrixAt(queries++,this.instance.matrix)}
+   }else if(fx.kind==='rewind'&&rewinds<24&&!this.players.get(fx.ownerId)?.data?.rewindFlash){
+    const size=1.6+(1-remaining)*1.3;this.instance.position.set(fx.x,2.1,fx.z);this.instance.quaternion.copy(this.camera.quaternion);this.instance.scale.set(size,size,1);this.instance.updateMatrix();this.rewindInstances.setMatrixAt(rewinds++,this.instance.matrix);
+   }
+  }
+  this.pivotInstances.count=pivots;this.apexInstances.count=lines;this.pivotSlams.count=slams;this.rewindInstances.count=rewinds;this.queryInstances.count=queries;
+  for(const mesh of [this.pivotInstances,this.apexInstances,this.pivotSlams,this.rewindInstances,this.queryInstances]){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true}
+ }
+ _animateKit(model,dt,time,angle,oldX,oldZ){
+  const kit=model.kit,data=model.data;if(!kit)return;
+  kit.barrier.visible=!!data.alive&&data.barrierRemaining>0&&data.barrierHp>0;
+  if(kit.barrier.visible){kit.barrier.rotation.y=(Number.isFinite(data.barrierAngle)?data.barrierAngle:angle)-angle;kit.barrierMaterial.color.setHex(data.barrierFlash>0?0xe0ffff:0x78e9ff);kit.barrierMaterial.opacity=.19+.18*clamp(data.barrierHp/42,0,1)+(data.barrierFlash>0?.19:0);kit.barrier.scale.y=.97+Math.sin(time*8)*.025}
+  const undo=Number(data.undoPending)||0,flash=Number(data.rewindFlash)||0;kit.rewind.visible=!!data.alive&&(undo>0||flash>0);
+  if(kit.rewind.visible){const progress=clamp(1-flash/.6,0,1);kit.rewind.scale.setScalar(undo>0?.8:1+progress*.9);kit.rewindMaterial.opacity=undo>0?.42:Math.max(.08,flash/.6)*.8;kit.rewindGlyphMaterial.opacity=undo>0?.45:Math.max(.08,flash/.6);kit.glyph.quaternion.copy(this.quat.copy(model.root.quaternion).invert().multiply(this.camera.quaternion))}
+  kit.dashFade=data.dashing?1:Math.max(0,kit.dashFade-dt*6);kit.trail.visible=!!data.alive&&kit.dashFade>0;
+  if(kit.trail.visible){const dx=model.x-oldX,dz=model.z-oldZ;if(Math.hypot(dx,dz)>.001)kit.trail.rotation.y=Math.atan2(dx,dz)-angle;kit.trail.scale.z=.7+.3*kit.dashFade;kit.dashMaterial.opacity=.45*kit.dashFade}
  }
  _animateModel(model,dt,time,follow){
   const data=model.data;if(!data)return;const shown=!model.player||data.alive||data.downed;model.root.visible=!!shown;if(!shown)return;
@@ -153,6 +244,7 @@ class BulkArenaRenderer{
   const hp=clamp((data.hp||0)/(data.maxHp||1),0,1),shield=clamp((data.shield||0)/(data.maxShield||1),0,1);model.hpFill.scale.x=1.8*hp;model.hpFill.position.x=(hp-1)*.9;model.shieldFill.scale.x=1.8*shield;model.shieldFill.position.x=(shield-1)*.9;model.shieldFill.visible=model.shieldBack.visible=!!data.maxShield;model.revive.scale.x=1.8*clamp(data.reviveProgress||0,0,1);model.revive.position.x=(clamp(data.reviveProgress||0,0,1)-1)*.9;model.revive.visible=!!data.downed;
   model.bar.quaternion.copy(this.quat.copy(model.root.quaternion).invert().multiply(this.camera.quaternion));model.ring.visible=model.player&&(data.id===this.localId||data.downed||data.invulnerable);model.ring.material.opacity=data.invulnerable?.55+Math.sin(time*18)*.3:.8;
   if(model.shell){model.shell.visible=!!data.shielded;model.shieldLabel.visible=!!data.shielded;model.shellMaterial.opacity=.13+Math.sin(time*4)*.035}
+  this._animateKit(model,dt,time,angle,oldX,oldZ);
  }
  render(dt,time){
   if(this.contextLost)return;dt=clamp(Number(dt)||.016,0,.12);time=Number(time)||0;
