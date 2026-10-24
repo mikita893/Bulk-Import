@@ -1,73 +1,63 @@
-# Bulk Import: Duplicate Rage 3D
+# Bulk Import: Shared Universe — v11
 
-Aktualne wydanie: **[Bulk-Import-Omega-3D-v10.html](Bulk-Import-Omega-3D-v10.html)** — gra 3D w jednym samodzielnym HTML. Starsze pliki v4/v5/v6/v7/v8/v9 pozostają dostępne. Każde następne wydanie do pobrania musi dostać nową nazwę z numerem wersji.
+Rozszerzenie multiplayer na gałęzi `feature/bulk-import-multiplayer-v11`. Zawiera pełną kampanię solo v10, osobną kampanię kooperacyjną i Salesforce kontra Excel do **3 na 3**. Poprzednia gałąź 3D i wydania HTML pozostają zachowane.
 
-Kod 3D jest na gałęzi `feature/bulk-import-omega-3d-v5`; baza 2D została zachowana w commicie `d4afe8e`. Pełne wymagania: [v5](DESIGN-v5.md), [optymalizacje v6](DESIGN-v6.md), [dialogi i kampania v7](DESIGN-v7.md), [ulepszenia i konsekwencje relacji v8](DESIGN-v8.md), [finał z Excelem i zgodność zapisów v9](DESIGN-v9.md), [tarcza, ZIPsert i wściekły Excel v10](DESIGN-v10.md).
+Otwórz stronę serwera, wybierz tryb i utwórz pokój. Przekaż znajomym link lub kod pokoju. Każdy gra we własnej przeglądarce; nie potrzeba kont w grze. W VS wszyscy wybierają drużyny i gotowość, a gospodarz uruchamia mecz przy równych składach. Multiplayer wymaga działającego serwera — samo pobranie HTML nie łączy komputerów znajomych.
 
-## Uruchomienie
+## Tryby gry
 
-Otwórz pobrany HTML w przeglądarce z WebGL. W środowisku deweloperskim: `npm start` (Python 3, port 3000); strona główna kieruje do v10. Bez instalowania zależności gry, kont ani usług zewnętrznych. Three.js 0.160.1 z licencją MIT jest osadzony w HTML; modele, portrety, tekstury i dźwięki są proceduralne. Nie ma zewnętrznych assetów.
+- **Solo:** dokładna kampania [Bulk-Import-Omega-3D-v10.html](Bulk-Import-Omega-3D-v10.html), z relacjami, statkiem, wyposażeniem, zapisami v8/v9, ZIPsertem, Markiem i obiema formami Excela. Dotychczasowy klucz zapisu pozostaje bez zmian.
+- **Kooperacja, 1–3 osoby:** sześć oddzielnych misji, trudniejsze i skalowane starcia, wspólne kredyty oraz siedem rodzajów ulepszeń. Ratuj powalonych kolegów klawiszem E; drużyna ma trzy pakiety awaryjnego odzyskiwania. Finałem jest Excel Online z pomocą hologramu Marca.
+- **VS:** Salesforce przeciw Excelowi, 1v1, 2v2 albo 3v3. Pierwsza drużyna z 15 eliminacjami wygrywa; po sześciu minutach decyduje wynik lub remis. Odrodzenie trwa pięć sekund. Nie ma friendly fire ani przewagi z kampanijnego wyposażenia.
 
-Sterowanie wymaga klawiatury i myszy; responsywne menu nie jest sterowaniem dotykowym.
+Obie frakcje VS korzystają z **tych samych parametrów** życia, tarczy, broni, ruchu, dasha i impulsu. Różnią się nazwami, kolorem i wyglądem. Arena, spawny i apteczki są symetryczne. Serwer oblicza ruch, trafienia i odnowienia, a klient wysyła sterowanie. Test symetrycznego pojedynku sprawdza również odwróconą kolejność graczy.
 
-## Sterowanie i płynność
+## Uruchomienie lokalne / serwer Node
 
-- WASD / strzałki — ruch względem kamery; Shift — sprint.
-- Mysz — cel; LPM / spacja — strzał; PPM + mysz — obrót kamery; rolka — przybliżenie.
-- R — unik z krótką nietykalnością, odnowienie 2,5–1,25 s. **C — ZIPsert**, daleki dash z dwoma ładunkami; każdy odnawia się po 6,5–4 s zależnie od mobilności. Q — efekt masy, odnowienie 7–3 s. Ulepszenia skracają odnowienie.
-- E — retranslatory / Omega, w finale pomoc Marca przy hologramie; F — rozmowy; M — misje; U — zbrojownia; P / Esc — pauza lub powrót z menu.
-- Nagłówek: przełącznik dźwięku i grafiki **Auto → Szybka → Wysoka**.
+Wymagany Node.js 20 lub nowszy, zalecany Node.js 22.
 
-Auto dostosowuje rozdzielczość do płynności. Szybka dodatkowo obniża rozdzielczość; Wysoka włącza dynamiczne cienie. Zachowano statyczny batching, instancjonowanie efektów i symulację niezależną od FPS. [Pomiar v5/v6](benchmarks/v5-v6.json): w lokalnym SwiftShaderze v6 Auto skróciła medianę klatki walki około 3,6× przy tej samej rozdzielczości; nie jest to obietnica FPS na każdym urządzeniu.
+```sh
+npm ci
+npm start
+```
 
-## Kampania
+Strona: `http://localhost:3000`. Serwer nasłuchuje na `0.0.0.0` i zmiennej `PORT`; HTTP i WebSocket `/ws` używają jednego portu. W sieci domowej znajomi mogą otworzyć adres IP komputera gospodarza. Internet wymaga hostingu lub tunelu — propozycje i instrukcje: **[HOSTING-MULTIPLAYER.md](docs/HOSTING-MULTIPLAYER.md)**.
 
-Siedem dotychczasowych misji: Sandbox-7, Archiwum Protean, Stocznia Zbieraczy, Próg Omegi, Illium: Skarbiec Gethów, Katedra Walidacji i Jądro galaktyki. Po pokonaniu Zwiastuna odblokowuje się ósmy rozdział: **Excel: Koniec arkusza**. Mapy mają różne układy osłon, powierzchnie i dekoracje. W pierwszych siedmiu misjach po każdych żniwach wracasz na statek; obecna załoga pozostaje na statku. Załogant, który odejdzie przy obu wskaźnikach relacji 0%, może powrócić jako przeciwnik. Kolejne żniwa i misje wybiera się z mapy. Finał z Excelem jest jednym ciągłym starciem.
+Gra wieloosobowa znajduje się w [Bulk-Import-Multiplayer-v11.html](Bulk-Import-Multiplayer-v11.html). Biblioteka Three.js, grafika proceduralna i kod klienta są osadzone w tym pliku. Serwer jest osobnym programem. Bez zewnętrznych CDN, assetów ani płatnych usług. Po edycji źródeł klienta uruchom `npm run build:client`, aby odtworzyć HTML.
 
-Przeciwnicy: Żniwiarze, czerwone elity, Zbieracze oraz nowi **Husk–Duplikat**, **Geth–Permission Wall** i **Banshee–Validation Rule**. Z każdą misją rosną liczba i statystyki; jednocześnie może istnieć do 18 wrogów. Awatar Zwiastuna w Progu Omegi ma 260 HP. Zwiastun w Jądrze galaktyki ma **1200 HP i trzy fazy**, posiłki oraz zapowiadane kręgami ataki. Teleportacje Banshee też są zapowiadane.
+## Darmowy Cloudflare Workers
 
-Kredyty finansują po pięć poziomów mocy i szybkostrzelności broni oraz **pięć nowych ulepszeń v8**: pancerz (do 225 HP i +50 HP z apteczki), tarczę (do 125 pkt, regeneracja po 4 s bez trafienia), poszycie (do 30% redukcji obrażeń życia), biotykę (większe obrażenia i szybszy efekt masy) oraz mobilność (szybszy unik). Zakupy są dostępne na statku; zwiększenie pojemności dodaje tylko nową pojemność do aktualnego stanu, bez pełnego leczenia. Tarcza pochłania trafienie pierwsza, poszycie chroni pozostałe życie. **Paski życia i tarczy są też nad bohaterem.** Apteczki: +35–50 HP, odnowienie 18 s. CSV daje rekordy i kredyty. TURBO CSV co piątą eliminację przyspiesza ogień przez 6 s; serie eliminacji w odstępie do 4 s dają premie. QTE indoktrynacji: cztery klawisze WASD w 5 s, pomyłka −0,7 s, sukces +40 CR, porażka −20 HP.
+Dołączony adapter używa tego samego silnika i obsługi pokojów co serwer Node. Pokojami zarządza jeden Durable Object, dzięki czemu gracze nie trafiają do różnych instancji z rozdzielonym stanem. Konfiguracja korzysta z klasy SQLite Durable Objects dostępnej w planie Free.
 
-## Ostatni boss: Excel
+```sh
+npm ci
+npm run dev:cloudflare
+```
 
-Pierwsza forma Excela zachowuje **2400 HP, trzy fazy i ataki z v9**. Po jej pokonaniu walka trwa dalej na tej samej arenie: pojawia się **wściekły Excel z 3200 HP**, który zasypuje gracza zduplikowanymi danymi i opóźnionymi kopiami ataków. Ta forma również ma trzy coraz trudniejsze fazy. Dopiero jej pokonanie kończy kampanię. Nie ma podziału na żniwa ani QTE indoktrynacji.
+Lokalny adres: `http://localhost:8787`. Po zalogowaniu na własne konto Cloudflare przez `npx wrangler login` można uruchomić `npm run deploy:cloudflare`. Kod nie został automatycznie opublikowany na cudzym koncie. Szczegóły limitów darmowego planu i alternatywy są w [porównaniu hostingów](docs/HOSTING-MULTIPLAYER.md).
 
-Nietykalność bossa pokazuje wyraźna osłona energii z siatką, świecącymi pierścieniami i etykietą **NIETYKALNY**. Zablokowany strzał wywołuje błysk tarczy. Gdy Marc przełamuje ochronę, osłona znika i można zadawać obrażenia; po zakończeniu okna wraca. Wściekły Excel zmienia wygląd, aby było jasne, że zaczęła się nowa część pojedynku.
+Dla zwykłych hostingów Node przygotowano także `render.yaml` i `Dockerfile`. Nie zakładaj, że sam napis „Free” oznacza brak wymaganej metody płatności — aktualna weryfikacja dostawców jest opisana w porównaniu.
 
-**Pomoc Marca Benioffa jest konieczna w obu formach.** Kiedy pojawi się niebieski hologram, podejdź do niego i naciśnij **E**. Marc na kilka sekund przełamie osłonę i odnowi część życia oraz tarczy. W pierwszej formie okna podatności trwają 9, 8 lub 7 sekund, a pomoc odnawia do 30 HP i 45 pkt tarczy. Wściekły Excel daje okna kontrataku trwające 6,5, 6 lub 5,5 sekundy. Przegapiony sygnał powraca; hologram, panel odliczania i znacznik M na radarze pokazują miejsce wsparcia. Marc jest fikcyjną, satyryczną postacią gry.
+## Sterowanie i zapis
 
-**ZIPsert pod C** ma dwa ładunki. Pozwala wykonać daleki dash z krótką nietykalnością, lecz nadal zatrzymuje się na przeszkodach. Korzystaj z niego, aby wydostać się z kopiowanych ataków; pozostają też dotychczasowy unik R, efekt masy Q, ulepszenia i apteczki. Finał wymaga dobrego wyposażenia i reakcji na ostrzeżenia. Wcześniejsze misje można powtarzać po kredyty.
+WASD / strzałki — ruch, Shift — sprint, mysz — cel, LPM / spacja — ogień, C / R — dash, Q — impuls, E — przytrzymaj przy powalonym koledze albo aktywuj pomoc Marca. Instrukcja i menu **nie zatrzymują** rozgrywki pozostałych graczy. Interfejs pokazuje życie i tarczę nad postaciami, wynik i odnowienia. Ustawienie Szybka ogranicza rozdzielczość renderowania.
 
-Pokonanie pierwszej formy tworzy trwały punkt kontrolny. Jeśli zginiesz podczas walki ze wściekłym Excelem, ponowne rozpoczęcie finału prowadzi od razu do drugiej formy. Nie trzeba powtarzać pierwszego pojedynku ani kampanii.
+Kooperacja automatycznie przechowuje lokalną kopię postępu misji, kredytów i wspólnych ulepszeń. Można pobrać JSON, założyć nowy pokój i wczytać go jako gospodarz. To checkpoint kampanii; nie odtwarza każdej pozycji i pocisku z aktywnego starcia. Zapisy solo oraz coop mają osobne formaty i klucze. Ulepszenia coop nie trafiają do VS.
 
-## Relacje i odejścia
+Pokoje i bieżące mecze są przechowywane w pamięci serwera. Restart, uśpienie lub aktualizacja hostingu mogą je zakończyć. Po ponownym połączeniu można wznowić istniejącą sesję bez leczenia i zerowania odnowień; po utracie pokoju utwórz nowy i przywróć checkpoint coop. Nie przekazuj znajomym tokena sesji — udostępniaj zwykły link lub kod pokoju.
 
-Vael i Syra mają zmieniające mimikę portrety, **przychylność i zaufanie 0–100%**, po 16 scen z trzema odpowiedziami oraz trzy tematy na każdy pobyt na statku. Odpowiedzi mogą poprawiać i pogarszać nastawienie. Po wyborze widać reakcję i faktyczną zmianę procentów. Powtarzanie tego samego tematu nie daje punktów.
+## Testy i źródła
 
-Przeprosiny pomagają odbudować zaufanie. Można rozwijać przyjaźń lub zaproponować wyłączny, wzajemny związek od 75% przychylności i 60% zaufania. Związek można zakończyć; spadek dowolnego wskaźnika poniżej 20% również prowadzi do rozstania. Gdy **oba wskaźniki osiągną 0%**, załogant opuszcza statek, kończy ewentualny związek i staje się przeciwnikiem przy następnym starcie misji lub kolejnych żniw. Po pokonaniu już nie wraca; śmierć bohatera zachowuje spotkanie do ponownej próby. Odejście i jego konsekwencja są zapisywane. Relacje, historia odpowiedzi i postęp tematów również pozostają w zapisie.
+```sh
+npm test
+npm run test:solo
+npm run test:browser
+# W drugim terminalu przy działającym npm run dev:cloudflare:
+npm run test:cloudflare
+```
 
-## Zapis i migracja
+Testy silnika, rzeczywistych sześciu połączeń, cyklu życia pokojów i adaptera workerd przeszły. Dwie przeglądarki sprawdziły VS i coop, ruch, strzały, umiejętności, reconnect oraz odświeżenie; zachowane są też testy zapisu solo.
 
-localStorage v10: `bulk-import-omega-3d-v10`; ustawienia grafiki: `bulk-import-3d-settings`. Automatyczny zapis co 2 s walki i przy ważnych zmianach obejmuje kampanię, przeciwników i pociski, życie, tarczę, ulepszenia, relacje oraz odejścia załogi. Zapisuje także ładunki i odnowienie ZIPserta, formę i HP Excela, punkt kontrolny po pierwszej formie oraz stan wsparcia Marca. Po odświeżeniu wybierz **KONTYNUUJ KAMPANIĘ**.
+Testy przeglądarkowe wymagają Playwright i Chromium; nie są zależnością do grania ani uruchomienia serwera. Serwer testowy używa osobnego portu. Szczegóły mechanik i zakres weryfikacji: [DESIGN-v11.md](DESIGN-v11.md). Wymagania poprzednich wersji pozostają w [DESIGN-v10.md](DESIGN-v10.md) i wcześniejszych dokumentach.
 
-Menu **ZAPIS** eksportuje i importuje JSON v4–v10. Ekran startowy umożliwia również przeniesienie starszego zapisu z localStorage. Obsługiwane są **v9 i v8**, a wcześniejsze migratory v4–v7 pozostają dostępne. Kredyty, wyposażenie, relacje, historia dialogów i ukończone wcześniejsze misje są zachowywane.
-
-**Jeśli pokonałeś Excela w v9, po migracji pozostaje tylko nowa, wściekła forma.** Wygrana z v9 jest uznawana za ukończenie pierwszej formy; oznaczenie zwycięstwa kampanii v10 pojawia się dopiero po pokonaniu drugiej. Aktywna walka z Excelem z v9 zachowuje dotychczasowe HP i okno podatności jako pierwsza forma. Jeśli w v8 pokonałeś już Zwiastuna, finał jest odblokowany, ale do ukończenia pozostają obie formy Excela.
-
-Import v8 zachowuje pancerz, tarcze i konsekwencje odejść. W zapisie v7 pięć ulepszeń dodanych w v8 zaczyna od zera; aktywna postać zachowuje HP. Import v5/v6 zachowuje aktywną walkę na zgodnej mapie, a v4 wraca na statek 3D. Dawne więzi są przeliczane na procenty. Stare zwycięstwo v4–v6 nie zalicza później dodanych bossów. Nowa umiejętność ZIPsert zaczyna w starszych zapisach z dwoma ładunkami.
-
-Migracja nie nadpisuje źródłowego zapisu poprzedniej wersji. Różne lokalne pliki HTML mogą mieć oddzielne localStorage: przed zmianą pliku lub wersji wyeksportuj JSON. Blokada zapisu jest zgłaszana w HUD; eksport nadal działa. Import jest sprawdzany przed zastąpieniem kampanii, również pod kątem spójności formy bossa, wsparcia, duplikowanych pocisków i nowej umiejętności. Rozpoczęte ostrzeżenia ataków są po wczytaniu anulowane, aby nie zadawać niewidocznych zaległych obrażeń.
-
-## Sprawdzenie
-
-Test balansu na kodzie wydania przeszedł. Porównanie wszystkich dziewięciu kombinacji fazy i wzoru ataku potwierdziło, że pierwsza forma zachowuje ostrzeżenia, czasy i pociski z v9. Symulacja potwierdziła osiągalność wygranej z obiema formami i samego wściekłego Excela przez bota reagującego na zagrożenia; bot ignorujący ostrzeżenia przegrywa, a bez Marca nie zadaje bossowi obrażeń. Model ma idealne celowanie i natychmiast wykorzystuje dostępną pomoc; nie jest pomiarem wyników graczy.
-
-Walidacja zapisów, testy zegara symulacji i regresja wcześniejszej kampanii przeszły. Końcowe testy Chromium potwierdziły widoczność, błysk i wyłączanie osłony, ZIPsert z klawiatury, jego ładunki, kolizje i zapis, przejście do wściekłej formy bez nagrody za pierwszy pojedynek, opóźnione kopie ataków oraz zwycięstwo dopiero po pokonaniu drugiej formy. Sprawdzono punkt kontrolny, odrzucanie uszkodzonych danych, migrację zwycięzcy v9 prosto do nowej formy, zachowanie aktywnej walki v9 oraz obie formy po migracji zwycięzcy v8. Wczytanie zachowuje stan, a źródłowy zapis starszej wersji pozostaje bez zmian. Nie wystąpiły błędy JavaScript ani żądania do zewnętrznych zasobów.
-
-- `node tests/v10-state.test.cjs`
-- `node tests/v10-excel-balance.test.cjs` — porównanie pierwszej formy z v9 i symulacja obu form.
-- `node tests/frame-clock.test.cjs Bulk-Import-Omega-3D-v10.html`
-- `node tests/v10-browser.test.cjs` — wymaga Playwright, systemowego Chromium i serwera na porcie 3000.
-- Benchmark deweloperski: `node tests/benchmark-3d.cjs Bulk-Import-Omega-3D-v10.html /tmp/perf-v10.json fast` (Playwright, Chromium i serwer na porcie 3000).
-
-Wcześniejsze wyniki zachowano w [DESIGN-v8.md](DESIGN-v8.md) i [DESIGN-v9.md](DESIGN-v9.md). Historyczne pomiary wydajności nie są obietnicą FPS dla nowej sceny ani każdego urządzenia.
+Three.js 0.160.1 z licencją MIT jest osadzony w HTML; klient nie pobiera obrazów ani modeli z Internetu. Modele, tekstury i dźwięki powstają proceduralnie. Kod silnika multiplayer znajduje się w `multiplayer/engine.cjs`, wspólne parametry w `multiplayer/shared.cjs`, transport i pokoje w `server/`, a adapter Workers w `cloudflare/`.

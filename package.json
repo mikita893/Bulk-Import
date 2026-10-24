@@ -1,9 +1,27 @@
 {
   "name": "bulk-import",
-  "version": "1.0.0",
+  "version": "11.0.0",
   "private": true,
-  "description": "Kosmiczna strzelanka w świecie importów Salesforce",
+  "description": "Bulk Import: kampania solo, kooperacja i Salesforce kontra Excel 3 na 3",
   "scripts": {
-    "start": "python3 -m http.server 3000 --bind 0.0.0.0"
+    "start": "node server/index.cjs",
+    "start:solo": "python3 -m http.server 3000 --bind 0.0.0.0",
+    "test": "node --test tests/multiplayer-engine.test.cjs tests/multiplayer-integration.test.cjs tests/room-service.test.cjs",
+    "test:browser": "node tests/multiplayer-browser.cjs",
+    "test:solo": "node tests/v10-state.test.cjs && node tests/frame-clock.test.cjs Bulk-Import-Omega-3D-v10.html",
+    "build:client": "node multiplayer/build-client.cjs",
+    "build:cloudflare": "node multiplayer/build-cloudflare.cjs",
+    "dev:cloudflare": "npm run build:cloudflare && wrangler dev --port 8787",
+    "deploy:cloudflare": "npm run build:cloudflare && wrangler deploy",
+    "test:cloudflare": "node tests/cloudflare-smoke.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.152.0"
   }
 }

@@ -1,0 +1,13 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path');
+const shared=require('./shared.cjs');
+const bakedConfig={missions:shared.MISSIONS,upgrades:shared.UPGRADES};
+const root=path.resolve(__dirname,'..'),base=fs.readFileSync(path.join(root,'Bulk-Import-Omega-3D-v10.html'),'utf8');
+const a=base.indexOf('<script>'),b=base.indexOf('</script>',a);
+if(a<0||b<0)throw Error('Embedded Three.js is missing from v10');
+const licenseStart=base.indexOf('<!-- Bundled Three.js'),licenseEnd=base.indexOf('-->',licenseStart)+3;
+const vendor=base.slice(licenseStart,licenseEnd)+'\n'+base.slice(a,b+9);
+let output=fs.readFileSync(path.join(__dirname,'client-shell.html'),'utf8');
+output=output.replace('/*CLIENT_STYLE*/',()=>fs.readFileSync(path.join(__dirname,'client.css'),'utf8')).replace('<!--THREE_BUNDLE-->',()=>vendor).replace('/*CLIENT_APP*/',()=>"'use strict';\nwindow.BULK_CLIENT_CONFIG="+JSON.stringify(bakedConfig)+';\n'+fs.readFileSync(path.join(__dirname,'render.js'),'utf8')+'\n'+fs.readFileSync(path.join(__dirname,'client.js'),'utf8'));
+fs.writeFileSync(path.join(root,'Bulk-Import-Multiplayer-v11.html'),output);
+console.log('Built Bulk-Import-Multiplayer-v11.html ('+Buffer.byteLength(output)+' bytes)');
