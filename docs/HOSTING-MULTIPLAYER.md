@@ -38,20 +38,16 @@ Obecny adapter kieruje pokoje do wspólnego obiektu, aby nie rozdzielić kolegó
 
 ## GitHub Codespaces: najprostszy serwer na wieczór
 
-Konfiguracja jest gotowa w repozytorium, z **ręcznym startem gry**. Zapis plików nie tworzy Codespace. Utworzenie środowiska uruchamia maszynę i zaczyna zużywać pulę, więc zrób to dopiero przed graniem. Szczegółowa instrukcja: **[CODESPACES-START.md](CODESPACES-START.md)**.
+Konfiguracja jest gotowa w repozytorium: **wznowienie Codespace automatycznie uruchamia grę**, a **Stop codespace** zatrzymuje całą maszynę. Zapis plików nie tworzy Codespace. Pierwsze utworzenie środowiska uruchamia maszynę i zaczyna zużywać pulę, więc zrób to dopiero przed graniem. Instrukcja Start/Stop: **[CODESPACES-START.md](CODESPACES-START.md)**.
 
 1. Otwórz repozytorium na gałęzi multiplayer.
 2. Wybierz **Code → Codespaces → … → New with options → Create codespace**. Dla osobistego konta Free wybierz maszynę **2-core**. Konfiguracja deklaruje minimum 2 rdzenie; wybór większej maszyny szybciej zużyje pulę.
-3. Dołączony `.devcontainer` instaluje Node.js 22 i zależności produkcyjne. Uruchom grę przez **Terminal → Run Task… → Bulk Import: uruchom serwer** albo w terminalu:
-
-   ```sh
-   npm start
-   ```
-
-   Serwer nie startuje automatycznie po utworzeniu lub wznowieniu Codespace. Log działania jest w terminalu zadania. Użyj jednej metody startu, aby nie uruchomić dwóch kopii na porcie 3000.
+3. Dołączony `.devcontainer` instaluje Node.js 22 i zależności produkcyjne. Po utworzeniu lub wznowieniu Codespace uruchamia grę automatycznie. Log działania znajduje się w `/tmp/bulk-import-server.log`; ponowne wywołanie pomocnika startowego wykorzystuje już działający serwer.
 
 4. Otwórz zakładkę **Ports**, znajdź port **3000**, ustaw **Port Visibility → Public** i skopiuj jego adres przeglądarkowy. Dla serwera Node zostaw lokalny protokół HTTP; publiczny adres jest obsługiwany przez proxy GitHuba. Nie zmieniaj portu na lokalne HTTPS, jeśli aplikacja nie uruchamia własnego TLS.
-5. Udostępnij adres kolegom. Po grze wyeksportuj checkpoint kooperacji i zatrzymaj całe środowisko na [github.com/codespaces](https://github.com/codespaces) przez **… → Stop codespace**. Samo `Ctrl+C` zatrzymuje grę, ale Codespace nadal zużywa czas. Usuń niepotrzebne środowisko, aby nie zużywać limitu dysku.
+5. Udostępnij adres kolegom. Po grze wyeksportuj checkpoint kooperacji i zatrzymaj całe środowisko na [github.com/codespaces](https://github.com/codespaces) przez **… → Stop codespace**. Zamknięcie terminalu pomocnika nie zatrzymuje serwera działającego w tle ani Codespace. Usuń niepotrzebne środowisko, aby nie zużywać limitu dysku.
+
+Przy kolejnych sesjach wystarczy kliknąć nazwę tego samego środowiska na [github.com/codespaces](https://github.com/codespaces), a po grze wybrać **… → Stop codespace**. Edytor ma ustawione otwarcie strony gry po przekierowaniu portu; zachowaj też jej adres w zakładkach. Publiczną widoczność ustaw przy pierwszej konfiguracji, a potem sprawdzaj ją tylko w razie problemów z dostępem znajomych.
 
 Oficjalna tabela osobistego GitHub Free obejmuje **120 godzin obliczeniowych i 15 GB-miesiąc**. Maszyna 2-rdzeniowa ma mnożnik 2, więc jest to około **60 rzeczywistych godzin pracy miesięcznie**, współdzielonych z innymi Twoimi Codespaces. Jeśli na koncie nie ma metody płatności, przekroczenie puli blokuje dalsze użycie zamiast wymagać kontynuacji płatnej.
 

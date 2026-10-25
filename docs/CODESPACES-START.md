@@ -1,26 +1,39 @@
-# Bulk Import: Codespaces gotowe do ręcznego uruchomienia
+# Bulk Import: Start i Stop serwera
 
-Konfiguracja jest zapisana w repozytorium. Samo zapisanie tych plików nie tworzy ani nie uruchamia Codespace i nie zużywa jego puli czasu ani dysku. Utworzenie Codespace od razu uruchamia maszynę, dlatego wykonaj poniższe kroki dopiero przed graniem. Kod gry pozostaje w wersji v12.
+Konfiguracja uruchamia grę automatycznie przy starcie lub wznowieniu Codespace. Sam zapis plików w repozytorium nie tworzy ani nie uruchamia środowiska. Utwórz je dopiero przed graniem. Gra pozostaje w wersji v12.
 
-## Pierwsza sesja
+## Na co dzień: tylko Start i Stop
 
-1. Opcjonalnie ustaw **Default idle timeout** w [ustawieniach Codespaces](https://github.com/settings/codespaces), np. na 240 minut, i zapisz. To ustawienie obowiązuje nowo tworzone środowiska; domyślnie bezczynne środowisko zatrzymuje się po 30 minutach.
+1. Otwórz [github.com/codespaces](https://github.com/codespaces).
+2. **START:** kliknij nazwę swojego Codespace z Bulk Import. GitHub wznowi maszynę, a serwer gry wystartuje automatycznie. Edytor ma ustawione otwarcie strony gry po przekierowaniu portu 3000. Jeżeli przeglądarka nie otworzy jej automatycznie, użyj zapisanego adresu gry albo **Ports → 3000 → Open in Browser**.
+3. Graj ze znajomymi. Na stronie gry utwórz pokój i użyj **Kopiuj zaproszenie**. Coop obsługuje do 3 osób, VS równe składy do 3 na 3.
+4. **STOP:** na [github.com/codespaces](https://github.com/codespaces) przy swoim środowisku wybierz **… → Stop codespace**. Zatrzymuje to grę i całą maszynę, więc przestaje zużywać czas pracy.
+
+Przy kolejnych sesjach nie instalujesz zależności ani nie wpisujesz `npm start`. Używaj tego samego środowiska.
+
+## Tylko pierwszy raz
+
+1. Opcjonalnie ustaw **Default idle timeout** w [ustawieniach Codespaces](https://github.com/settings/codespaces), np. na 240 minut, i zapisz. Ustawienie obowiązuje nowo tworzone środowiska; domyślnie bezczynne środowisko zatrzymuje się po 30 minutach.
 2. Otwórz [gałąź multiplayer](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-multiplayer-v11). Nazwa gałęzi zawiera v11, a aktualna gra to v12.
-3. Wybierz **Code → Codespaces → … → New with options**, gałąź `feature/bulk-import-multiplayer-v11`, maszynę **2-core** i najbliższy dostępny region. Utwórz Codespace na swoim osobistym koncie.
-4. Poczekaj na konfigurację. Node.js 22 i zależności serwera instalują się automatycznie. Instalowane są tylko zależności do grania; narzędzia Cloudflare nie są potrzebne. Serwer gry czeka na ręczny start.
-5. W edytorze wybierz **Terminal → Run Task… → Bulk Import: uruchom serwer**. Alternatywnie otwórz terminal i wpisz `npm start`. Wystarczy jedna z tych metod; komunikat `EADDRINUSE` oznacza zwykle, że serwer już działa.
-6. Otwórz zakładkę **Ports** na dole edytora. Przy porcie **3000** wybierz prawym przyciskiem **Port Visibility → Public**. Jeżeli port nie jest widoczny, wybierz **Forward a Port** i wpisz `3000`.
-7. Kliknij **Open in Browser** lub skopiuj **Forwarded Address** w postaci `https://…-3000.app.github.dev`. Lokalny protokół portu pozostaw **HTTP**; proxy GitHuba udostępnia publiczny adres przez HTTPS.
-8. Na stronie gry wybierz kooperację albo VS, utwórz pokój i użyj **Kopiuj zaproszenie**. Znajomi otwierają ten link w swojej przeglądarce. Publiczny port nie wymaga ich logowania na GitHub. Coop obsługuje do 3 osób, VS równe składy do 3 na 3.
+3. Wybierz **Code → Codespaces → … → New with options**, gałąź `feature/bulk-import-multiplayer-v11`, maszynę **2-core** i najbliższy dostępny region. Utwórz Codespace na swoim osobistym koncie. Ten krok od razu uruchamia maszynę.
+4. Poczekaj na konfigurację. Node.js 22, zależności produkcyjne i serwer gry przygotują się automatycznie.
+5. Na dole edytora otwórz **Ports**. Przy porcie **3000** wybierz prawym przyciskiem **Port Visibility → Public**. Jeżeli port nie jest widoczny, wybierz **Forward a Port** i wpisz `3000`.
+6. Kliknij **Open in Browser** i zapisz adres gry w zakładkach. Adres ma postać `https://…-3000.app.github.dev`. Lokalny protokół pozostaw **HTTP**; proxy GitHuba udostępnia stronę przez HTTPS. Publiczny port umożliwia znajomym wejście bez logowania na GitHub.
 
-## Po grze i następna sesja
+Publiczną widoczność ustawiasz podczas pierwszej konfiguracji; jeśli znajomi później zobaczą ekran logowania, sprawdź ponownie **Port Visibility → Public**. Sam adres gry otwierany przez znajomych nie zastępuje wznowienia zatrzymanej maszyny przez gospodarza.
 
-1. W kooperacji pobierz **Eksport checkpointu co-op** albo **Eksport kampanii co-op**. Aktywne pokoje są w pamięci serwera i znikają po jego zatrzymaniu.
-2. Wejdź na [Twoje Codespaces](https://github.com/codespaces), przy tym środowisku wybierz **… → Stop codespace**. Zatrzymanie samej gry przez `Ctrl+C` lub zamknięcie karty przeglądarki nie zatrzymuje naliczania czasu działającego Codespace.
-3. Przed kolejną sesją uruchom to samo środowisko, ponownie wybierz zadanie **Bulk Import: uruchom serwer** i sprawdź publiczną widoczność portu 3000. Utwórz pokój; zapis kooperacji przywrócisz przez **Import kampanii co-op**.
+## Zapis i oszczędzanie puli
 
-Osobiste GitHub Free obejmuje około **60 rzeczywistych godzin miesięcznie na 2-core** i **15 GB-miesiąc** dysku. Pula jest wspólna dla wszystkich Twoich Codespaces. Zatrzymane środowisko nadal zajmuje dysk; usuń je, gdy nie jest potrzebne. Bez zapisanej metody płatności wykorzystanie bezpłatnej puli blokuje dalsze użycie do jej odnowienia. Sama konfiguracja w repozytorium nie zmienia ustawień rozliczeń konta.
+Przed zatrzymaniem serwera w kooperacji pobierz **Eksport checkpointu co-op** albo **Eksport kampanii co-op**. Aktywne pokoje są w pamięci i znikają po zatrzymaniu maszyny. Przy następnej sesji utwórz pokój, a zapis przywróć przez **Import kampanii co-op**.
 
-W razie problemów przy instalacji zależności otwórz terminal i uruchom `npm ci --omit=dev --ignore-scripts`, a następnie `npm start`. Istniejący Codespace utworzony ze starszą konfiguracją wymaga przebudowania kontenera (**Codespaces: Rebuild Container**), aby usunąć dawny automatyczny start gry. Przebudowę wykonuj dopiero w czasie zaplanowanej sesji.
+Zamknięcie strony lub samego edytora nie zatrzymuje Codespace. Używaj **Stop codespace**. Domyślne usypianie następuje po 30 minutach bezczynności; sam ruch graczy nie musi go wyłączać. Pojedyncze uruchomienie ma maksymalny czas życia 12 godzin.
 
-Więcej informacji: [porównanie hostingów](HOSTING-MULTIPLAYER.md), [oficjalne limity Codespaces](https://docs.github.com/en/billing/concepts/product-billing/github-codespaces), [udostępnianie portów](https://docs.github.com/en/codespaces/developing-in-a-codespace/forwarding-ports-in-your-codespace).
+Osobiste GitHub Free obejmuje około **60 rzeczywistych godzin miesięcznie na 2-core** i **15 GB-miesiąc** dysku, wspólnych dla wszystkich Twoich Codespaces. Zatrzymane środowisko nadal zajmuje dysk; usuń je, gdy nie jest potrzebne. Bez zapisanej metody płatności wykorzystanie bezpłatnej puli blokuje dalsze użycie do jej odnowienia. Konfiguracja repozytorium nie zmienia ustawień rozliczeń konta.
+
+## Gdy potrzebna jest naprawa
+
+Jeżeli masz już Codespace utworzony ze starszą konfiguracją, pobierz najnowsze zmiany i raz przebuduj kontener przez **Codespaces: Rebuild Container** w palecie poleceń edytora. Wykonaj to przed graniem; kolejne wznowienia będą uruchamiać grę automatycznie.
+
+Awaryjny przycisk w edytorze: **Terminal → Run Task… → Bulk Import: uruchom serwer**. Pomocnik sprawdza stan serwera i nie uruchamia kolejnej kopii, jeżeli właściwy serwer już działa. Log startu: `/tmp/bulk-import-server.log`. Ręczne `npm start` jest nadal dostępne, ale nie jest potrzebne do codziennego uruchamiania. Zatrzymanie terminalu zadania nie zatrzymuje serwera działającego w tle; do zakończenia sesji użyj **Stop codespace**.
+
+Więcej informacji: [porównanie hostingów](HOSTING-MULTIPLAYER.md), [oficjalny Start i Stop Codespaces](https://docs.github.com/en/codespaces/developing-in-a-codespace/stopping-and-starting-a-codespace), [bezpłatna pula](https://docs.github.com/en/billing/concepts/product-billing/github-codespaces).

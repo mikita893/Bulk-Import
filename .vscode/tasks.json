@@ -4,8 +4,8 @@
     {
       "label": "Bulk Import: uruchom serwer",
       "type": "process",
-      "command": "npm",
-      "args": ["start"],
+      "command": "node",
+      "args": [".devcontainer/start-server.cjs"],
       "options": {"cwd": "${workspaceFolder}"},
       "problemMatcher": [],
       "runOptions": {"instanceLimit": 1},

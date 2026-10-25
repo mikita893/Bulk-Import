@@ -34,9 +34,9 @@ Strona: `http://localhost:3000`. Serwer nasłuchuje na `0.0.0.0` i zmiennej `POR
 
 Gra wieloosobowa znajduje się w [Bulk-Import-Multiplayer-v12.html](Bulk-Import-Multiplayer-v12.html). Poprzedni HTML v11 jest zachowany. Biblioteka Three.js, grafika proceduralna i kod klienta są osadzone w tym pliku. Serwer jest osobnym programem. Bez zewnętrznych CDN, assetów ani płatnych usług. Po edycji źródeł klienta uruchom `npm run build:client`, aby odtworzyć HTML.
 
-## GitHub Codespaces: konfiguracja do późniejszego startu
+## GitHub Codespaces: Start i Stop serwera
 
-Repozytorium zawiera konfigurację Node.js 22, minimum 2 rdzeni, instalacji zależności serwera i portu 3000. Gra uruchamia się ręcznie przez **Terminal → Run Task… → Bulk Import: uruchom serwer** albo `npm start`. Konfiguracja nie tworzy ani nie uruchamia zdalnego Codespace. Utwórz go dopiero przed graniem, a po sesji zatrzymaj całe środowisko, aby oszczędzać pulę. Instrukcja krok po kroku: **[CODESPACES-START.md](docs/CODESPACES-START.md)**.
+Na [github.com/codespaces](https://github.com/codespaces) kliknij nazwę swojego środowiska, aby je wznowić: serwer gry wystartuje automatycznie, a edytor ma ustawione otwarcie strony gry. Po sesji wybierz **… → Stop codespace**, aby zatrzymać grę i maszynę. Bez wpisywania komend przy każdej sesji. Jednorazowo utwórz środowisko **2-core** z tej gałęzi i ustaw port **3000 → Public**. Konfiguracja jest zapisana w repozytorium; samo jej zapisanie nie tworzy ani nie uruchamia zdalnego Codespace. Instrukcja: **[CODESPACES-START.md](docs/CODESPACES-START.md)**.
 
 ## Darmowy Cloudflare Workers
 

@@ -4,9 +4,10 @@
   "hostRequirements": {"cpus": 2},
   "forwardPorts": [3000],
   "portsAttributes": {
-    "3000": {"label": "Bulk Import v12", "onAutoForward": "notify", "protocol": "http"}
+    "3000": {"label": "Bulk Import v12", "onAutoForward": "openBrowserOnce", "protocol": "http"}
   },
   "postCreateCommand": "npm ci --omit=dev --ignore-scripts --no-audit --no-fund",
+  "postStartCommand": "node .devcontainer/start-server.cjs",
   "customizations": {
     "codespaces": {"openFiles": ["docs/CODESPACES-START.md"]}
   }
