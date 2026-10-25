@@ -1,10 +1,13 @@
 {
   "name": "Bulk Import multiplayer",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "hostRequirements": {"cpus": 2},
   "forwardPorts": [3000],
   "portsAttributes": {
     "3000": {"label": "Bulk Import v12", "onAutoForward": "notify", "protocol": "http"}
   },
-  "postCreateCommand": "npm ci --ignore-scripts",
-  "postStartCommand": "npm start > /tmp/bulk-import-server.log 2>&1 &"
+  "postCreateCommand": "npm ci --omit=dev --ignore-scripts --no-audit --no-fund",
+  "customizations": {
+    "codespaces": {"openFiles": ["docs/CODESPACES-START.md"]}
+  }
 }

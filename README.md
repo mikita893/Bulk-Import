@@ -34,6 +34,10 @@ Strona: `http://localhost:3000`. Serwer nasłuchuje na `0.0.0.0` i zmiennej `POR
 
 Gra wieloosobowa znajduje się w [Bulk-Import-Multiplayer-v12.html](Bulk-Import-Multiplayer-v12.html). Poprzedni HTML v11 jest zachowany. Biblioteka Three.js, grafika proceduralna i kod klienta są osadzone w tym pliku. Serwer jest osobnym programem. Bez zewnętrznych CDN, assetów ani płatnych usług. Po edycji źródeł klienta uruchom `npm run build:client`, aby odtworzyć HTML.
 
+## GitHub Codespaces: konfiguracja do późniejszego startu
+
+Repozytorium zawiera konfigurację Node.js 22, minimum 2 rdzeni, instalacji zależności serwera i portu 3000. Gra uruchamia się ręcznie przez **Terminal → Run Task… → Bulk Import: uruchom serwer** albo `npm start`. Konfiguracja nie tworzy ani nie uruchamia zdalnego Codespace. Utwórz go dopiero przed graniem, a po sesji zatrzymaj całe środowisko, aby oszczędzać pulę. Instrukcja krok po kroku: **[CODESPACES-START.md](docs/CODESPACES-START.md)**.
+
 ## Darmowy Cloudflare Workers
 
 Dołączony adapter używa tego samego silnika i obsługi pokojów co serwer Node. Pokojami zarządza jeden Durable Object, dzięki czemu gracze nie trafiają do różnych instancji z rozdzielonym stanem. Konfiguracja korzysta z klasy SQLite Durable Objects dostępnej w planie Free.
