@@ -1,5 +1,7 @@
 # Bulk Import: Wspólna Galaktyka — v16
 
+Historia zmian: [CHANGELOG.md](CHANGELOG.md) — aktualizowana przy każdym nowym wydaniu, począwszy od v16.
+
 **Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v16.html](Bulk-Import-v16.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3** i **Gwintforce: Wojna rekordów**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
 
 ## Pobierz HTML i graj lokalnie
@@ -47,6 +49,8 @@ Po zwiększeniu wersji w `package.json` uruchom:
 ```sh
 npm run build:client
 ```
+
+Przy każdym nowym wydaniu dodaj wpis na początku [CHANGELOG.md](CHANGELOG.md): numer, datę, link do nowego HTML, funkcje, poprawki i zgodność zapisów. Zachowuj wcześniejsze wpisy i synchronizuj changelog do gałęzi z czytelnymi źródłami. Przy udostępnianiu wersji dołączaj skrót zmian oraz linki do HTML i changeloga.
 
 `release.cjs` ustala nazwę `Bulk-Import-vN.html`; ten sam numer trafia do UI, serwera Node, adaptera Cloudflare i przekierowania `index.html`. Budowanie nie czyta starszych wygenerowanych HTML. Poprzednie wydania pozostają w repozytorium.
 

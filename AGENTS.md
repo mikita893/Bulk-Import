@@ -3,6 +3,7 @@
 - Rozwijaj jedną grę ze wspólnym menu kampanii solo, kooperacji i VS; minigry umieszczaj wewnątrz kampanii.
 - Bird Game 3 jest minigrą w głównym terminalu na statku kampanii, otwieranym z bliska klawiszem E. Nie dodawaj jej jako osobnego trybu, kafelka ani skrótu w menu startowym lub na paskach narzędzi.
 - Po każdej zmianie gry zwiększ główny numer wersji w `package.json` i wygeneruj przez `npm run build:client` nowy `Bulk-Import-vN.html`. Zachowuj wcześniejsze pliki wydań.
+- Przy każdym nowym wydaniu aktualizuj `CHANGELOG.md`: najnowszy wpis na górze, numer i data wydania, link do wersjonowanego HTML, nowe funkcje, poprawki oraz zgodność zapisów. Synchronizuj changelog także do `dev/readable-source`. W odpowiedzi dla użytkownika podawaj krótką listę zmian oraz linki do HTML i changeloga. Same uzupełnienia dokumentacji istniejącego wydania nie wymagają nowego numeru gry.
 - Ten sam HTML ma działać przez `file://` oraz na serwerze. Plik lokalny musi zawierać kampanię, minigry i wszystkie zasoby; opcje sieciowe mają być wyłączone i opisane. Nie otwieraj WebSocketów ani nie pobieraj konfiguracji w trybie plikowym.
 - Źródła kampanii są w `campaign/`, menu i multiplayera w `multiplayer/`, minigier w `minigames/`, a Three.js w `vendor/`. Nie traktuj starych wygenerowanych HTML jako źródeł do kolejnych wydań.
 - Numer i nazwę bieżącego wydania odczytuj przez `release.cjs`. Serwer Node, adapter Cloudflare i strona startowa mają prowadzić do tego samego pliku.
