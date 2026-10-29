@@ -1,6 +1,7 @@
 'use strict';
 const http=require('node:http');
 const {VERSION}=require('../multiplayer/shared.cjs');
+const release=require('../release.cjs');
 const fs=require('node:fs');
 const path=require('node:path');
 const {WebSocketServer}=require('ws');
@@ -21,7 +22,7 @@ function createGameServer(options={}){
     let file;
     if(pathname==='/'||pathname==='/index.html')file='index.html';
     else if(/^\/Bulk-Import(?:-[A-Za-z0-9-]+)?\.html$/.test(pathname))file=pathname.slice(1);
-    else if(pathname==='/multiplayer'||pathname==='/play')file='Bulk-Import-Multiplayer-v12.html';
+    else if(pathname==='/multiplayer'||pathname==='/play')file=release.filename;
     else if(pathname==='/favicon.ico'){res.writeHead(204,headers);res.end();return;}
     else{res.writeHead(404,headers);res.end('Not found');return;}
     fs.readFile(path.join(ROOT,file),(err,body)=>{if(err){res.writeHead(404,headers);res.end('Not found');return;}res.writeHead(200,{...headers,'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-cache'});res.end(req.method==='HEAD'?'':body)});

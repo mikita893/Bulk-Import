@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const html=fs.readFileSync(require('node:path').join(__dirname,'..','Bulk-Import-Omega-3D-v10.html'),'utf8');
+const html=require('./read-campaign.cjs')();
 const app=html.slice(html.lastIndexOf('<script>')+8,html.lastIndexOf('</script>'));
 function declaration(name){
  const start=app.indexOf('function '+name+'(');assert(start>=0,name+' exists in shipped HTML');

@@ -14,7 +14,7 @@ Formularzy rejestracji nie zakładano na żywo. Nie ma tu obietnicy, że dostawc
 
 ## Cloudflare: zalecane wdrożenie
 
-Gałąź do wdrożenia: [`feature/bulk-import-multiplayer-v11`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-multiplayer-v11).
+Gałąź do wdrożenia: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13).
 
 1. Załóż i zweryfikuj bezpłatne konto Cloudflare. Wystarcza adres `workers.dev`; własna domena nie jest potrzebna.
 2. Pobierz repozytorium i przełącz się na podaną gałąź. Użyj Node.js zgodnego z `package.json`.
@@ -62,7 +62,7 @@ Aktualne strony rejestracji, cennika i pełnej dokumentacji Render były niedost
 Jeżeli Twoje konto pozwala utworzyć Free Web Service:
 
 - repozytorium: `mikita893/Bulk-Import`;
-- gałąź: `feature/bulk-import-multiplayer-v11`;
+- gałąź: `feature/bulk-import-unified-v13`;
 - runtime: Node;
 - build: `npm ci`;
 - start: `npm start`;

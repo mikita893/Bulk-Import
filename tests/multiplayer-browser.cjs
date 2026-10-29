@@ -2,11 +2,12 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const {createGameServer}=require('../server/index.cjs');
-const OUTPUT=process.env.BULK_MULTI_SCREENSHOTS||'/tmp/bulk-multiplayer-v12';
+const release=require('../release.cjs');
+const OUTPUT=process.env.BULK_MULTI_SCREENSHOTS||'/tmp/bulk-multiplayer-v'+release.major;
 (async()=>{
  const app=process.env.BULK_MULTI_ORIGIN?null:createGameServer({port:0,host:'127.0.0.1'});
  const ORIGIN=process.env.BULK_MULTI_ORIGIN||(await app.listen()).url;
- const URL=ORIGIN+'/Bulk-Import-Multiplayer-v12.html';
+ const URL=ORIGIN+'/'+release.filename;
  let browser;
  try {
  browser=await chromium.launch({executablePath:process.env.BULK_CHROMIUM||'/usr/bin/chromium',headless:true,args:['--no-sandbox','--enable-unsafe-swiftshader']});
@@ -15,7 +16,7 @@ const OUTPUT=process.env.BULK_MULTI_SCREENSHOTS||'/tmp/bulk-multiplayer-v12';
   const host=await hostContext.newPage(),friend=await friendContext.newPage();
   for(const [name,page]of [['host',host],['friend',friend]]){page.on('pageerror',e=>errors.push(name+': '+e.message));page.on('request',r=>{if(!r.url().startsWith(ORIGIN+'/')&&!r.url().startsWith('data:')&&!r.url().startsWith(ORIGIN.replace(/^http/,'ws')+'/'))external.push(r.url())})}
   await host.goto(URL);
-  assert(await host.locator('a[href*="Bulk-Import-Omega-3D-v10.html"]').count(),'Original complete solo campaign remains accessible');
+  assert(await host.locator('#play-campaign').count(),'Complete campaign is available inside the unified HTML');
   await host.locator('#player-name').fill('Ada Salesforce');await host.locator('#create-versus').click();
   await host.waitForFunction(()=>window.__bulkMultiplayer?.room?.code);
   const code=await host.evaluate(()=>window.__bulkMultiplayer.room.code);assert.match(code,/^[A-Z0-9]{6}$/);

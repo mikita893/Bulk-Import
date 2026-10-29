@@ -16,10 +16,10 @@ function connect(){
 const type=t=>m=>m.t===t;
 (async()=>{
  try{
-  const health=await fetch(origin+'/healthz');assert.equal(health.status,200);assert.equal((await health.json()).version,12);
+  const health=await fetch(origin+'/healthz');assert.equal(health.status,200);assert.equal((await health.json()).version,require('../release.cjs').major);
   const config=await (await fetch(origin+'/api/config')).json();assert.equal(config.missions.length,6);assert.equal(config.limits.team,3);assert(config.factionKits?.salesforce&&config.factionKits?.excel);
   assert.equal((await fetch(origin+'/server/rooms.cjs')).status,404);
-  assert.equal((await fetch(origin+'/Bulk-Import-Omega-3D-v10.html')).status,200);
+  assert.equal((await fetch(origin+'/'+require('../release.cjs').filename)).status,200);
   const host=connect(),identity=await host.wait(type('welcome'));host.identity=identity;host.send({t:'create',name:'DO Host',mode:'versus'});const room=(await host.wait(type('room'))).room;
   for(let i=1;i<6;i++){const client=connect();client.identity=await client.wait(type('welcome'));client.send({t:'join',code:room.code,name:'DO Player '+i});await client.wait(type('room'))}
   const six=await host.wait(m=>m.t==='room'&&m.room.players.length===6);assert.equal(six.room.players.filter(p=>p.team==='salesforce').length,3);assert.equal(six.room.players.filter(p=>p.team==='excel').length,3);

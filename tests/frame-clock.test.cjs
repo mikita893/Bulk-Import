@@ -3,15 +3,15 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const file = process.argv[2] || path.join(__dirname, '..', 'Bulk-Import-Omega-3D-v6.html');
-const html = fs.readFileSync(file, 'utf8');
+const file = process.argv[2]==='--current' ? require('../release.cjs').filename : process.argv[2] || path.join(__dirname, '..', 'Bulk-Import-Omega-3D-v6.html');
+const html = path.basename(file)===require('../release.cjs').filename ? require('./read-campaign.cjs')() : fs.readFileSync(file, 'utf8');
 const app = html.slice(html.lastIndexOf('<script>') + 8, html.lastIndexOf('</script>'));
 const start = app.indexOf('function frame(now)');
 assert(start >= 0, 'Timing driver must exist in shipped HTML');
 const driver = app.slice(start, app.indexOf("addEventListener('visibilitychange'", start));
 function fixture(mode = 'combat') {
   const state = {
-    mode, last: 0, lastRendered: 0, accumulator: 0, qualityClock: 0, settingsClock: 0,
+    mode, shellSuspended: false, last: 0, lastRendered: 0, accumulator: 0, qualityClock: 0, settingsClock: 0,
     frameAverage: 16.7, adaptiveRatio: 1, simulated: 0, calls: 0, renders: 0,
     document: { hidden: false }, settings: { quality: 'fast' },
     runtimeStats: { renderMs: 0, frames: 0, simulationSteps: 0 },

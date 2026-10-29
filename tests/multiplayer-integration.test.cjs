@@ -86,7 +86,7 @@ test('co-op lobby, portable checkpoint validation, host controls and preserved s
 
 test('v12 real sockets replicate distinct faction Q/F, counterplay and preserved skill state',async t=>{
  const env=await setup(t),sf=await env.peer(),xl=await env.peer();
- const config=await (await fetch(env.origin+'/api/config')).json();assert.equal(config.version,12);assert(config.factionKits?.salesforce&&config.factionKits?.excel,'Public faction kits describe distinct mechanics');
+ const config=await (await fetch(env.origin+'/api/config')).json();assert.equal(config.version,require('../release.cjs').major);assert(config.factionKits?.salesforce&&config.factionKits?.excel,'Public faction kits describe distinct mechanics');
  const {room}=await sf.command({t:'create',name:'Apex administrator',mode:'versus'});await xl.command({t:'join',code:room.code,name:'Tabela przestawna'});await sf.command({t:'team',team:'salesforce'});await xl.command({t:'team',team:'excel'});await sf.command({t:'ready',ready:true});await xl.command({t:'ready',ready:true});let after=sf.mark();sf.send({t:'start'});await stateAfter(sf,s=>s.phase==='playing',after);
  const match=env.app.rooms.get(room.code).match,a=match.players.find(p=>p.id===sf.id),b=match.players.find(p=>p.id===xl.id);
  const resetPositions=()=>{match.obstacles=[];match.projectiles=[];match.effects=[];a.x=-7;a.z=14;b.x=7;b.z=14;for(const p of [a,b]){p.inv=0;p.spawnProtected=false;p.hp=140;p.shield=40;p.abilityCooldown=0;p.secondaryCooldown=0;p.barrierRemaining=0;p.barrierHp=0;p.slowRemaining=0;p.undoPending=0}};

@@ -1,5 +1,6 @@
 import roomModule from '../server/rooms.cjs';
 import shared from '../multiplayer/shared.cjs';
+import release from '../release.cjs';
 const { createRoomService, publicConfig, MAX_SESSIONS } = roomModule;
 
 // One named object owns the rooms. A room can never split across Worker isolates or regions.
@@ -73,7 +74,7 @@ export default {
       return env.GAME_ROOMS.get(id).fetch(request);
     }
     if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405,headers:{Allow:'GET, HEAD'}});
-    if(url.pathname==='/multiplayer'||url.pathname==='/play')url.pathname='/Bulk-Import-Multiplayer-v12.html';
+    if(url.pathname==='/multiplayer'||url.pathname==='/play')url.pathname='/'+release.filename;
     return env.ASSETS.fetch(new Request(url,request));
   }
 };

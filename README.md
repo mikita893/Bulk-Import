@@ -1,76 +1,69 @@
-# Bulk Import: Pivot Wars — v12
+# Bulk Import: Wspólna Galaktyka — v13
 
-Aktualne wydanie: **[Bulk-Import-Multiplayer-v12.html](Bulk-Import-Multiplayer-v12.html)**. Rozszerzenie multiplayer na gałęzi `feature/bulk-import-multiplayer-v11`. Zawiera pełną kampanię solo v10, osobną kampanię kooperacyjną i Salesforce kontra Excel do **3 na 3**. Poprzednia gałąź 3D i wydania HTML pozostają zachowane.
+**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v13.html](Bulk-Import-v13.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigrę **Bird Game 3**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
 
-Otwórz stronę serwera, wybierz tryb i utwórz pokój. Przekaż znajomym link lub kod pokoju. Każdy gra we własnej przeglądarce; nie potrzeba kont w grze. W VS wszyscy wybierają drużyny i gotowość, a gospodarz uruchamia mecz przy równych składach. Multiplayer wymaga działającego serwera — samo pobranie HTML nie łączy komputerów znajomych.
+## Pobierz HTML i graj lokalnie
 
-## Tryby gry
+Pobierz **Bulk-Import-v13.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki i Bird Game 3 są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
 
-- **Solo:** dokładna kampania [Bulk-Import-Omega-3D-v10.html](Bulk-Import-Omega-3D-v10.html), z relacjami, statkiem, wyposażeniem, zapisami v8/v9, ZIPsertem, Markiem i obiema formami Excela. Dotychczasowy klucz zapisu pozostaje bez zmian.
-- **Kooperacja, 1–3 osoby:** sześć oddzielnych misji, trudniejsze i skalowane starcia, wspólne kredyty oraz siedem rodzajów ulepszeń. Ratuj powalonych kolegów klawiszem E; drużyna ma trzy pakiety awaryjnego odzyskiwania. Finałem jest Excel Online z pomocą hologramu Marca.
-- **VS:** Salesforce przeciw Excelowi, 1v1, 2v2 albo 3v3. Pierwsza drużyna z 15 eliminacjami wygrywa; po sześciu minutach decyduje wynik lub remis. Odrodzenie trwa pięć sekund. Nie ma friendly fire ani przewagi z kampanijnego wyposażenia.
+Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo i Bird Game 3 są dostępne; kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
 
-Bazowe życie, tarcza, broń i zwykły ruch pozostają równe, ale frakcje mają **rzeczywiście różne umiejętności i kontry**. Salesforce używa celowanego zapytania Apex i przedniej osłony Permission Set; Excel rzuca tabelę przestawną na wybrany obszar i cofa część świeżych obrażeń przez Ctrl+Z. Salesforce ma dalszy dash, Excel krótszy i częstszy. Arena, spawny i apteczki są symetryczne; serwer oblicza wszystkie trafienia i odnowienia.
+## Ten sam HTML na serwerze
 
-## Nowe moce frakcji
-
-- **Salesforce / Q — Apex: SELECT * FROM WROGOWIE.** Celowany, przebijający pocisk zapytania; trafiaj precyzyjnie, bo osłony zatrzymują go.
-- **Salesforce / F — Permission Set: NIE MASZ DOSTĘPU.** Tarcza przednia z ograniczoną wytrzymałością. Można obejść ją z boku; nie chroni przed tabelą spadającą z góry.
-- **Excel / Q — Tabela przestawna.** Wybrane pole arkusza najpierw ostrzega przeciwników, potem uderza i krótko spowalnia. Przeciwnik może wyjść z pola, użyć dasha lub osłony mapy.
-- **Excel / F — Cofnij: Ctrl+Z.** Ograniczone cofnięcie świeżych strat po krótkim opóźnieniu. Bez wskrzeszania, leczenia ponad limit i powielania odzyskanego życia.
-
-Lobby pozwala porównać zestawy, a HUD pokazuje osobno Q, F i dash wraz z odnowieniami. Latające arkusze, pole tabeli, wiązka zapytania, bariera i efekt cofania mają odrębny wygląd.
-
-## Uruchomienie lokalne / serwer Node
-
-Wymagany Node.js 20 lub nowszy, zalecany Node.js 22.
+Wymagany Node.js 20+, zalecany 22.
 
 ```sh
 npm ci
 npm start
 ```
 
-Strona: `http://localhost:3000`. Serwer nasłuchuje na `0.0.0.0` i zmiennej `PORT`; HTTP i WebSocket `/ws` używają jednego portu. W sieci domowej znajomi mogą otworzyć adres IP komputera gospodarza. Internet wymaga hostingu lub tunelu — propozycje i instrukcje: **[HOSTING-MULTIPLAYER.md](docs/HOSTING-MULTIPLAYER.md)**.
+Otwórz `http://localhost:3000`. Serwer udostępnia ten sam HTML; po udanym połączeniu dostępne są również kooperacja i VS. HTTP i WebSocket `/ws` korzystają z jednego portu, ustawianego przez `PORT`. Gospodarz tworzy pokój i przekazuje znajomym link lub kod.
 
-Gra wieloosobowa znajduje się w [Bulk-Import-Multiplayer-v12.html](Bulk-Import-Multiplayer-v12.html). Poprzedni HTML v11 jest zachowany. Biblioteka Three.js, grafika proceduralna i kod klienta są osadzone w tym pliku. Serwer jest osobnym programem. Bez zewnętrznych CDN, assetów ani płatnych usług. Po edycji źródeł klienta uruchom `npm run build:client`, aby odtworzyć HTML.
+- **Kampania solo 3D:** statek, proteańska załoga, rozmowy, relacje i romanse, zdrady, ulepszenia, apteczki, kolejne mapy, Zwiastun oraz obie formy finałowego Excela. Dotychczasowe mechaniki i zapisy pozostają zachowane.
+- **Kooperacja, do 3 osób:** osobna kampania sześciu misji, wspólne kredyty i wyposażenie, ratowanie powalonych graczy oraz finał z pomocą hologramu Marca.
+- **VS, 1v1 / 2v2 / 3v3:** równe podstawowe statystyki, różne umiejętności frakcji, symetryczna arena, odrodzenia i brak friendly fire. Salesforce: Apex i Permission Set. Excel: tabela przestawna i Ctrl+Z.
+- **Bird Game 3:** pokładowy automat z gołębiem API. Przelatuj przez retranslatory między kolumnami Excela, zbieraj CSV, zachowaj trzy życia i pobij lokalny rekord. Etapy Sandbox, Produkcja i Governor Limits stają się coraz trudniejsze. Co sześć CSV odzyskujesz życie, do limitu trzech.
 
-## GitHub Codespaces: Start i Stop serwera
-
-Na [github.com/codespaces](https://github.com/codespaces) kliknij nazwę swojego środowiska, aby je wznowić: serwer gry wystartuje automatycznie, a edytor ma ustawione otwarcie strony gry. Po sesji wybierz **… → Stop codespace**, aby zatrzymać grę i maszynę. Bez wpisywania komend przy każdej sesji. Jednorazowo utwórz środowisko **2-core** z tej gałęzi i ustaw port **3000 → Public**. Konfiguracja jest zapisana w repozytorium; samo jej zapisanie nie tworzy ani nie uruchamia zdalnego Codespace. Instrukcja: **[CODESPACES-START.md](docs/CODESPACES-START.md)**.
-
-## Darmowy Cloudflare Workers
-
-Dołączony adapter używa tego samego silnika i obsługi pokojów co serwer Node. Pokojami zarządza jeden Durable Object, dzięki czemu gracze nie trafiają do różnych instancji z rozdzielonym stanem. Konfiguracja korzysta z klasy SQLite Durable Objects dostępnej w planie Free.
-
-```sh
-npm ci
-npm run dev:cloudflare
-```
-
-Lokalny adres: `http://localhost:8787`. Po zalogowaniu na własne konto Cloudflare przez `npx wrangler login` można uruchomić `npm run deploy:cloudflare`. Kod nie został automatycznie opublikowany na cudzym koncie. Szczegóły limitów darmowego planu i alternatywy są w [porównaniu hostingów](docs/HOSTING-MULTIPLAYER.md).
-
-Dla zwykłych hostingów Node przygotowano także `render.yaml` i `Dockerfile`. Nie zakładaj, że sam napis „Free” oznacza brak wymaganej metody płatności — aktualna weryfikacja dostawców jest opisana w porównaniu.
+Bird Game 3 otworzysz z menu albo przyciskiem automatu na statku. Kampania zamraża się na czas minigry, a powrót zachowuje bieżący stan. Podczas walki automat jest niedostępny. Wyjście z kampanii do menu zapisuje postęp. Aktywny pokój multiplayer trzeba najpierw opuścić, aby zmienić tryb.
 
 ## Sterowanie i zapis
 
-WASD / strzałki — ruch, Shift — sprint, mysz — cel, LPM / spacja — ogień, C / R — dash frakcji, Q — atak frakcji (impuls w coop), F — obrona frakcji, E — przytrzymaj przy powalonym koledze albo aktywuj pomoc Marca. Instrukcja i menu **nie zatrzymują** rozgrywki pozostałych graczy. Interfejs pokazuje życie i tarczę nad postaciami, wynik i odnowienia. Ustawienie Szybka ogranicza rozdzielczość renderowania.
+Kampania: WASD / strzałki — ruch, Shift — sprint, mysz — cel, LPM / spacja — ogień, Q — efekt masy, C — ZIPsert, R — unik, F — załoga, E — retranslator lub pomoc Marca, M — misje, U — ulepszenia, P — pauza.
 
-Kooperacja automatycznie przechowuje lokalną kopię postępu misji, kredytów i wspólnych ulepszeń. Można pobrać JSON, założyć nowy pokój i wczytać go jako gospodarz. To checkpoint kampanii; nie odtwarza każdej pozycji i pocisku z aktywnego starcia. Zapisy solo oraz coop mają osobne formaty i klucze. Ulepszenia coop nie trafiają do VS.
+Multiplayer: WASD, mysz i strzał; Q — atak, F — obrona, C / R — dash, E — reanimacja lub wsparcie. Menu nie zatrzymuje meczu pozostałych graczy.
 
-Pokoje i bieżące mecze są przechowywane w pamięci serwera. Restart, uśpienie lub aktualizacja hostingu mogą je zakończyć. Po ponownym połączeniu można wznowić istniejącą sesję bez leczenia i zerowania odnowień; po utracie pokoju utwórz nowy i przywróć checkpoint coop. Nie przekazuj znajomym tokena sesji — udostępniaj zwykły link lub kod pokoju.
+Bird Game 3: spacja / strzałka w górę / dotknięcie — machnięcie skrzydłami; P / Escape — pauza. Utrata widoczności lub fokusu zatrzymuje minigrę. Rekord zapisywany jest osobno i nie daje przewagi w kampanii ani VS.
 
-## Testy i źródła
+Format zapisu solo nadal ma numer **10** i klucz `bulk-import-omega-3d-v10`: numer wydania HTML jest od niego niezależny. Pozostają migracje i import JSON starszych kampanii, w tym v8/v9. Kooperacja zachowuje format **1** i klucz `bulk-import-coop-v11`, zgodny z multiplayer v11/v12. Restart hostingu usuwa pokoje w RAM; checkpoint JSON zachowuje misje i wyposażenie.
+
+## Wydawanie następnych wersji
+
+Źródła kampanii są w `campaign/`, menu i multiplayera w `multiplayer/`, minigier w `minigames/`, a Three.js z licencją MIT w `vendor/`. Każda następna zmiana gry otrzymuje nowy numer i nowy HTML. Nie rozwijamy oddzielnego klienta solo oraz multiplayer.
+
+Po zwiększeniu wersji w `package.json` uruchom:
+
+```sh
+npm run build:client
+```
+
+`release.cjs` ustala nazwę `Bulk-Import-vN.html`; ten sam numer trafia do UI, serwera Node, adaptera Cloudflare i przekierowania `index.html`. Budowanie nie czyta starszych wygenerowanych HTML. Poprzednie wydania pozostają w repozytorium.
+
+## Hosting
+
+Przygotowano `Dockerfile`, `render.yaml` i adapter Cloudflare Workers z jednym Durable Object obsługującym wspólną pamięć pokojów. `npm run build:cloudflare` buduje aktualny wspólny HTML. `npm run dev:cloudflare` uruchamia lokalny adapter na porcie 8787; `npm run deploy:cloudflare` publikuje dopiero po zalogowaniu na własne konto.
+
+Konfiguracja Codespaces automatycznie uruchamia grę przy wznowieniu środowiska. Do pierwszego utworzenia użyj obecnej gałęzi **feature/bulk-import-unified-v13**. Codzienny Start / Stop: [CODESPACES-START.md](docs/CODESPACES-START.md). Porównanie bezpłatnych hostingów: [HOSTING-MULTIPLAYER.md](docs/HOSTING-MULTIPLAYER.md). Żadnego nowego hostingu nie uruchomiono ani nie opublikowano automatycznie. Ochrona publicznego serwera wspólnym hasłem pozostaje osobnym, niewdrożonym jeszcze rozszerzeniem.
+
+## Weryfikacja
 
 ```sh
 npm test
 npm run test:solo
 npm run test:browser
-# W drugim terminalu przy działającym npm run dev:cloudflare:
+# Przy działającym lokalnym npm run dev:cloudflare:
 npm run test:cloudflare
 ```
 
-Wszystkie 36 testów różnych zestawów frakcji, balansu, rzeczywistych sześciu połączeń i cyklu życia pokojów przeszły. Przeszedł także lokalny test adaptera Cloudflare z nowymi mocami. Próby 1v1/3v3 z oboma porządkami graczy sprawdzają budżety i brak przewagi kolejności; to regresja botów, nie obietnica ludzkiego wyniku 50/50. Dwie przeglądarki sprawdziły VS i coop, ruch, strzały, obie różne moce Q/F, reconnect oraz odświeżenie; zachowane są też testy zapisu solo.
+Testy przeglądarkowe wymagają Playwright i Chromium; nie są potrzebne do grania. Sprawdzają samodzielny HTML, wygaszone opcje sieciowe, pełną kampanię i JSON, arcade na statku, rekord, pauzę, widok mobilny i rzeczywiste połączenia multiplayer. W zarządzanym Chromium na tym środowisku polityka administratora blokuje adresy `file://`; wtedy test ładuje zawartość samodzielnego pliku w pustym dokumencie bez sieci. Nie zmienia zasad bezpieczeństwa przeglądarki. Format i timingi kampanii są dodatkowo sprawdzane z payloadu rzeczywiście osadzonego w nowym HTML.
 
-Testy przeglądarkowe wymagają Playwright i Chromium; nie są zależnością do grania ani uruchomienia serwera. Serwer testowy używa osobnego portu. Szczegóły mechanik i zakres weryfikacji: [DESIGN-v12.md](DESIGN-v12.md), a opis pierwszego multiplayera w [DESIGN-v11.md](DESIGN-v11.md). Wymagania poprzednich wersji pozostają w [DESIGN-v10.md](DESIGN-v10.md) i wcześniejszych dokumentach.
-
-Three.js 0.160.1 z licencją MIT jest osadzony w HTML; klient nie pobiera obrazów ani modeli z Internetu. Modele, tekstury i dźwięki powstają proceduralnie. Kod silnika multiplayer znajduje się w `multiplayer/engine.cjs`, wspólne parametry w `multiplayer/shared.cjs`, transport i pokoje w `server/`, a adapter Workers w `cloudflare/`.
+Szczegóły wspólnego wydania: [DESIGN-v13.md](DESIGN-v13.md). Mechaniki frakcji: [DESIGN-v12.md](DESIGN-v12.md); historia kampanii: [DESIGN-v10.md](DESIGN-v10.md).

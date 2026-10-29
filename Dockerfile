@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 COPY server ./server
+COPY release.cjs ./
 COPY multiplayer/engine.cjs multiplayer/shared.cjs ./multiplayer/
 COPY index.html Bulk-Import*.html ./
 ENV NODE_ENV=production

@@ -1,6 +1,6 @@
 'use strict';
 // Equal core weapons and survivability; faction skills have different, bounded tradeoffs.
-const VERSION=12;
+const VERSION=require('../release.cjs').major;
 const WORLD={minX:-24,maxX:24,minZ:-20,maxZ:20};
 const LIMITS={playersPerTeam:3,coopPlayers:3,enemies:24,projectiles:180,warnings:10,events:12};
 const VS_STATS=Object.freeze({maxHp:140,maxShield:40,damage:14,interval:.19,speed:8,sprintSpeed:10.2,projectileSpeed:30,projectileLife:1.65,shieldRegen:8,rechargeDelay:4,armor:0,abilityDamage:28,abilityRadius:5.5,abilityCooldown:9,dashCooldown:3,dashSpeed:30,dashDuration:.17});

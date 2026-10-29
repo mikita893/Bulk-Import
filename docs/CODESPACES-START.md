@@ -1,6 +1,6 @@
 # Bulk Import: Start i Stop serwera
 
-Konfiguracja uruchamia grę automatycznie przy starcie lub wznowieniu Codespace. Sam zapis plików w repozytorium nie tworzy ani nie uruchamia środowiska. Utwórz je dopiero przed graniem. Gra pozostaje w wersji v12.
+Konfiguracja uruchamia grę automatycznie przy starcie lub wznowieniu Codespace. Sam zapis plików w repozytorium nie tworzy ani nie uruchamia środowiska. Utwórz je dopiero przed graniem. Aktualne wspólne wydanie gry to v13.
 
 ## Na co dzień: tylko Start i Stop
 
@@ -14,8 +14,8 @@ Przy kolejnych sesjach nie instalujesz zależności ani nie wpisujesz `npm start
 ## Tylko pierwszy raz
 
 1. Opcjonalnie ustaw **Default idle timeout** w [ustawieniach Codespaces](https://github.com/settings/codespaces), np. na 240 minut, i zapisz. Ustawienie obowiązuje nowo tworzone środowiska; domyślnie bezczynne środowisko zatrzymuje się po 30 minutach.
-2. Otwórz [gałąź multiplayer](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-multiplayer-v11). Nazwa gałęzi zawiera v11, a aktualna gra to v12.
-3. Wybierz **Code → Codespaces → … → New with options**, gałąź `feature/bulk-import-multiplayer-v11`, maszynę **2-core** i najbliższy dostępny region. Utwórz Codespace na swoim osobistym koncie. Ten krok od razu uruchamia maszynę.
+2. Otwórz [gałąź multiplayer](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Aktualny wspólny HTML zawiera kampanię solo, multiplayer i Bird Game 3.
+3. Wybierz **Code → Codespaces → … → New with options**, gałąź `feature/bulk-import-unified-v13`, maszynę **2-core** i najbliższy dostępny region. Utwórz Codespace na swoim osobistym koncie. Ten krok od razu uruchamia maszynę.
 4. Poczekaj na konfigurację. Node.js 22, zależności produkcyjne i serwer gry przygotują się automatycznie.
 5. Na dole edytora otwórz **Ports**. Przy porcie **3000** wybierz prawym przyciskiem **Port Visibility → Public**. Jeżeli port nie jest widoczny, wybierz **Forward a Port** i wpisz `3000`.
 6. Kliknij **Open in Browser** i zapisz adres gry w zakładkach. Adres ma postać `https://…-3000.app.github.dev`. Lokalny protokół pozostaw **HTTP**; proxy GitHuba udostępnia stronę przez HTTPS. Publiczny port umożliwia znajomym wejście bez logowania na GitHub.
