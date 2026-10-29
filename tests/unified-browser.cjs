@@ -12,6 +12,31 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
  let localBackup;
  function watch(page){page.on('pageerror',e=>errors.push(e.message));}
  async function campaignFrame(page){await page.waitForFunction(()=>document.querySelector('#campaign-frame')?.contentWindow?.BulkCampaign);return page.frames().find(f=>f.url()==='about:srcdoc');}
+ async function openTerminal(page,frame){
+  await frame.waitForFunction(()=>active&&['hub','break'].includes(mode));
+  if(!await frame.evaluate(()=>nearShipTerminal())){
+   assert.equal(await page.evaluate(()=>BulkUnified.openBird()),false,'Arcade cannot launch while away from terminal');
+   await frame.locator('#world').click({position:{x:500,y:300}});await page.keyboard.down('KeyW');
+   await frame.waitForFunction(()=>nearShipTerminal(),null,{timeout:6000});await page.keyboard.up('KeyW');
+  }
+  await frame.waitForFunction(()=>document.getElementById('prompt').textContent.includes('TERMINAL GŁÓWNY'));
+  await page.keyboard.press('KeyE');await frame.waitForFunction(()=>terminalPanelOpen&&mode==='panel');
+  assert.equal(await frame.locator('#panel-title').textContent(),'Terminal główny');
+  await page.screenshot({path:'/tmp/bulk-unified-v'+release.major+'-terminal.png'});
+ }
+ async function enterArcade(page,frame){
+  await openTerminal(page,frame);
+  await frame.getByRole('button',{name:'Rekreacja: Bird Game 3',exact:true}).click();
+  await page.waitForFunction(()=>BulkUnified.screen==='bird');
+ }
+ async function returnToShip(page,frame){
+  await page.locator('#unified-back').click();assert.equal(await page.evaluate(()=>BulkUnified.screen),'campaign');
+  assert.equal(await frame.locator('#panel-title').textContent(),'Terminal główny');
+  assert(await frame.evaluate(()=>terminalPanelOpen));
+  await frame.getByRole('button',{name:'Wróć na pokład',exact:true}).click();
+  await frame.waitForFunction(()=>mode==='hub'||mode==='break');
+  assert.equal(await page.evaluate(()=>BulkUnified.openBird()),false,'Terminal must be explicitly open to start arcade');
+ }
  async function playBird(page){
   for(const id of ['pigeon','crow','owl','hummingbird','duck']){
    await page.locator('[data-bird="'+id+'"]').click();
@@ -49,19 +74,19 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   for(const id of ['create-coop','create-versus','join-room','join-code','connect-server'])assert(await offline.locator('#'+id).isDisabled());
   assert.equal(await offline.evaluate(()=>__bulkMultiplayer.renderer),null,'No idle WebGL renderer in offline menu');
   await offline.screenshot({path:'/tmp/bulk-unified-v'+release.major+'-offline.png'});
-  await offline.locator('#play-bird').click();await playBird(offline);await offline.locator('#unified-back').click();
+  assert.equal(await offline.locator('#play-bird,#nav-bird,#unified-bird').count(),0,'No independent arcade entry in main menu or toolbar');assert.equal(await offline.evaluate(()=>BulkUnified.openBird()),false);
   await offline.locator('#play-campaign').click();let frame=await campaignFrame(offline);
   await frame.getByRole('button',{name:'▶ ROZPOCZNIJ KAMPANIĘ',exact:true}).click();await frame.waitForFunction(()=>active&&mode==='hub');
   const start=await frame.evaluate(()=>player.z);await frame.locator('#world').click({position:{x:500,y:300}});await offline.keyboard.down('KeyW');await sleep(400);await offline.keyboard.up('KeyW');assert(await frame.evaluate(()=>player.z)<start-.5);
-  await frame.locator('#bird-arcade').click();await offline.waitForFunction(()=>BulkUnified.screen==='bird');
+  assert.equal(await frame.locator('#bird-arcade').count(),0,'No ship toolbar shortcut');await enterArcade(offline,frame);await playBird(offline);
   const frozen=await frame.evaluate(()=>({x:player.x,z:player.z,time}));await sleep(250);assert.deepEqual(await frame.evaluate(()=>({x:player.x,z:player.z,time})),frozen,'Campaign freezes behind the arcade');
-  await offline.locator('#unified-back').click();assert.equal(await offline.evaluate(()=>BulkUnified.screen),'campaign');
+  await returnToShip(offline,frame);
   await frame.locator('#saves').click();
   const [download]=await Promise.all([offline.waitForEvent('download'),frame.getByRole('button',{name:'Eksportuj zapis JSON',exact:true}).click()]);
   localBackup=JSON.parse(fs.readFileSync(await download.path(),'utf8'));assert.equal(localBackup.progress.version,10,'Campaign save format stays compatible');
   await offline.locator('#unified-back').click();assert.equal(traffic.length,0,'Offline play never requests a server, assets or WebSockets');
   if(nativeFile){await offline.locator('#play-campaign').click();frame=await campaignFrame(offline);assert.equal(await frame.getByRole('button',{name:'▶ KONTYNUUJ KAMPANIĘ',exact:true}).count(),1);}
-  console.log('PASS standalone menu, disabled networking, Bird Game 3 selection, real 3D flight/skill/peck/pause, complete 3D campaign, movement, ship arcade, freeze/resume and JSON export.');
+  console.log('PASS standalone menu, disabled networking, Bird Game 3 selection, real 3D flight/skill/peck/pause, complete 3D campaign, movement, physical ship terminal, freeze/resume and JSON export.');
   await context.close();
 
   const onlineContext=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true}),online=await onlineContext.newPage();watch(online);
@@ -72,9 +97,9 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const saved=await frame.evaluate(()=>({credits:progress.credits,crew:progress.crew.map(c=>[c.affection,c.trust]),completed:progress.completed}));
   await online.screenshot({path:'/tmp/bulk-unified-v'+release.major+'-campaign.png'});
   await online.locator('#unified-back').click();await online.waitForFunction(()=>__bulkMultiplayer.connected);await online.locator('#play-campaign').click();frame=await campaignFrame(online);await frame.getByRole('button',{name:'▶ KONTYNUUJ KAMPANIĘ',exact:true}).click();assert.deepEqual(await frame.evaluate(()=>({credits:progress.credits,crew:progress.crew.map(c=>[c.affection,c.trust]),completed:progress.completed})),saved);
-  await online.locator('#unified-back').click();await online.waitForFunction(()=>__bulkMultiplayer.connected);await online.evaluate(()=>localStorage.setItem('bulk-import-bird-game-3-v1',JSON.stringify({version:1,best:37})));await online.locator('#play-bird').click();assert.equal(await online.evaluate(()=>BulkUnified.bird.saveData.legacyBest),37);await playBird(online);const best=await online.evaluate(()=>BulkUnified.bird.best);await online.locator('#unified-back').click();await online.waitForFunction(()=>__bulkMultiplayer.connected);await online.reload();await online.waitForFunction(()=>__bulkMultiplayer.connected);await online.locator('#play-bird').click();assert.equal(await online.evaluate(()=>BulkUnified.bird.best),best,'Bird record survives reload');
+  await online.evaluate(()=>localStorage.setItem('bulk-import-bird-game-3-v1',JSON.stringify({version:1,best:37})));await enterArcade(online,frame);assert.equal(await online.evaluate(()=>BulkUnified.bird.saveData.legacyBest),37);await playBird(online);const best=await online.evaluate(()=>BulkUnified.bird.best);await returnToShip(online,frame);await online.locator('#unified-back').click();await online.waitForFunction(()=>__bulkMultiplayer.connected);await online.reload();await online.waitForFunction(()=>__bulkMultiplayer.connected);await online.locator('#play-campaign').click();frame=await campaignFrame(online);await frame.getByRole('button',{name:'▶ KONTYNUUJ KAMPANIĘ',exact:true}).click();await enterArcade(online,frame);assert.equal(await online.evaluate(()=>BulkUnified.bird.best),best,'Bird record survives reload');
   await online.setViewportSize({width:430,height:932});await online.screenshot({path:'/tmp/bulk-unified-v'+release.major+'-mobile.png'});assert(await online.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
-  await online.locator('#unified-back').click();await online.setViewportSize({width:1440,height:1000});await online.waitForFunction(()=>__bulkMultiplayer.connected);await online.locator('#create-coop').click();await online.waitForFunction(()=>__bulkMultiplayer.room?.mode==='coop');
+  await returnToShip(online,frame);await online.locator('#unified-back').click();await online.setViewportSize({width:1440,height:1000});await online.waitForFunction(()=>__bulkMultiplayer.connected);await online.locator('#create-coop').click();await online.waitForFunction(()=>__bulkMultiplayer.room?.mode==='coop');
   const code=await online.evaluate(()=>__bulkMultiplayer.room.code);await online.locator('#nav-campaign').click();assert.equal(await online.evaluate(()=>BulkUnified.screen),'main');assert.equal(await online.evaluate(()=>__bulkMultiplayer.room.code),code,'Switching modes cannot abandon a live room silently');
   await onlineContext.close();assert.deepEqual(errors,[]);
   console.log('PASS server availability, legacy-format solo import/continue, unchanged relationships, saved Bird record, mobile layout and safe mode switching; no JS errors.');

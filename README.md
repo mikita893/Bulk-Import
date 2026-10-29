@@ -1,12 +1,12 @@
-# Bulk Import: Wspólna Galaktyka — v14
+# Bulk Import: Wspólna Galaktyka — v15
 
-**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v14.html](Bulk-Import-v14.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigrę **Bird Game 3**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
+**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v15.html](Bulk-Import-v15.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigrę **Bird Game 3**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
 
 ## Pobierz HTML i graj lokalnie
 
-Pobierz **Bulk-Import-v14.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki i Bird Game 3 są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
+Pobierz **Bulk-Import-v15.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki i Bird Game 3 są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
 
-Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo i Bird Game 3 są dostępne; kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
+Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo działa offline; Bird Game 3 uruchomisz w jej głównym terminalu na statku. Kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
 
 ## Ten sam HTML na serwerze
 
@@ -24,11 +24,11 @@ Otwórz `http://localhost:3000`. Serwer udostępnia ten sam HTML; po udanym poł
 - **VS, 1v1 / 2v2 / 3v3:** równe podstawowe statystyki, różne umiejętności frakcji, symetryczna arena, odrodzenia i brak friendly fire. Salesforce: Apex i Permission Set. Excel: tabela przestawna i Ctrl+Z.
 - **Bird Game 3:** leśna arena 3D inspirowana ekranami i żartami z mema. Wybierz gołębia, wronę, sowę, kolibra albo kaczkę: różnią się modelem, statystykami i mocą Q. Zbieraj CSV, dziob boty i dostarcz 8 rekordów do niebieskiego gniazda w 120 sekund. Masz trzy próby i limit trzech CSV w dziobie. Las, staw, gniazda, ptaki i portrety są proceduralne, bez pobierania assetów.
 
-Bird Game 3 otworzysz z menu albo przyciskiem automatu na statku. Kampania zamraża się na czas minigry, a powrót zachowuje bieżący stan. Podczas walki automat jest niedostępny. Wyjście z kampanii do menu zapisuje postęp. Aktywny pokój multiplayer trzeba najpierw opuścić, aby zmienić tryb.
+Bird Game 3 jest częścią kampanii, dostępną wyłącznie w **głównym terminalu na statku**. Rozpocznij lub kontynuuj kampanię, podejdź do niebieskiego hologramu pośrodku statku, naciśnij **E** i wybierz **Rekreacja: Bird Game 3**. Nie ma osobnego kafelka minigry ani skrótów na paskach. Kampania zamraża się na czas rekreacji, a **Wróć do terminala** przywraca tę samą konsolę i pozycję postaci. Terminal zawiera także mapę misji, zbrojownię i zapis. Podczas walki jest niedostępny. Wyjście z kampanii do menu zapisuje postęp. Aktywny pokój multiplayer trzeba najpierw opuścić, aby zmienić tryb.
 
 ## Sterowanie i zapis
 
-Kampania: WASD / strzałki — ruch, Shift — sprint, mysz — cel, LPM / spacja — ogień, Q — efekt masy, C — ZIPsert, R — unik, F — załoga, E — retranslator lub pomoc Marca, M — misje, U — ulepszenia, P — pauza.
+Kampania: WASD / strzałki — ruch, Shift — sprint, mysz — cel, LPM / spacja — ogień, Q — efekt masy, C — ZIPsert, R — unik, F — załoga, E — główny terminal, retranslator lub pomoc Marca, M — misje, U — ulepszenia, P — pauza.
 
 Multiplayer: WASD, mysz i strzał; Q — atak, F — obrona, C / R — dash, E — reanimacja lub wsparcie. Menu nie zatrzymuje meczu pozostałych graczy.
 
@@ -66,4 +66,4 @@ npm run test:cloudflare
 
 Testy przeglądarkowe wymagają Playwright i Chromium; nie są potrzebne do grania. Sprawdzają samodzielny HTML, wygaszone opcje sieciowe, pełną kampanię i JSON, arcade na statku, rekord, pauzę, widok mobilny i rzeczywiste połączenia multiplayer. W zarządzanym Chromium na tym środowisku polityka administratora blokuje adresy `file://`; wtedy test ładuje zawartość samodzielnego pliku w pustym dokumencie bez sieci. Nie zmienia zasad bezpieczeństwa przeglądarki. Format i timingi kampanii są dodatkowo sprawdzane z payloadu rzeczywiście osadzonego w nowym HTML.
 
-Opis nowej ptasiej areny i źródła inspiracji: [DESIGN-v14.md](DESIGN-v14.md). Scalenie gry: [DESIGN-v13.md](DESIGN-v13.md). Mechaniki frakcji: [DESIGN-v12.md](DESIGN-v12.md); historia kampanii: [DESIGN-v10.md](DESIGN-v10.md).
+Integracja minigry z terminalem: [DESIGN-v15.md](DESIGN-v15.md). Opis ptasiej areny i źródła inspiracji: [DESIGN-v14.md](DESIGN-v14.md). Scalenie gry: [DESIGN-v13.md](DESIGN-v13.md). Mechaniki frakcji: [DESIGN-v12.md](DESIGN-v12.md); historia kampanii: [DESIGN-v10.md](DESIGN-v10.md).

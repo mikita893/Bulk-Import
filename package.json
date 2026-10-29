@@ -1,6 +1,6 @@
 {
   "name": "bulk-import",
-  "version": "14.0.0",
+  "version": "15.0.0",
   "private": true,
   "description": "Bulk Import: kampania solo, kooperacja i Salesforce kontra Excel 3 na 3",
   "scripts": {

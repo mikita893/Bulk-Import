@@ -1,6 +1,6 @@
 # Bulk Import: Start i Stop serwera
 
-Konfiguracja uruchamia grę automatycznie przy starcie lub wznowieniu Codespace. Sam zapis plików w repozytorium nie tworzy ani nie uruchamia środowiska. Utwórz je dopiero przed graniem. Aktualne wspólne wydanie gry to v14.
+Konfiguracja uruchamia grę automatycznie przy starcie lub wznowieniu Codespace. Sam zapis plików w repozytorium nie tworzy ani nie uruchamia środowiska. Utwórz je dopiero przed graniem. Aktualne wspólne wydanie gry to v15.
 
 ## Na co dzień: tylko Start i Stop
 

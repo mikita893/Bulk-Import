@@ -2,9 +2,7 @@
 .mode-card:disabled{opacity:.38;filter:saturate(.18);cursor:not-allowed;border-style:dashed;transform:none!important;box-shadow:none!important}
 .mode-card:disabled:hover{background:rgba(20,40,54,.7)}
 input:disabled{opacity:.4;cursor:not-allowed}
-.mode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.bird-card{border-color:#c69b4e;background:linear-gradient(135deg,#332c20aa,#152330)}
-.bird-card span{color:#f7cb81}
+.mode-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 .availability-note{font-size:11px;line-height:1.6;color:#a2d5cf;border-left:2px solid #78cfc4;padding:8px 12px;margin:14px 0}
 .home-card{max-width:950px}.home-card h2{font-size:clamp(36px,5.5vw,72px);line-height:.9}.home-card h2 small{font-size:12px;letter-spacing:4px;margin-top:13px}
 .home-card .intro{margin:12px 0}.home-card .mode-card{padding:16px;min-height:114px}.home-card .mode-card b{font-size:17px}
