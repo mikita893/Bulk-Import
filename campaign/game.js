@@ -3,12 +3,13 @@
 
 'use strict';
 const campaignStorage=window.parent.BulkUnified?.storage||localStorage;
-let shellSuspended=false,terminalPanelOpen=false;
+const CardSystem=window.parent.BulkCards;
+let shellSuspended=false,terminalPanelOpen=false,cardShopOpen=false,cardDuelToken=null,cardDuelSequence=0;
 const SHIP_TERMINAL=Object.freeze({x:0,z:-8,radius:3.6});
 const $=id=>document.getElementById(id),SAVE_KEY='bulk-import-omega-3d-v10',VERSION=10;
 const JOKES=['„W kosmosie nikt nie usłyszy twojego INVALID_FIELD.”','Żniwiarz: „Mam licencję Enterprise. Ty masz tylko życie.”','Syra: „To nie romans. To relacja many-to-one. Za twoją zgodą.”','Vael: „Naszą cywilizację zgubił import z wyłączonym backupem.”','„Włącz reguły duplikatów. Jeden Zwiastun w zupełności wystarczy.”','Żniwiarz: „Ten arkusz ma tylko 47 zakładek. Prawie jak baza danych!”','„Governor limits? Ja wolę limit Żniwiarzy: zero.”','Syra: „Chemia między nami? Status: Successfully Upserted.”','„Nie strzelaj w produkcję. Chyba że produkcja sprzedaje Excela.”','Zbieracz: „RODO? Ja zbieram tylko publiczne profile… i planety.”','„Data Loader nie pyta, czy jesteś gotowy. Pyta o separator.”','„Zwiastun ma 1200 HP i zero pokory. Jak konsultant po certyfikacji.”','„Żniwiarze wysłali ofertę w XLSX. Kwarantanna załącznika trwa.”','„Apex Predator? Raczej Apex CPU time limit exceeded.”','„Miłość to jedyny obiekt, na którym nie robimy hard delete.”','„Import udany. Błędne rekordy: cała galaktyka.”','„Zapisałem backup jako final_final_NAPRAWDE_ostateczny.csv.”','„Zwiastun: PRZEJMUJĘ KONTROLĘ. Admin: insufficient privileges.”','„401 Unauthorized. Nawet inwazja potrzebuje permission seta.”','„Validation Rule: ISBLANK(Sumienie) && ISPICKVAL(Rasa, Żniwiarz).”'];
 JOKES.push('Excel: „Przecież u mnie działa”. Salesforce: „To pokaż error.csv”.','Żniwiarz: „Mam VLOOKUP”. Admin: „Mam broń i External ID”.','„Ctrl+Z nie działa na inwazję. Sprawdziłem.”','„Błąd migracji: kolumna Imię zawiera całą biografię komandora.”','„Żniwiarz ma 12 HP. Arkusz ma 12 właścicieli i żadnego admina.”','„Excel pyta, czy zapisać zmiany. Salesforce pyta, kto ci dał uprawnienia.”','„Nie ufaj plikowi, który nazywa się backup_bez_backup.xlsx.”','„Flow triggered. Kawa spilled. Żniwiarz killed.”','„Merge Cells? My tu robimy Merge Civilizations.”','„TURBO CSV: bo Batch Apex czekałby do poniedziałku.”','„Zbieracze proszą o wszystkie pola. Znowu SELECT * w mailu.”','„Salesforce nie jest drogi. To Excel dolicza koszt psychoterapii.”','„Relacja z Syrą: Master–Detail? Nie. Dwoje równych adminów.”','„Słowo null nie znaczy bezpiecznie. W tym pliku to nazwisko klienta.”','„Przeciwnik odporny na pociski. Spróbuj mu puścić validation rule.”','„Zwiastun: Załóżmy, że nie będzie duplikatów. Narrator: Były.”','„Żniwiarze nie mają backupu. Mają confidence.”','„Dziś żniwa, jutro szkolenie z przecinka dziesiętnego.”','„Named Credential: Zwiastun. Uprawnienia: żadne. Dzień dobry.”','„Import 99%… sprawdzanie 12 milionów rekordów… kawa 0%.”','„Ta inwazja mogła być mailem. Najlepiej bez załącznika.”','„Excel nazywa to tabelą. Proteanie nazywają to ostrzeżeniem.”','„Deduplikacja zakończona. Pozostał jeden Żniwiarz i jego manager.”','„Błąd CSV: Żniwiarz otworzył przecinek w średniku.”');
-function fresh(){return {version:10,credits:0,records:0,kills:0,upgrades:{damage:0,rate:0,armor:0,shield:0,plating:0,biotic:0,mobility:0},completed:[],crew:createCrewDefaults(),partner:null,visit:0,won:false,excelFirstFormCleared:false}}
+function fresh(){return {version:10,credits:0,records:0,kills:0,upgrades:{damage:0,rate:0,armor:0,shield:0,plating:0,biotic:0,mobility:0},completed:[],crew:createCrewDefaults(),partner:null,visit:0,won:false,excelFirstFormCleared:false,cards:CardSystem.createCardCollection()}}
 let progress=fresh(),active=false,storageOK=true,mode='intro',returnMode='hub',sceneKind='hub',run=null,pendingWave=0,player={x:0,z:8,hp:100,shield:0,rechargeWait:0},keys={},mouse={x:0,y:0,down:false,right:false},aim={x:0,z:0},enemies=[],bullets=[],hostile=[],drops=[],medkits=[],particles=[],pulses=[],qte=null,time=0,last=0,walk=0,shotClock=0,massCooldown=0,relayCooldown=0,inv=0,saveClock=0,indo=15,noticeTime=0,jokeClock=0,camYaw=0,camZoom=1,focusPause=false,modalBack=null,shake=0,muzzle=0;
 let audioOn=true,audioCtx=null;
 const settings=readSettings();let renderScale=1,adaptiveRatio=1,hudClock=0,radarClock=0,dodgeCooldown=0,dashTime=0,dashX=0,dashZ=1,overdrive=0,combo=0,comboTime=0,hudNeedsUpdate=true;const runtimeStats={fps:60,renderMs:0,simulationSteps:0,frames:0};
@@ -66,24 +67,25 @@ function save(){if(!active)return;try{campaignStorage.setItem(SAVE_KEY,JSON.stri
 function readSave(key=SAVE_KEY){try{let r=campaignStorage.getItem(key);if(!r)return null;let d=JSON.parse(r);if(key!==SAVE_KEY)return d;if(!validSaveSnapshot(d))return null;return d}catch(e){storageOK=false;return null}}
 function notify(t){$('notice').textContent=t;noticeTime=6}
 function wipeCombat(){refillZipsert();clearExcelVisuals();combatWarnings.length=0;clearVisuals();combo=comboTime=overdrive=dodgeCooldown=dashTime=0;enemies=[];bullets=[];hostile=[];drops=[];particles=[];pulses=[];keys={};mouse.down=mouse.right=false;shotClock=massCooldown=relayCooldown=inv=0;qte=null;shake=muzzle=0;$('boss-hud').style.display='none'}
-function restore(d){if(!validSaveSnapshot(d))throw Error('Niepoprawny zapis');active=true;wipeCombat();progress=d.progress;pendingWave=0;run=d.active?{...d.active.run,...(d.active.run.excel?{excel:{...d.active.run.excel}}:{})}:null;if(d.active){let a=d.active;player={...a.player};pendingWave=Number.isInteger(d.pendingWave)&&d.pendingWave>1&&d.pendingWave<=MISSIONS[run.mission].waves?d.pendingWave:0;buildEnvironment(pendingWave?'hub':'combat');enemies=a.enemies.map(e=>({...e,castTime:0,t:Math.max(.8,e.t),specialTimer:Math.max(2,e.specialTimer??2),model:makeEnemy(e)}));bullets=a.bullets.map(b=>({...b,model:projectile(b,false)}));hostile=a.hostile.map(b=>({...b,model:projectile(b,true)}));drops=a.drops.map(b=>({...b,model:dropModel(b)}));medkits=a.medkits.map(m=>({...m}));syncMedkits();massCooldown=a.massCooldown;relayCooldown=a.relayCooldown;indo=a.indo;overdrive=Math.max(0,Math.min(6,a.overdrive||0));dodgeCooldown=Math.max(0,Math.min(2.5,a.dodgeCooldown||0));combo=Math.max(0,a.combo||0);comboTime=Math.max(0,Math.min(4,a.comboTime||0));flowDashCharges=a.flowDashCharges;flowDashRecharge=a.flowDashRecharge;mode=pendingWave?'break':'combat'}else{player=defensePlayer(0,8);buildEnvironment('hub');mode='hub'}reconcileBetrayalsAfterRestore();if(isExcelMission())showMarcSupport(run.excel);closePanel(false);cameraSnap();hud();save();if(pendingWave)breakMenu();notify('Progres wczytany. Żniwiarze też próbowali cofnąć zmiany — bez backupu.')}
+function restore(d){if(!validSaveSnapshot(d))throw Error('Niepoprawny zapis');active=true;wipeCombat();progress=d.progress;progress.cards=CardSystem.normalizeCardCollection(progress.cards);cardDuelToken=null;pendingWave=0;run=d.active?{...d.active.run,...(d.active.run.excel?{excel:{...d.active.run.excel}}:{})}:null;if(d.active){let a=d.active;player={...a.player};pendingWave=Number.isInteger(d.pendingWave)&&d.pendingWave>1&&d.pendingWave<=MISSIONS[run.mission].waves?d.pendingWave:0;buildEnvironment(pendingWave?'hub':'combat');enemies=a.enemies.map(e=>({...e,castTime:0,t:Math.max(.8,e.t),specialTimer:Math.max(2,e.specialTimer??2),model:makeEnemy(e)}));bullets=a.bullets.map(b=>({...b,model:projectile(b,false)}));hostile=a.hostile.map(b=>({...b,model:projectile(b,true)}));drops=a.drops.map(b=>({...b,model:dropModel(b)}));medkits=a.medkits.map(m=>({...m}));syncMedkits();massCooldown=a.massCooldown;relayCooldown=a.relayCooldown;indo=a.indo;overdrive=Math.max(0,Math.min(6,a.overdrive||0));dodgeCooldown=Math.max(0,Math.min(2.5,a.dodgeCooldown||0));combo=Math.max(0,a.combo||0);comboTime=Math.max(0,Math.min(4,a.comboTime||0));flowDashCharges=a.flowDashCharges;flowDashRecharge=a.flowDashRecharge;mode=pendingWave?'break':'combat'}else{player=defensePlayer(0,8);buildEnvironment('hub');mode='hub'}reconcileBetrayalsAfterRestore();if(isExcelMission())showMarcSupport(run.excel);closePanel(false);cameraSnap();hud();save();if(pendingWave)breakMenu();notify('Progres wczytany. Żniwiarze też próbowali cofnąć zmiany — bez backupu.')}
 
 function newCampaign(){active=true;progress=fresh();run=null;pendingWave=0;wipeCombat();player=defensePlayer(0,8);camYaw=0;camZoom=1;buildEnvironment('hub');mode='hub';closePanel(false);hud();save();notify('Podejdź do głównego hologramu: E · terminal z misjami i rekreacją. M — misje · U — broń · F — załoga.')}
-function openPanel(title,tag,body='',back=null){terminalPanelOpen=false;returnMode=mode;mode='panel';keys={};mouse.down=mouse.right=false;$('panel').classList.remove('intro');$('panel').style.display='flex';$('panel-title').textContent=title;$('panel-tag').textContent=tag;$('panel-body').innerHTML=body;$('panel-actions').replaceChildren();modalBack=back}
+function openPanel(title,tag,body='',back=null){terminalPanelOpen=false;cardShopOpen=false;returnMode=mode;mode='panel';keys={};mouse.down=mouse.right=false;$('panel').classList.remove('intro');$('panel').style.display='flex';$('panel-title').textContent=title;$('panel-tag').textContent=tag;$('panel-body').innerHTML=body;$('panel-actions').replaceChildren();modalBack=back}
 function button(t,fn,cls='',disabled=false){let b=document.createElement('button');b.textContent=t;b.className=cls;b.disabled=disabled;b.onclick=()=>{sound(420,.04,'sine',.012);fn()};$('panel-actions').appendChild(b);return b}
-function closePanel(resume=true){terminalPanelOpen=false;$('panel').style.display='none';$('panel').classList.remove('intro');keys={};mouse.down=mouse.right=false;if(resume)mode=returnMode;modalBack=null;hud()}
+function closePanel(resume=true){terminalPanelOpen=false;cardShopOpen=false;$('panel').style.display='none';$('panel').classList.remove('intro');keys={};mouse.down=mouse.right=false;if(resume)mode=returnMode;modalBack=null;hud()}
 function safeLocation(){return ['hub','break'].includes(mode)}
 
 function nearShipTerminal(){return sceneKind==='hub'&&Math.hypot(player.x-SHIP_TERMINAL.x,player.z-SHIP_TERMINAL.z)<=SHIP_TERMINAL.radius;}
 function shipTerminalMenu(){
  if(!active||!safeLocation()||!nearShipTerminal())return;
  const base=mode,back=()=>{closePanel(false);mode=base;hud();},open=fn=>{back();fn();};
- openPanel('Terminal główny','SSV BULK IMPORT / SYSTEMY POKŁADOWE','<p>Misje, wyposażenie i chwila odpoczynku między importami.</p><div class="terminal-recreation"><b>REKREACJA / BIRD GAME 3</b><p>Leśna arena 3D, pięć ptasich mainów i boty, które nie podpisały NDA. Zapis kampanii czeka na powrót.</p></div>',back);
+ openPanel('Terminal główny','SSV BULK IMPORT / SYSTEMY POKŁADOWE','<p>Misje, wyposażenie i chwila odpoczynku między importami.</p><div class="terminal-recreation"><b>REKREACJA / BIRD GAME 3</b><p>Leśna arena 3D, pięć ptasich mainów i boty, które nie podpisały NDA. Zapis kampanii czeka na powrót.</p><b>GWINTFORCE / WOJNA REKORDÓW</b><p>Karcianka Salesforce kontra Excel. Talia startowa gratis, nowe karty w zbrojowni. Czy tabela przestawna pokona więź Data Loaderów?</p></div>',back);
  terminalPanelOpen=true;
  button('Mapa galaktyki / misje',()=>open(mapMenu),'primary');
  button('Zbrojownia / modyfikacje',()=>open(shopMenu));
  button('Archiwum kampanii / zapis',()=>open(saveMenu));
  button('Rekreacja: Bird Game 3',()=>window.parent.BulkUnified.openBird());
+ button('Rekreacja: Gwintforce / wojna rekordów',()=>window.parent.BulkUnified.openCards());
  button('Wróć na pokład',back);
 }
 
@@ -452,7 +454,7 @@ if(id===5){for(let s of [-1,1])for(let z of [-14,0,14])pillar(s*24,z,5,mat(0x8fa
 if(id===6){for(let s of [-1,1]){box(environment,mat(0x41131e,.1,.7,0xa22d32,1.1),s*24,.03,0,.85,.05,40,false);for(let z of [-17,-7,3,13]){pillar(s*24,z,4.3,M.dark);sphere(environment,neon,s*24,4.5,z,.3)}}for(let r of [5,8,12]){let ring=mesh(environment,new THREE.TorusGeometry(r,.04,5,64),neon,0,.035,-5);ring.rotation.x=Math.PI/2}textSprite(environment,'JĄDRO GALAKTYKI / ROOT ACCESS',0,6,-20,'#ff9aab',10,.75)}
 }
 
-function validProgress(p){return !!p&&p.version===10&&['credits','records','kills','visit'].every(k=>Number.isSafeInteger(p[k])&&p[k]>=0&&p[k]<1e9)&&p.upgrades&&UPGRADE_KEYS.every(k=>Number.isInteger(p.upgrades[k])&&p.upgrades[k]>=0&&p.upgrades[k]<=5)&&Array.isArray(p.completed)&&p.completed.length<=MISSIONS.length&&new Set(p.completed).size===p.completed.length&&p.completed.every(k=>Number.isInteger(k)&&k>=0&&k<MISSIONS.length)&&Array.isArray(p.crew)&&p.crew.length===2&&p.crew.every(validCrewState)&&[null,'Vael','Syra'].includes(p.partner)&&typeof p.excelFirstFormCleared==='boolean'&&(!p.completed.includes(EXCEL_MISSION)||p.excelFirstFormCleared)&&typeof p.won==='boolean'&&(!p.won||p.completed.includes(EXCEL_MISSION))}
+function validProgress(p){return !!p&&p.version===10&&['credits','records','kills','visit'].every(k=>Number.isSafeInteger(p[k])&&p[k]>=0&&p[k]<1e9)&&p.upgrades&&UPGRADE_KEYS.every(k=>Number.isInteger(p.upgrades[k])&&p.upgrades[k]>=0&&p.upgrades[k]<=5)&&Array.isArray(p.completed)&&p.completed.length<=MISSIONS.length&&new Set(p.completed).size===p.completed.length&&p.completed.every(k=>Number.isInteger(k)&&k>=0&&k<MISSIONS.length)&&Array.isArray(p.crew)&&p.crew.length===2&&p.crew.every(validCrewState)&&[null,'Vael','Syra'].includes(p.partner)&&typeof p.excelFirstFormCleared==='boolean'&&(!p.completed.includes(EXCEL_MISSION)||p.excelFirstFormCleared)&&typeof p.won==='boolean'&&(!p.won||p.completed.includes(EXCEL_MISSION))&&(p.cards===undefined||CardSystem.validCardCollection(p.cards))}
 function validActive(a,upgrades=progress.upgrades){return !!a&&a.run&&Number.isInteger(a.run.mission)&&a.run.mission>=0&&a.run.mission<MISSIONS.length&&Number.isInteger(a.run.wave)&&a.run.wave>=1&&a.run.wave<=MISSIONS[a.run.mission].waves&&Number.isInteger(a.run.spawned)&&a.run.spawned>=0&&a.run.spawned<=1000&&nums(a.run,['clock'])&&typeof a.run.bossSpawned==='boolean'&&nums(a.player,['x','z','hp','shield','rechargeWait'])&&Math.abs(a.player.x)<26&&Math.abs(a.player.z)<22&&a.player.hp>0&&a.player.hp<=maxHealth(upgrades)&&a.player.shield>=0&&a.player.shield<=maxShield(upgrades)&&a.player.rechargeWait>=0&&a.player.rechargeWait<=4&&['enemies','bullets','hostile','drops','medkits'].every(k=>Array.isArray(a[k])&&a[k].length<300)&&a.enemies.length<=MAX_ACTIVE_ENEMIES&&a.enemies.every(e=>(e.shieldFlash===undefined||Number.isFinite(e.shieldFlash)&&e.shieldFlash>=0&&e.shieldFlash<=.4)&&Object.hasOwn(TYPES,e.type)&&nums(e,['x','z','hp','maxHp','t','phase'])&&e.hp>0&&e.maxHp>0&&e.hp<=e.maxHp&&['attackDamage','moveSpeed','specialTimer','castTime','bossPhase','summonedMask','attackIndex'].every(k=>e[k]===undefined||Number.isFinite(e[k]))&&(e.castTime===undefined||e.castTime>=0)&&(e.attackDamage===undefined||e.attackDamage>=0)&&(e.moveSpeed===undefined||e.moveSpeed>=0)&&(e.attackIndex===undefined||Number.isSafeInteger(e.attackIndex)&&e.attackIndex>=0)&&(e.bossPhase===undefined||Number.isInteger(e.bossPhase)&&e.bossPhase>=1&&e.bossPhase<=3)&&(e.summonedMask===undefined||Number.isSafeInteger(e.summonedMask)&&e.summonedMask>=0))&&a.bullets.every(e=>nums(e,['x','z','vx','vz','damage'])&&e.damage>=0)&&a.hostile.every(e=>(e.duplicate===undefined||typeof e.duplicate==='boolean')&&(e.copyId===undefined||e.duplicate===true&&[1,2].includes(e.copyId))&&nums(e,['x','z','vx','vz','damage'])&&e.damage>=0&&Object.hasOwn(TYPES,e.type))&&a.drops.every(e=>nums(e,['x','z','life'])&&(e.type===undefined||['csv','turbo'].includes(e.type)))&&a.medkits.length===2&&a.medkits.every(e=>nums(e,['x','z','timer'])&&typeof e.ready==='boolean')&&nums(a,['massCooldown','relayCooldown','indo'])&&['overdrive','dodgeCooldown','combo','comboTime'].every(k=>a[k]===undefined||(Number.isFinite(a[k])&&a[k]>=0))&&(a.combo===undefined||Number.isSafeInteger(a.combo))}
 
 function migrateV4(d){migrateLegacy(d)}
@@ -543,7 +545,45 @@ function shopMenu(){
   const cards=UPGRADE_KEYS.map(key=>'<div class="tile"><b>'+UPGRADE_DEFS[key].name+' · '+upgradeLevel(key)+'/5</b><span>'+upgradeStat(key)+'<br>'+UPGRADE_DEFS[key].detail+'</span></div>').join('');
   openPanel('Zbrojownia / laboratorium importu','BUDŻET: '+Math.floor(progress.credits)+' CR','<p>Zakupy na statku. Zwiększenie pojemności dodaje tylko nową pojemność do obecnego życia lub tarczy. Tarcza pochłania trafienie pierwsza, poszycie chroni pozostałe życie.</p><div class="grid-info">'+cards+'</div>',back);
   for(const key of UPGRADE_KEYS){const n=upgradeLevel(key),cost=upgradeCost(key);button(UPGRADE_DEFS[key].name+' / poziom '+n+'/5'+(n===5?' / MAX':' / '+cost+' CR'),()=>{if(buyUpgrade(key)){mode=base;shopMenu()}},'',n>=UPGRADE_LIMIT||progress.credits<cost)}
+  button('Karty do Gwintforce / sklep',()=>{back();cardShopMenu()});
   button('Wróć na statek',back);
+}
+
+
+// Card economy is stored with campaign progress, not in a separate minigame save.
+function cardShopMenu(){
+ if(!active||!safeLocation())return;
+ const base=mode,back=()=>{closePanel(false);mode=base;hud();};
+ const collection=progress.cards||(progress.cards=CardSystem.createCardCollection());
+ const offers=Object.values(CardSystem.CARD_CATALOG).filter(c=>c.price>0);
+ openPanel('Gwintforce / kwatermistrz kart','BUDŻET: '+Math.floor(progress.credits)+' CR','<p>Karty kupujesz raz za kredyty kampanii. Wejdź do głównego terminala, aby ułożyć talię i rozegrać partię. Darmowa talia startowa jest już w kolekcji.</p><div class="grid-info">'+offers.map(c=>'<div class="tile"><b>'+c.icon+' '+c.name+' / '+(c.power||'SPECJALNA')+'</b><span>'+(CardSystem.CARD_ABILITY_TEXT[c.ability]||'Jednostka: '+CardSystem.CARD_ROW_NAMES[c.row])+ '</span></div>').join('')+'</div>',back);
+ cardShopOpen=true;
+ for(const c of offers){const owned=collection.owned.includes(c.id);button(c.name+' / '+(owned?'W KOLEKCJI':c.price+' CR'),()=>{if(buyCampaignCard(c.id)){mode=base;cardShopMenu();}},'',owned||progress.credits<c.price);}
+ button('Wróć do zbrojowni',()=>{back();shopMenu();});button('Wróć na statek',back);
+}
+function buyCampaignCard(id){
+ const c=CardSystem.CARD_CATALOG[id],collection=progress.cards;
+ if(!active||!cardShopOpen||mode!=='panel'||!Object.hasOwn(CardSystem.CARD_CATALOG,id)||!c||c.price<=0||!collection||collection.owned.includes(id)||progress.credits<c.price)return false;
+ progress.credits-=c.price;collection.owned.push(id);save();hud();notify('Nowa karta: '+c.name+'. Dodaj ją do talii w terminalu.');return true;
+}
+function canPlayCards(){return active&&terminalPanelOpen&&mode==='panel'&&nearShipTerminal();}
+function availableCardOpponents(){return [...(crewAvailable(0)?['vael']:[]),...(crewAvailable(1)?['syra']:[]),'excel'];}
+function saveCardDeck(deck){
+ if(!canPlayCards()||cardDuelToken!==null||!CardSystem.validCardDeck(deck,progress.cards.owned))return false;
+ progress.cards.deck=[...deck];save();return true;
+}
+function beginCardDuel(opponent){
+ if(!canPlayCards()||cardDuelToken!==null||!availableCardOpponents().includes(opponent))return null;
+ const token=++cardDuelSequence;cardDuelToken={token,opponent};return token;
+}
+function finishCardDuel(token,winner){
+ if(!cardDuelToken||cardDuelToken.token!==token||!canPlayCards()||!['player','ai','draw'].includes(winner))return null;
+ const {opponent}=cardDuelToken;cardDuelToken=null;let reward=null;
+ if(winner==='player'){
+  const cards=progress.cards;cards.wins[opponent]=Math.min(999999,cards.wins[opponent]+1);
+  if(!cards.claimed.includes(opponent)){cards.claimed.push(opponent);const id=CardSystem.CARD_OPPONENTS[opponent].prize;if(!cards.owned.includes(id))cards.owned.push(id);reward=CardSystem.CARD_CATALOG[id].name;}
+ }
+ save();return {winner,reward};
 }
 
 // v8: permanent crew departure and a single, persistent named enemy encounter.
@@ -1320,6 +1360,9 @@ window.BulkCampaign=Object.freeze({
  suspend(){shellSuspended=true;keys={};mouse.down=mouse.right=false;save();},
  resume(){shellSuspended=false;last=performance.now();lastRendered=last;accumulator=0;},
  save,
+ canPlayCards,availableCardOpponents,saveCardDeck,beginCardDuel,finishCardDuel,
+ getCardCollection(){return CardSystem.normalizeCardCollection(progress.cards);},
+ cancelCardDuel(){cardDuelToken=null;},
  canPlayBird(){return active&&terminalPanelOpen&&mode==='panel'&&nearShipTerminal();},
  get mode(){return mode;},get active(){return active;}
 });

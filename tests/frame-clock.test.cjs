@@ -8,7 +8,7 @@ const html = path.basename(file)===require('../release.cjs').filename ? require(
 const app = html.slice(html.lastIndexOf('<script>') + 8, html.lastIndexOf('</script>'));
 const start = app.indexOf('function frame(now)');
 assert(start >= 0, 'Timing driver must exist in shipped HTML');
-const driver = app.slice(start, app.indexOf("addEventListener('visibilitychange'", start));
+const driver = app.slice(start, start + app.slice(start).search(/addEventListener\(\s*['"]visibilitychange['"]/));
 function fixture(mode = 'combat') {
   const state = {
     mode, shellSuspended: false, last: 0, lastRendered: 0, accumulator: 0, qualityClock: 0, settingsClock: 0,

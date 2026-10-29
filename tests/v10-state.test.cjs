@@ -10,7 +10,7 @@ function declaration(name){
  for(let i=body;i<app.length;i++){const c=app[i];if(quote){if(escape)escape=false;else if(c==='\\')escape=true;else if(c===quote)quote=null;continue}if(c==='"'||c==="'"||c==='`'){quote=c;continue}if(c==='{')depth++;else if(c==='}'&&--depth===0)return app.slice(start,i+1)}
  throw Error('Unclosed declaration '+name);
 }
-const cx={VERSION:10,MISSIONS:Array.from({length:8},(_,i)=>({waves:[3,3,4,3,4,4,4,1][i]})),FINAL_MISSION:6,EXCEL_MISSION:7,MAX_ACTIVE_ENEMIES:18,TYPES:Object.fromEntries(['reaper','elite','collector','boss','husk','geth','banshee','traitorVael','traitorSyra','excel'].map(t=>[t,{}])),UPGRADE_KEYS:['damage','rate','armor','shield','plating','biotic','mobility'],UPGRADE_LIMIT:5,BETRAYAL_TYPES:['traitorVael','traitorSyra'],BETRAYAL_STATES:['none','pending','active','defeated']};vm.createContext(cx);
+const cx={CardSystem:require('../minigames/cards-sim.js'),VERSION:10,MISSIONS:Array.from({length:8},(_,i)=>({waves:[3,3,4,3,4,4,4,1][i]})),FINAL_MISSION:6,EXCEL_MISSION:7,MAX_ACTIVE_ENEMIES:18,TYPES:Object.fromEntries(['reaper','elite','collector','boss','husk','geth','banshee','traitorVael','traitorSyra','excel'].map(t=>[t,{}])),UPGRADE_KEYS:['damage','rate','armor','shield','plating','biotic','mobility'],UPGRADE_LIMIT:5,BETRAYAL_TYPES:['traitorVael','traitorSyra'],BETRAYAL_STATES:['none','pending','active','defeated']};vm.createContext(cx);
 for(const name of ['relationshipClamp','createBetrayalDefaults','normalizeCrewBetrayal','validBetrayalState','validBetrayalSnapshot','createCrewDefaults','normalizeCrew','validCrewState','upgradeLevel','normalizeUpgradeLevels','maxHealth','maxShield','validProgress','nums','validActive','validSaveSnapshot','fresh','createExcelState','validExcelState','excelPhase','validExcelSnapshot','validateOlderChapter','upgradeToV10','excelMaxHealth','validZipsertState'])vm.runInContext(declaration(name),cx);
 const p=cx.fresh();cx.progress=p;assert(cx.validProgress(p));assert.equal(p.version,10);assert.equal(p.excelFirstFormCleared,false);assert.deepEqual(Object.keys(p.upgrades),cx.UPGRADE_KEYS);assert.equal(p.crew[0].affection,35);assert(cx.validBetrayalSnapshot(p,null,0));
 const clone=d=>JSON.parse(JSON.stringify(d));
@@ -58,3 +58,14 @@ for(const change of [b=>b.duplicate='true',b=>b.copyId=3,b=>b.copyId=1.5,b=>b.du
 const flash=clone(rageCheckpoint);flash.active.enemies[0].shieldFlash=.35;assert(cx.validSaveSnapshot(flash));flash.active.enemies[0].shieldFlash=1;assert(!cx.validSaveSnapshot(flash),'Reject invalid shield hit flash');
 assert.equal(cx.excelMaxHealth(1),2400);assert.equal(cx.excelMaxHealth(2),3200);
 console.log('PASS shipped v10 validators: upgrades/defenses/relations, ZIPsert charges/cooldown, first and furious Excel forms, stage-specific HP, mandatory fresh Marc help and final victory.');
+
+// v16 collection is optional in old format-10 saves; explicit corrupt data still rejects.
+const beforeCards=clone(p);delete beforeCards.cards;assert(cx.validProgress(beforeCards));
+const corruptCards=clone(p);corruptCards.cards.deck.push('sf-hero');assert(!cx.validProgress(corruptCards));
+Object.assign(cx,{active:true,cardShopOpen:true,mode:'panel',terminalPanelOpen:true,cardDuelToken:null,cardDuelSequence:0,nearShipTerminal:()=>true,save:()=>{},hud:()=>{},notify:()=>{}});
+for(const name of ['buyCampaignCard','canPlayCards','availableCardOpponents','crewAvailable','saveCardDeck','beginCardDuel','finishCardDuel'])vm.runInContext(declaration(name),cx);
+cx.progress=clone(p);cx.progress.credits=1000;assert(cx.buyCampaignCard('sf-bulk3'));assert.equal(cx.progress.credits,840);assert(!cx.buyCampaignCard('sf-bulk3'));assert(!cx.buyCampaignCard('prize-vael'));assert(!cx.buyCampaignCard('toString'));
+assert(cx.saveCardDeck([...cx.progress.cards.deck,'sf-bulk3']));const token=cx.beginCardDuel('vael');assert.equal(cx.beginCardDuel('syra'),null);assert(!cx.saveCardDeck(cx.progress.cards.deck));assert.equal(cx.finishCardDuel(token+1,'player'),null);assert(cx.finishCardDuel(token,'player').reward);assert.equal(cx.finishCardDuel(token,'player'),null);
+const repeat=cx.beginCardDuel('vael');assert.equal(cx.finishCardDuel(repeat,'player').reward,null);assert.equal(cx.progress.cards.wins.vael,2);assert.equal(cx.progress.credits,840);assert(cx.validProgress(cx.progress));
+cx.progress.crew[0].departed=true;assert(!cx.availableCardOpponents().includes('vael'));assert.equal(cx.beginCardDuel('vael'),null);
+console.log('PASS optional old-save card migration, deck validation, armory cost/ownership, departed rivals and one-time duel rewards.');

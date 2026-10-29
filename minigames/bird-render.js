@@ -14,6 +14,10 @@ class BulkBirdRenderer {
   this.enemies=['crow','owl','hummingbird'].map(id=>{const model=this.makeBird(id);this.scene.add(model.root);return model;});this.decoy=this.makeBird('pigeon');this.scene.add(this.decoy.root);
   this.pickups=new THREE.InstancedMesh(this.geo.plane,new THREE.MeshLambertMaterial({map:this.csvTexture(),transparent:true,alphaTest:.3,side:THREE.DoubleSide}),24);this.pickups.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.scene.add(this.pickups);
   this.rings=Array.from({length:24},()=>{const m=new THREE.Mesh(this.geo.ring,new THREE.MeshBasicMaterial({color:0x9fffee,transparent:true,opacity:.7,depthWrite:false}));m.rotation.x=-Math.PI/2;m.visible=false;this.scene.add(m);return m;});
+  // A fixed sector shows the exact direction/range throughout the dodge window.
+  const points=[];for(let i=0;i<24;i++){const a=-Math.PI/3+i*Math.PI*2/3/24,b=a+Math.PI*2/3/24;points.push(0,0,0,Math.sin(a),0,Math.cos(a),Math.sin(b),0,Math.cos(b));}
+  this.geo.attack=new THREE.BufferGeometry();this.geo.attack.setAttribute('position',new THREE.Float32BufferAttribute(points,3));
+  this.attackCones=this.enemies.map(()=>{const m=new THREE.Mesh(this.geo.attack,new THREE.MeshBasicMaterial({color:0xff302f,transparent:true,opacity:.45,side:THREE.DoubleSide,depthWrite:false}));m.visible=false;this.scene.add(m);return m;});
   this.decoy.root.visible=false;this.enemies.forEach(m=>m.root.visible=false);
   this.onResize=()=>this.resize();this.observer=new ResizeObserver(this.onResize);this.observer.observe(canvas);this.resize();
  }
@@ -74,9 +78,9 @@ class BulkBirdRenderer {
  }
  render(game,dt,time){
   const preview=game.mode==='ready';this.perch.visible=preview;for(const [id,model]of Object.entries(this.players)){model.root.visible=id===game.selected;if(id===game.selected)this.syncBird(model,game.player,time,preview);}
-  this.enemies.forEach((model,i)=>{model.root.visible=!preview;if(!preview)this.syncBird(model,game.enemies[i],time);});
+  this.enemies.forEach((model,i)=>{const e=game.enemies[i];model.root.visible=!preview&&!!e;if(!preview&&e)this.syncBird(model,e,time);const cone=this.attackCones[i];cone.visible=!preview&&!!e?.alive&&e.attackWindup>0;if(cone.visible){cone.position.set(e.x,Math.max(.15,e.attackY-.7),e.z);cone.rotation.y=e.attackAngle;cone.scale.setScalar(e.attackRange);cone.material.opacity=.28+(1-e.attackWindup/e.attackTotal)*.4;}});
   this.decoy.root.visible=!preview&&!!game.decoy;if(this.decoy.root.visible){this.syncBird(this.decoy,{...game.player,...game.decoy,alive:true,cargo:0},time);this.decoy.root.visible=Math.sin(time*15)>.0;}
-  let n=0;if(!preview)for(const item of game.pickups){if(item.wait>0||n>=24)continue;this.tmp.position.set(item.x,.9+Math.sin(time*2+item.id)*.16,item.z);this.tmp.rotation.set(-.65,this.yaw+Math.sin(time*.6+item.id)*.1,0);this.tmp.scale.set(1.1,1.3,1.1);this.tmp.updateMatrix();this.pickups.setMatrixAt(n++,this.tmp.matrix);}this.pickups.count=n;this.pickups.instanceMatrix.needsUpdate=true;
+  let n=0;if(!preview)for(const item of game.pickups){if(item.wait>0||n>=24)continue;this.tmp.position.set(item.x,item.y+Math.sin(time*2+item.id)*.16,item.z);this.tmp.rotation.set(-.65,this.yaw+Math.sin(time*.6+item.id)*.1,0);this.tmp.scale.set(1.1,1.3,1.1);this.tmp.updateMatrix();this.pickups.setMatrixAt(n++,this.tmp.matrix);}this.pickups.count=n;this.pickups.instanceMatrix.needsUpdate=true;
   this.rings.forEach((ring,i)=>{const f=!preview&&game.fx[i];ring.visible=!!f;if(f){ring.position.set(f.x,.2,f.z);const size=(1-f.life/f.total)*3+.3;ring.scale.setScalar(size);ring.material.color.setHex(f.color);ring.material.opacity=f.life/f.total*.7;}});
   if(preview){this.target.set(-6,4.8,8);this.look.set(1.6,2.2,0);}else{const p=game.player;this.target.set(p.x+Math.sin(this.yaw)*14,p.y+8.5,p.z+Math.cos(this.yaw)*14);this.look.set(p.x-Math.sin(this.yaw)*2,p.y+.5,p.z-Math.cos(this.yaw)*2);}
   this.camera.position.lerp(this.target,1-Math.exp(-Math.max(.016,dt)*7));this.camera.lookAt(this.look);this.renderer.render(this.scene,this.camera);

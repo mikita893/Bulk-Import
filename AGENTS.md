@@ -8,3 +8,6 @@
 - Numer i nazwę bieżącego wydania odczytuj przez `release.cjs`. Serwer Node, adapter Cloudflare i strona startowa mają prowadzić do tego samego pliku.
 - Zachowuj zgodność zapisów kampanii solo i kooperacji. Zmiana numeru wydania gry nie oznacza zmiany formatu zapisu. Zachowuj dotychczasowe klucze localStorage i import JSON.
 - Sprawdzaj nowe wydanie zarówno jako pobrany plik bez pozostałych plików repozytorium, jak i przez serwer z rzeczywistymi klientami multiplayer. Aktualizuj testy bieżącego wydania.
+
+- Gwintforce uruchamiaj wyłącznie z głównego terminala kampanii; sklep kart pozostaje częścią zbrojowni. Kolekcja jest opcjonalnym rozszerzeniem zapisu solo w formacie 10. Starsze zapisy otrzymują zestaw startowy.
+- Utrzymuj równolegle `dev/readable-source`: po zmianach gry scal do niej bieżące wydanie, sformatuj własne źródła i uruchom testy. Nie formatuj bibliotek vendor ani archiwalnych HTML. Zachowuj czytelne nazwy, komentarze opisujące mechaniki i instrukcję dla developera. Wydawaj jeden wspólny numer gry, a nie osobną grę na tej gałęzi.
