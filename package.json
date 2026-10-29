@@ -14,7 +14,9 @@
     "dev:cloudflare": "npm run build:cloudflare && wrangler dev --port 8787",
     "deploy:cloudflare": "npm run build:cloudflare && wrangler deploy",
     "test:cloudflare": "node tests/cloudflare-smoke.cjs",
-    "test:balance": "node --test tests/multiplayer-kit-balance.test.cjs"
+    "test:balance": "node --test tests/multiplayer-kit-balance.test.cjs",
+    "format": "prettier --write campaign multiplayer minigames server cloudflare tests .devcontainer release.cjs package.json .prettierrc.json DEVELOPMENT.md",
+    "format:check": "prettier --check campaign multiplayer minigames server cloudflare tests .devcontainer release.cjs package.json .prettierrc.json DEVELOPMENT.md"
   },
   "engines": {
     "node": ">=20"
@@ -23,6 +25,7 @@
     "ws": "^8.22.0"
   },
   "devDependencies": {
+    "prettier": "3.9.10",
     "wrangler": "^4.152.0"
   }
 }

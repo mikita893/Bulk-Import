@@ -1,29 +1,282 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#07111d">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='12' width='64' height='64' fill='%237ce9e5'/%3E%3Ctext x='15' y='48' font-size='48'%3E↯%3C/text%3E%3C/svg%3E">
-<title>Bulk Import: Wspólna Galaktyka — v__VERSION__</title>
-<style>/*CLIENT_STYLE*/</style>
-</head>
-<body>
-<header><a class="brand" href="./Bulk-Import-v__VERSION__.html"><b>↯</b><span>BULK IMPORT<small>WSPÓLNA GALAKTYKA / V__VERSION__</small></span></a><nav><button id="nav-campaign">Kampania solo</button><button id="help-button">Sterowanie</button></nav><div class="header-right"><span id="connection" class="connection" data-state="offline">ŁĄCZENIE…</span><span id="ping">— ms</span><button id="sound-toggle" title="Dźwięki proceduralne">DŹWIĘK: ON</button><button id="quality-toggle">GRAFIKA: AUTO</button></div></header>
-<main>
- <section class="viewport" aria-label="Arena multiplayer 3D"><canvas id="world" aria-label="Trójwymiarowa rozgrywka Bulk Import"></canvas><div class="vignette"></div><div class="hud-top"><div><div id="mode-label" class="eyebrow">SOJUSZ ADMINISTRATORÓW</div><h1 id="mission-label">JEDNA GRA. CAŁA GALAKTYKA.</h1><p id="objective" class="sub">Salesforce kontra Excel. Tym razem błąd można zrzucić na kolegę.</p><button id="room-menu" hidden>Pokój / zaproszenie</button></div><div class="match-info"><b id="score-label">CO-OP / VS 3×3</b><small id="timer-label">SOLO · KOOPERACJA · VS</small></div></div>
- <div id="boss-hud" hidden><b id="boss-title">BOSS</b><span id="boss-state"></span><div class="meter"><i id="boss-fill"></i></div></div>
- <div id="notice" role="status" aria-live="polite"></div><div id="combat-toast" aria-live="polite"></div>
- <div class="hud-bottom"><div class="health"><div class="health-label">ŻYCIE <strong id="hp-label">—</strong></div><div class="meter"><i id="hp-fill"></i></div><div class="health-label">TARCZA <strong id="shield-label">—</strong></div><div class="meter shield"><i id="shield-fill"></i></div><small id="player-state">GOTOWY NA DEPLOYMENT</small></div><div class="weapon"><strong id="weapon-label">DATA LOADER</strong><span id="dash-label">C / R · DASH GOTOWY</span><span id="cooldown-label">Q · MOC FRAKCJI</span><span id="secondary-label">F · UMIEJĘTNOŚĆ OBRONNA</span><span id="interact-label">E · WSPARCIE / REANIMACJA</span></div></div>
- <div id="crosshair"></div>
- <div id="home" class="overlay"><div class="home-card"><div class="eyebrow">NOWY ODDZIAŁ. TEN SAM BRUDNY CSV.</div><h2>BULK<br><em>IMPORT</em><small>WSPÓLNA GALAKTYKA</small></h2><p class="intro">Jedna galaktyka, jeden plik. Kampania solo działa także offline. Na statku czeka główny terminal z pokładową rekreacją. Na serwerze dołącza kooperacja i <b>Salesforce kontra Excel</b> do 3 na 3.</p><label class="field">Twój pseudonim<input id="player-name" maxlength="20" autocomplete="nickname" value="Administrator" placeholder="Komandor Upsert"></label><div class="mode-grid"><button class="mode-card" id="play-campaign"><span>01 / SOLO</span><b>Kampania galaktyczna</b><small>Statek, relacje, ulepszenia i obie formy Excela. Dotychczasowe zapisy i import JSON pozostają dostępne.</small></button><button class="mode-card" id="create-coop"><span>02 / KOOPERACJA</span><b>Import oddziałowy</b><small>1–3 graczy. Trudniejsza, osobna kampania, wspólne zakupy i ratowanie kolegów.</small></button><button class="mode-card" id="create-versus"><span>03 / VERSUS</span><b>Salesforce vs Excel</b><small>Do 3×3. Równa broń, różne moce. Apex i osłona kontra tabele przestawne i Ctrl+Z. Wygrywa też spryt.</small></button></div><p id="availability-note" class="availability-note" role="status"></p><div class="join-row"><label class="field">Kod pokoju<input id="join-code" maxlength="8" autocomplete="off" spellcheck="false" placeholder="ABC123"></label><button id="join-room" class="primary">Dołącz do znajomych</button></div><details id="network-details"><summary>Połączenie z serwerem</summary><p>Na serwerze ten sam plik udostępnia solo i multiplayer. Po otwarciu pobranego HTML dostępne są kampania i minigry; opcje sieciowe są wyłączone.</p><div class="server-row"><input id="server-url" aria-label="Adres serwera multiplayer" placeholder="https://twoj-serwer.example"><button id="connect-server">Połącz</button></div><p id="network-note" class="micro"></p></details><p class="home-foot">Excel: „Zrobię z was tabelę przestawną”. Salesforce: „Najpierw pokaż Permission Set”.</p></div></div>
- <div id="lobby" class="overlay" hidden><div class="panel lobby-panel"><div class="panel-top"><div><div class="eyebrow" id="lobby-mode">POKÓJ ODDZIAŁU</div><h2>Kod: <span id="room-code">—</span></h2></div><button id="leave-room" class="quiet danger">Opuść pokój</button></div><div class="invite-row"><input id="invite-link" readonly aria-label="Link do zaproszenia"><button id="copy-invite">Kopiuj zaproszenie</button></div><p id="lobby-hint" class="muted"></p><div id="roster" class="roster"></div><div id="team-actions" class="team-actions" hidden><button id="team-salesforce">☁ Salesforce</button><button id="team-excel">▦ Excel</button></div><div id="selected-kit" class="selected-kit" aria-live="polite"></div><details id="kit-comparison" class="kit-comparison"><summary>Porównaj umiejętności i kontry obu frakcji</summary><div id="faction-kits" class="faction-kits"></div></details><div id="mission-picker" hidden><label class="field">Misja kooperacyjna<select id="coop-mission"></select></label><p id="campaign-info" class="micro"></p></div><div class="lobby-actions"><button id="ready-button" class="primary">Jestem gotowy</button><button id="start-match">Rozpocznij mecz</button><button id="return-game" hidden>Wróć do walki</button></div><p id="start-reason" class="micro"></p><div class="checkpoint-row"><button id="export-campaign" class="quiet">Eksport kampanii co-op</button><button id="import-campaign" class="quiet">Import kampanii co-op</button><button id="resume-campaign" class="quiet" hidden>Wznów zapis kooperacji</button><input id="campaign-file" type="file" accept=".json,application/json" hidden></div><p class="micro">W VS życie, tarcza i podstawowa broń są równe. Umiejętności, zasięgi i odnowienia różnią się: Salesforce wygrywa precyzją i pozycją osłony, Excel planowaniem obszaru i cofnięciem świeżych obrażeń. Ulepszenia z kampanii nie przechodzą do VS.</p></div></div>
- <div id="between" class="overlay" hidden><div class="panel"><div class="eyebrow" id="between-tag">SSV BULK IMPORT / PRZERWA NA DEPLOYMENT</div><h2 id="between-title">Zakończono żniwa</h2><p id="between-description"></p><div id="between-scores"></div><div id="upgrade-shop" class="upgrade-grid"></div><div class="lobby-actions"><button id="next-button" class="primary">Kontynuuj oddziałem</button><button id="show-lobby">Załoga i pokój</button><button id="between-export" class="quiet">Eksport checkpointu co-op</button></div><p class="micro" id="between-note"></p></div></div>
- <div id="help" class="overlay" hidden><div class="panel"><div class="eyebrow">INSTRUKCJA / BEZ PLIKU PDF</div><h2>Nie karm duplikatów.</h2><div class="help-grid"><p><kbd>WASD</kbd> / strzałki — ruch · <kbd>SHIFT</kbd> sprint<br><kbd>MYSZ</kbd> — celowanie<br><kbd>LPM</kbd> / <kbd>SPACJA</kbd> — strzał<br><kbd>C</kbd> / <kbd>R</kbd> — dash frakcji z krótką ochroną</p><p><kbd>Q</kbd> — atak frakcji / efekt masy w kooperacji<br><kbd>F</kbd> — obrona frakcji: osłona albo Ctrl+Z<br><kbd>E</kbd> — przytrzymaj przy rannym koledze, by go podnieść; aktywuj wsparcie<br><kbd>P</kbd> / <kbd>ESC</kbd> — zamknij tę instrukcję<br><kbd>ROLKA</kbd> — zoom kamery</p></div><p>W kooperacji osłaniaj kolegów, zbieraj apteczki i wspólnie kupuj ulepszenia między żniwami. W VS strzelamy tylko w przeciwną frakcję; po eliminacji wracasz po kilku sekundach.</p><div id="help-faction-kits" class="faction-kits"></div><p class="important">Multiplayer działa dalej, kiedy oglądasz instrukcję. Zatrzymuje się tylko twój ostrzał.</p><button id="close-help" class="primary">Rozumiem, wracam do importu</button></div></div>
- </section>
- <aside><div class="section-title">MAPA TAKTYCZNA <span id="room-badge">OFFLINE</span></div><canvas id="radar" width="400" height="290"></canvas><div class="section"><div class="section-title">ODDZIAŁ / TABLICA WYNIKÓW</div><div id="scoreboard"><p class="muted">Tutaj pojawi się twoja załoga.</p></div></div><div class="section"><div class="section-title">STATUS IMPORTU</div><p id="campaign-status" class="campaign-status">Kampania solo i kooperacja mają osobny postęp. Rekreacja czeka na statku.</p><div id="live-actions" hidden><button id="open-lobby">Pokój / zaproszenie</button><button id="reconnect">Połącz ponownie</button></div></div><div class="transmission"><div class="eyebrow">RADIO / DZIAŁ WSPARCIA</div><p id="radio">„To nie jest friendly fire. To niepoprawne mapowanie frakcji.”</p></div><div class="controls"><kbd>WASD</kbd> ruch &nbsp; <kbd>LPM</kbd> strzał<br><kbd>C</kbd>/<kbd>R</kbd> dash &nbsp; <kbd>Q</kbd> atak<br><kbd>F</kbd> osłona / Ctrl+Z<br><kbd>E</kbd> pomoc / reanimacja<br><kbd>P</kbd> instrukcja</div><small class="footer">WSPÓLNA GALAKTYKA // BUILD __VERSION__<br>WSZYSTKIE REKORDY W JEDNYM POKOJU.</small></aside>
-</main>
-<section id="unified-stage" hidden><div class="unified-toolbar"><button id="unified-back">← Menu główne</button><span id="unified-title">KAMPANIA SOLO</span></div><div id="campaign-host" hidden></div><div id="bird-host" hidden></div><div id="cards-host" hidden></div></section>
-<!--THREE_BUNDLE-->
-<script>/*CLIENT_APP*/</script>
-</body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#07111d" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='12' width='64' height='64' fill='%237ce9e5'/%3E%3Ctext x='15' y='48' font-size='48'%3E↯%3C/text%3E%3C/svg%3E"
+    />
+    <title>Bulk Import: Wspólna Galaktyka — v__VERSION__</title>
+    <style>
+      /*CLIENT_STYLE*/
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="./Bulk-Import-v__VERSION__.html"
+        ><b>↯</b><span>BULK IMPORT<small>WSPÓLNA GALAKTYKA / V__VERSION__</small></span></a
+      >
+      <nav>
+        <button id="nav-campaign">Kampania solo</button><button id="help-button">Sterowanie</button>
+      </nav>
+      <div class="header-right">
+        <span id="connection" class="connection" data-state="offline">ŁĄCZENIE…</span
+        ><span id="ping">— ms</span
+        ><button id="sound-toggle" title="Dźwięki proceduralne">DŹWIĘK: ON</button
+        ><button id="quality-toggle">GRAFIKA: AUTO</button>
+      </div>
+    </header>
+    <main>
+      <section class="viewport" aria-label="Arena multiplayer 3D">
+        <canvas id="world" aria-label="Trójwymiarowa rozgrywka Bulk Import"></canvas>
+        <div class="vignette"></div>
+        <div class="hud-top">
+          <div>
+            <div id="mode-label" class="eyebrow">SOJUSZ ADMINISTRATORÓW</div>
+            <h1 id="mission-label">JEDNA GRA. CAŁA GALAKTYKA.</h1>
+            <p id="objective" class="sub">
+              Salesforce kontra Excel. Tym razem błąd można zrzucić na kolegę.
+            </p>
+            <button id="room-menu" hidden>Pokój / zaproszenie</button>
+          </div>
+          <div class="match-info">
+            <b id="score-label">CO-OP / VS 3×3</b
+            ><small id="timer-label">SOLO · KOOPERACJA · VS</small>
+          </div>
+        </div>
+        <div id="boss-hud" hidden>
+          <b id="boss-title">BOSS</b><span id="boss-state"></span>
+          <div class="meter"><i id="boss-fill"></i></div>
+        </div>
+        <div id="notice" role="status" aria-live="polite"></div>
+        <div id="combat-toast" aria-live="polite"></div>
+        <div class="hud-bottom">
+          <div class="health">
+            <div class="health-label">ŻYCIE <strong id="hp-label">—</strong></div>
+            <div class="meter"><i id="hp-fill"></i></div>
+            <div class="health-label">TARCZA <strong id="shield-label">—</strong></div>
+            <div class="meter shield"><i id="shield-fill"></i></div>
+            <small id="player-state">GOTOWY NA DEPLOYMENT</small>
+          </div>
+          <div class="weapon">
+            <strong id="weapon-label">DATA LOADER</strong
+            ><span id="dash-label">C / R · DASH GOTOWY</span
+            ><span id="cooldown-label">Q · MOC FRAKCJI</span
+            ><span id="secondary-label">F · UMIEJĘTNOŚĆ OBRONNA</span
+            ><span id="interact-label">E · WSPARCIE / REANIMACJA</span>
+          </div>
+        </div>
+        <div id="crosshair"></div>
+        <div id="home" class="overlay">
+          <div class="home-card">
+            <div class="eyebrow">NOWY ODDZIAŁ. TEN SAM BRUDNY CSV.</div>
+            <h2>BULK<br /><em>IMPORT</em><small>WSPÓLNA GALAKTYKA</small></h2>
+            <p class="intro">
+              Jedna galaktyka, jeden plik. Kampania solo działa także offline. Na statku czeka
+              główny terminal z pokładową rekreacją. Na serwerze dołącza kooperacja i
+              <b>Salesforce kontra Excel</b> do 3 na 3.
+            </p>
+            <label class="field"
+              >Twój pseudonim<input
+                id="player-name"
+                maxlength="20"
+                autocomplete="nickname"
+                value="Administrator"
+                placeholder="Komandor Upsert"
+            /></label>
+            <div class="mode-grid">
+              <button class="mode-card" id="play-campaign">
+                <span>01 / SOLO</span><b>Kampania galaktyczna</b
+                ><small
+                  >Statek, relacje, ulepszenia i obie formy Excela. Dotychczasowe zapisy i import
+                  JSON pozostają dostępne.</small
+                ></button
+              ><button class="mode-card" id="create-coop">
+                <span>02 / KOOPERACJA</span><b>Import oddziałowy</b
+                ><small
+                  >1–3 graczy. Trudniejsza, osobna kampania, wspólne zakupy i ratowanie
+                  kolegów.</small
+                ></button
+              ><button class="mode-card" id="create-versus">
+                <span>03 / VERSUS</span><b>Salesforce vs Excel</b
+                ><small
+                  >Do 3×3. Równa broń, różne moce. Apex i osłona kontra tabele przestawne i Ctrl+Z.
+                  Wygrywa też spryt.</small
+                >
+              </button>
+            </div>
+            <p id="availability-note" class="availability-note" role="status"></p>
+            <div class="join-row">
+              <label class="field"
+                >Kod pokoju<input
+                  id="join-code"
+                  maxlength="8"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="ABC123" /></label
+              ><button id="join-room" class="primary">Dołącz do znajomych</button>
+            </div>
+            <details id="network-details">
+              <summary>Połączenie z serwerem</summary>
+              <p>
+                Na serwerze ten sam plik udostępnia solo i multiplayer. Po otwarciu pobranego HTML
+                dostępne są kampania i minigry; opcje sieciowe są wyłączone.
+              </p>
+              <div class="server-row">
+                <input
+                  id="server-url"
+                  aria-label="Adres serwera multiplayer"
+                  placeholder="https://twoj-serwer.example"
+                /><button id="connect-server">Połącz</button>
+              </div>
+              <p id="network-note" class="micro"></p>
+            </details>
+            <p class="home-foot">
+              Excel: „Zrobię z was tabelę przestawną”. Salesforce: „Najpierw pokaż Permission Set”.
+            </p>
+          </div>
+        </div>
+        <div id="lobby" class="overlay" hidden>
+          <div class="panel lobby-panel">
+            <div class="panel-top">
+              <div>
+                <div class="eyebrow" id="lobby-mode">POKÓJ ODDZIAŁU</div>
+                <h2>Kod: <span id="room-code">—</span></h2>
+              </div>
+              <button id="leave-room" class="quiet danger">Opuść pokój</button>
+            </div>
+            <div class="invite-row">
+              <input id="invite-link" readonly aria-label="Link do zaproszenia" /><button
+                id="copy-invite"
+              >
+                Kopiuj zaproszenie
+              </button>
+            </div>
+            <p id="lobby-hint" class="muted"></p>
+            <div id="roster" class="roster"></div>
+            <div id="team-actions" class="team-actions" hidden>
+              <button id="team-salesforce">☁ Salesforce</button
+              ><button id="team-excel">▦ Excel</button>
+            </div>
+            <div id="selected-kit" class="selected-kit" aria-live="polite"></div>
+            <details id="kit-comparison" class="kit-comparison">
+              <summary>Porównaj umiejętności i kontry obu frakcji</summary>
+              <div id="faction-kits" class="faction-kits"></div>
+            </details>
+            <div id="mission-picker" hidden>
+              <label class="field">Misja kooperacyjna<select id="coop-mission"></select></label>
+              <p id="campaign-info" class="micro"></p>
+            </div>
+            <div class="lobby-actions">
+              <button id="ready-button" class="primary">Jestem gotowy</button
+              ><button id="start-match">Rozpocznij mecz</button
+              ><button id="return-game" hidden>Wróć do walki</button>
+            </div>
+            <p id="start-reason" class="micro"></p>
+            <div class="checkpoint-row">
+              <button id="export-campaign" class="quiet">Eksport kampanii co-op</button
+              ><button id="import-campaign" class="quiet">Import kampanii co-op</button
+              ><button id="resume-campaign" class="quiet" hidden>Wznów zapis kooperacji</button
+              ><input id="campaign-file" type="file" accept=".json,application/json" hidden />
+            </div>
+            <p class="micro">
+              W VS życie, tarcza i podstawowa broń są równe. Umiejętności, zasięgi i odnowienia
+              różnią się: Salesforce wygrywa precyzją i pozycją osłony, Excel planowaniem obszaru i
+              cofnięciem świeżych obrażeń. Ulepszenia z kampanii nie przechodzą do VS.
+            </p>
+          </div>
+        </div>
+        <div id="between" class="overlay" hidden>
+          <div class="panel">
+            <div class="eyebrow" id="between-tag">SSV BULK IMPORT / PRZERWA NA DEPLOYMENT</div>
+            <h2 id="between-title">Zakończono żniwa</h2>
+            <p id="between-description"></p>
+            <div id="between-scores"></div>
+            <div id="upgrade-shop" class="upgrade-grid"></div>
+            <div class="lobby-actions">
+              <button id="next-button" class="primary">Kontynuuj oddziałem</button
+              ><button id="show-lobby">Załoga i pokój</button
+              ><button id="between-export" class="quiet">Eksport checkpointu co-op</button>
+            </div>
+            <p class="micro" id="between-note"></p>
+          </div>
+        </div>
+        <div id="help" class="overlay" hidden>
+          <div class="panel">
+            <div class="eyebrow">INSTRUKCJA / BEZ PLIKU PDF</div>
+            <h2>Nie karm duplikatów.</h2>
+            <div class="help-grid">
+              <p>
+                <kbd>WASD</kbd> / strzałki — ruch · <kbd>SHIFT</kbd> sprint<br /><kbd>MYSZ</kbd> —
+                celowanie<br /><kbd>LPM</kbd> / <kbd>SPACJA</kbd> — strzał<br /><kbd>C</kbd> /
+                <kbd>R</kbd> — dash frakcji z krótką ochroną
+              </p>
+              <p>
+                <kbd>Q</kbd> — atak frakcji / efekt masy w kooperacji<br /><kbd>F</kbd> — obrona
+                frakcji: osłona albo Ctrl+Z<br /><kbd>E</kbd> — przytrzymaj przy rannym koledze, by
+                go podnieść; aktywuj wsparcie<br /><kbd>P</kbd> / <kbd>ESC</kbd> — zamknij tę
+                instrukcję<br /><kbd>ROLKA</kbd> — zoom kamery
+              </p>
+            </div>
+            <p>
+              W kooperacji osłaniaj kolegów, zbieraj apteczki i wspólnie kupuj ulepszenia między
+              żniwami. W VS strzelamy tylko w przeciwną frakcję; po eliminacji wracasz po kilku
+              sekundach.
+            </p>
+            <div id="help-faction-kits" class="faction-kits"></div>
+            <p class="important">
+              Multiplayer działa dalej, kiedy oglądasz instrukcję. Zatrzymuje się tylko twój
+              ostrzał.
+            </p>
+            <button id="close-help" class="primary">Rozumiem, wracam do importu</button>
+          </div>
+        </div>
+      </section>
+      <aside>
+        <div class="section-title">MAPA TAKTYCZNA <span id="room-badge">OFFLINE</span></div>
+        <canvas id="radar" width="400" height="290"></canvas>
+        <div class="section">
+          <div class="section-title">ODDZIAŁ / TABLICA WYNIKÓW</div>
+          <div id="scoreboard"><p class="muted">Tutaj pojawi się twoja załoga.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-title">STATUS IMPORTU</div>
+          <p id="campaign-status" class="campaign-status">
+            Kampania solo i kooperacja mają osobny postęp. Rekreacja czeka na statku.
+          </p>
+          <div id="live-actions" hidden>
+            <button id="open-lobby">Pokój / zaproszenie</button
+            ><button id="reconnect">Połącz ponownie</button>
+          </div>
+        </div>
+        <div class="transmission">
+          <div class="eyebrow">RADIO / DZIAŁ WSPARCIA</div>
+          <p id="radio">„To nie jest friendly fire. To niepoprawne mapowanie frakcji.”</p>
+        </div>
+        <div class="controls">
+          <kbd>WASD</kbd> ruch &nbsp; <kbd>LPM</kbd> strzał<br /><kbd>C</kbd>/<kbd>R</kbd> dash
+          &nbsp; <kbd>Q</kbd> atak<br /><kbd>F</kbd> osłona / Ctrl+Z<br /><kbd>E</kbd> pomoc /
+          reanimacja<br /><kbd>P</kbd> instrukcja
+        </div>
+        <small class="footer"
+          >WSPÓLNA GALAKTYKA // BUILD __VERSION__<br />WSZYSTKIE REKORDY W JEDNYM POKOJU.</small
+        >
+      </aside>
+    </main>
+    <section id="unified-stage" hidden>
+      <div class="unified-toolbar">
+        <button id="unified-back">← Menu główne</button
+        ><span id="unified-title">KAMPANIA SOLO</span>
+      </div>
+      <div id="campaign-host" hidden></div>
+      <div id="bird-host" hidden></div>
+      <div id="cards-host" hidden></div>
+    </section>
+    <!--THREE_BUNDLE-->
+    <script>
+      /*CLIENT_APP*/
+    </script>
+  </body>
+</html>
