@@ -1,26 +1,56 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const {BulkBirdState}=require('../minigames/bird-game-3.js');
-test('Bird Game 3 has deterministic fair gates, three lives and increasing difficulty',()=>{
- const a=new BulkBirdState(42),b=new BulkBirdState(42);assert.deepEqual(a.gates,b.gates);assert.equal(a.lives,3);
- for(const score of [0,5,12,99]){a.score=score;a.makeGate(1000);const gate=a.gates.at(-1);assert(gate.center-gate.gap/2>35);assert(gate.center+gate.gap/2<474);}
- a.score=0;const first=a.speed;a.score=5;const second=a.speed;a.score=12;assert(first<second&&second<a.speed);
+const {BulkBirdState,BULK_BIRDS,BIRD_NEST,readBulkBirdSave}=require('../minigames/bird-sim.js');
+test('five selectable birds have different real stats and deterministic bounded arenas',()=>{
+ const ids=Object.keys(BULK_BIRDS);assert.equal(ids.length,5);assert.equal(new Set(ids.map(id=>BULK_BIRDS[id].skill)).size,5);
+ for(const id of ids){const g=new BulkBirdState(42,id);assert.equal(g.selected,id);assert.equal(g.player.maxHp,BULK_BIRDS[id].hp);assert.equal(g.player.hp,g.player.maxHp);assert.equal(g.lives,3);assert.equal(g.mode,'ready');assert.deepEqual(g.pickups,new BulkBirdState(42,id).pickups);}
+ assert.equal(new BulkBirdState(42,'toString').selected,'pigeon');
 });
-test('Bird Game 3 only awards a gate once, collects CSV and repairs within the life cap',()=>{
- const g=new BulkBirdState(4);g.mode='playing';g.gates=[{id:1,x:129,center:250,gap:206,passed:false,failed:false,collected:true}];g.step(1/120);assert.equal(g.score,1);g.step(1/120);assert.equal(g.score,1);
- g.csv=5;g.lives=2;g.y=250;g.vy=0;g.gates=[{id:2,x:188,center:250,gap:206,passed:false,failed:false,collected:false}];g.step(1/120);assert.equal(g.csv,6);assert.equal(g.lives,3);g.step(1/120);assert.equal(g.csv,6);
+test('CSV collection has a three-item capacity, a height limit and one-time nest deposits',()=>{
+ const g=new BulkBirdState(4);g.start();g.enemies=[];g.spawnClock=999;const p=g.player;p.x=0;p.z=0;p.y=4;g.pickups=[];for(let i=0;i<6;i++)g.spawnCSV(0,0);g.step(1/60);assert.equal(p.cargo,0);
+ p.y=1.1;g.step(1/60);assert.equal(p.cargo,3);assert.equal(g.pickups.length,3);assert.equal(g.score,0);
+ p.x=BIRD_NEST.x;p.z=BIRD_NEST.z;g.step(1/60);assert.equal(g.delivered,3);assert.equal(g.score,300);assert.equal(p.cargo,0);g.step(1/60);assert.equal(g.score,300);
 });
-test('Bird Game 3 collision immunity, failed gates, pause and game over preserve valid state',()=>{
- const g=new BulkBirdState(1);g.mode='playing';const gate={id:1,x:210,center:250,gap:206,passed:false,failed:false,collected:true};g.gates=[gate];g.y=70;g.step(1/120);assert.equal(g.lives,2);assert(gate.failed);assert.equal(g.score,0);g.damage(null);assert.equal(g.lives,2);
- g.mode='paused';const state=JSON.stringify(g);g.step(1/60);g.flap();assert.equal(JSON.stringify(g),state);
- g.mode='playing';g.inv=0;g.damage(null);g.inv=0;g.damage(null);assert.equal(g.mode,'over');assert.equal(g.lives,0);const over=JSON.stringify(g);g.step(1/60);assert.equal(JSON.stringify(g),over);
+test('pecks respect range, altitude, cooldowns, short immunity and bot respawn',()=>{
+ const g=new BulkBirdState(2),p=g.player,e=g.enemies[0];g.start();e.x=p.x+2;e.z=p.z;e.y=p.y;e.hp=38;e.grace=100;
+ g.peck(p);assert.equal(e.hp,19);g.peck(p);assert.equal(e.hp,19);p.attackCooldown=0;g.peck(p);assert.equal(e.hp,19,'Damage grace prevents immediate repeated damage');e.inv=0;p.attackCooldown=0;g.peck(p);assert.equal(e.alive,false);assert.equal(g.kills,1);assert.equal(g.score,25);
+ for(let i=0;i<310;i++)g.step(1/60);assert(e.alive);assert.equal(e.hp,e.maxHp);
+ e.x=p.x+10;e.z=p.z;e.y=p.y;e.inv=0;p.attackCooldown=0;g.peck(p);assert.equal(e.hp,e.maxHp);e.x=p.x;e.y=p.y+3;p.attackCooldown=0;g.peck(p);assert.equal(e.hp,e.maxHp);
 });
-test('Bird Game 3 is playable through all stages with ordinary timed flaps',()=>{
- const g=new BulkBirdState(55);g.mode='playing';
- for(let i=0;i<120*100&&g.mode==='playing'&&g.score<20;i++){
-  const next=g.gates.find(x=>!x.passed&&x.x+84>214),target=next?.center??250;
-  if(g.y>target+12&&g.vy>30||g.y>420)g.flap();
-  g.step(1/120);
+test('each bird power has its own bounded effect and cannot repeat during cooldown',()=>{
+ const pigeon=new BulkBirdState(1,'pigeon');pigeon.start();assert(pigeon.useSkill());assert.equal(pigeon.decoy.life,3.5);assert(!pigeon.useSkill());
+ const crow=new BulkBirdState(1,'crow');crow.start();crow.player.x=0;crow.player.z=0;crow.pickups=[];for(let i=0;i<5;i++)crow.spawnCSV(i,0);crow.useSkill();assert.equal(crow.player.cargo,3);assert.equal(crow.pickups.length,2);
+ const owl=new BulkBirdState(1,'owl');owl.start();const target=owl.enemies[0];target.x=owl.player.x+2;target.z=owl.player.z;owl.useSkill();assert.equal(target.slow,3.5);assert.equal(target.hp,target.maxHp-10);
+ const humming=new BulkBirdState(1,'hummingbird');humming.start();const h=humming.enemies[0];h.x=humming.player.x+2;h.z=humming.player.z;humming.useSkill();assert.equal(h.hp,h.maxHp-32);
+ const duck=new BulkBirdState(1,'duck');duck.start();duck.player.hp=duck.player.maxHp-10;duck.useSkill();assert.equal(duck.player.hp,duck.player.maxHp);assert.equal(duck.player.shield,18);for(let i=0;i<190;i++)duck.step(1/60);assert.equal(duck.player.shield,0);
+});
+test('decoy redirects nearby bots, while the crow can steal carried records only once',()=>{
+ const g=new BulkBirdState(1);g.start();const p=g.player,e=g.enemies[0];e.x=p.x+7;e.z=p.z;e.grace=0;g.useSkill();p.x-=8;const start=e.x;g.step(1/60);assert(e.x<start,'Bot heads for clone rather than the escaped player');
+ const crow=new BulkBirdState(1,'crow');crow.start();crow.pickups=[];const victim=crow.enemies[0];victim.x=crow.player.x+2;victim.z=crow.player.z;victim.cargo=2;crow.useSkill();assert.equal(victim.cargo,1);assert.equal(crow.player.cargo,1);assert(!crow.useSkill());assert.equal(victim.cargo,1);
+});
+test('flight, sprint and dash consume stamina and remain within world/height limits',()=>{
+ const g=new BulkBirdState(6,'hummingbird');g.start();g.enemies=[];const p=g.player,start={x:p.x,z:p.z};g.step(1/60,{mx:NaN,mz:Infinity,fly:true,dash:true});assert.equal(p.x,start.x);assert(p.y>1.1);assert(p.stamina<100);assert(p.dashCooldown>0);const cd=p.dashCooldown;g.step(1/60,{dash:true});assert(p.dashCooldown<cd);
+ for(let i=0;i<3000;i++)g.step(1/60,{mx:1,mz:-1,fly:true,sprint:true});assert(p.x<=24&&p.z>=-24);assert(p.y>=1.1&&p.y<=6.5);assert(p.stamina>=0&&p.stamina<=100);
+});
+test('death uses exactly one retry, respawns safely and game over/pause freeze state',()=>{
+ const g=new BulkBirdState(3);g.start();g.damage(g.player,1000);assert.equal(g.lives,2);g.damage(g.player,1000);assert.equal(g.lives,2);for(let i=0;i<140;i++)g.step(1/60);assert(g.player.alive);assert.equal(g.player.hp,g.player.maxHp);
+ g.mode='paused';const before=JSON.stringify(g);g.step(1/60,{skill:true,fire:true});assert.equal(JSON.stringify(g),before);
+ g.mode='playing';g.player.inv=0;g.damage(g.player,1000);for(let i=0;i<140;i++)g.step(1/60);g.player.inv=0;g.damage(g.player,1000);assert.equal(g.mode,'over');assert.equal(g.lives,0);const end=JSON.stringify(g);g.step(1/60);assert.equal(JSON.stringify(g),end);
+});
+test('all bird builds can finish the objective using ordinary movement and real pickup rules',()=>{
+ for(const id of Object.keys(BULK_BIRDS)){
+  const g=new BulkBirdState(25,id);g.start();g.enemies=[];g.pickups=[];g.spawnClock=999;
+  for(let i=0;i<60*60&&g.mode==='playing';i++){
+   const p=g.player;if(!p.cargo&&!g.pickups.length)g.spawnCSV(-10,10);
+   const goal=p.cargo?BIRD_NEST:g.pickups[0],dx=goal.x-p.x,dz=goal.z-p.z,len=Math.hypot(dx,dz)||1;
+   g.step(1/60,{mx:dx/len,mz:dz/len});
+  }
+  assert(g.won,id+' should be able to gather and bank the required data');assert(g.delivered>=8);assert(g.score>=800);
  }
- assert(g.score>=20,'All three difficulty stages must be survivable with the real physics');assert(g.lives>0);
+});
+test('entity effects stay bounded and old v13 records migrate without touching campaign saves',()=>{
+ const g=new BulkBirdState(1);for(let i=0;i<100;i++){g.spawnCSV(i,0);g.effect('hit',0,0);}assert.equal(g.pickups.length,24);assert.equal(g.fx.length,24);
+ const old=readBulkBirdSave(JSON.stringify({version:1,best:37}));assert.equal(old.version,2);assert.equal(old.legacyBest,37);assert.equal(old.best,0);assert.equal(old.selected,'pigeon');
+ const current=readBulkBirdSave({version:2,best:850,legacyBest:37,selected:'owl',records:{owl:850,crow:-1}});assert.equal(current.selected,'owl');assert.equal(current.records.owl,850);assert.equal(current.records.crow,0);
+ for(const raw of ['bad JSON',{version:4,best:99},{version:2,best:Infinity,selected:'constructor'}]){const s=readBulkBirdSave(raw);assert.equal(s.selected,'pigeon');assert.equal(s.best,0);}
 });

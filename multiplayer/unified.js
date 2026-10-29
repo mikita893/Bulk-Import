@@ -14,7 +14,7 @@
   document.querySelector('body > header').hidden=next!=='main';
   document.querySelector('body > main').hidden=next!=='main';
   $('unified-stage').hidden=next==='main';$('campaign-host').hidden=next!=='campaign';$('bird-host').hidden=next!=='bird';
-  $('unified-title').textContent=next==='campaign'?'KAMPANIA SOLO · WSPÓLNA GALAKTYKA':'BIRD GAME 3 · GOŁĄB API';
+  $('unified-title').textContent=next==='campaign'?'KAMPANIA SOLO · WSPÓLNA GALAKTYKA':'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
   $('unified-bird').hidden=next!=='campaign';
   $('unified-back').textContent=next==='bird'&&birdReturn==='campaign'?'← Wróć do kampanii':'← Menu główne';
  }

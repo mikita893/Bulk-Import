@@ -11,7 +11,7 @@ const campaign=versioned(read('campaign/shell.html')
  .replace('/*CAMPAIGN_STYLE*/',()=>read('campaign/style.css'))
  .replace('<!--THREE_LICENSE-->',()=>'<'+ '!-- '+read('vendor/THREE-LICENSE.txt').trim()+' -->')
  .replace('/*CAMPAIGN_APP*/',()=>read('campaign/game.js')));
-const app="'use strict';\nwindow.BULK_RELEASE="+json(release)+';\nwindow.BULK_CLIENT_CONFIG='+json(bakedConfig)+';\nwindow.BULK_CAMPAIGN_DOCUMENT='+json(campaign)+';\n'+['minigames/bird-game-3.js','multiplayer/unified.js','multiplayer/render.js','multiplayer/client.js'].map(read).join('\n');
+const app="'use strict';\nwindow.BULK_RELEASE="+json(release)+';\nwindow.BULK_CLIENT_CONFIG='+json(bakedConfig)+';\nwindow.BULK_CAMPAIGN_DOCUMENT='+json(campaign)+';\n'+['minigames/bird-sim.js','minigames/bird-render.js','minigames/bird-game-3.js','multiplayer/unified.js','multiplayer/render.js','multiplayer/client.js'].map(read).join('\n');
 const output=versioned(read('multiplayer/client-shell.html'))
  .replace('/*CLIENT_STYLE*/',()=>['multiplayer/client.css','multiplayer/unified.css','minigames/bird-game-3.css'].map(read).join('\n'))
  .replace('<!--THREE_BUNDLE-->',()=>vendor)
