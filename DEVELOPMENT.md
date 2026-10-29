@@ -64,10 +64,10 @@ Testy przeglądarkowe wymagają Playwright i Chromium (opcjonalnie `BULK_CHROMIU
 
 ## Kolejne wydania i synchronizacja gałęzi
 
-1. W głównej gałęzi gry wdrażaj nowe mechaniki, zwiększ główny numer `package.json` i lockfile, wygeneruj nowy `Bulk-Import-vN.html`, testuj i commituj. Zachowuj stare HTML i zgodność zapisów.
+1. W głównej gałęzi gry wdrażaj nowe mechaniki, zwiększ główny numer `package.json` i lockfile, wygeneruj nowy `Bulk-Import-vN.html`, testuj i commituj. Dodaj na początku `CHANGELOG.md` wpis z numerem, datą, linkiem do HTML, nowymi funkcjami, poprawkami i zgodnością zapisów. Zachowuj stare HTML, wcześniejsze wpisy i zgodność zapisów.
 2. W osobnym worktree `dev/readable-source` scal commit głównej gałęzi (`git merge feature/bulk-import-unified-v13`). Przy konflikcie formatowania przenieś aktualne mechaniki z gałęzi gry, zachowując konfigurację Prettiera, dokumentację i komentarze developerskie. Nie używaj globalnego „ours/theirs” ani resetu całej gałęzi.
 3. Jeśli konflikt dotyczy wygenerowanego bieżącego HTML, zakończ zmiany źródeł i wygeneruj go ponownie. Nie rozwiązuj konfliktów w minifikowanym payloadzie ręcznie. Nie modyfikuj wydań archiwalnych.
-4. Uruchom `npm run format`, budowanie i testy na czytelnych źródłach. Commituj i wypchnij obie gałęzie bez force push. Numer wydania gry jest ten sam po obu stronach.
+4. Uruchom `npm run format`, budowanie i testy na czytelnych źródłach. Commituj i wypchnij obie gałęzie bez force push. Numer wydania gry i changelog są takie same po obu stronach. Przy udostępnieniu wydania podaj użytkownikowi skrót zmian oraz linki do HTML i changeloga. Samo uzupełnienie dokumentacji istniejącej wersji nie wymaga nowego numeru ani przebudowania gry.
 5. Zmiana zrobiona najpierw na gałęzi developera powinna trafić również do wspólnej gry. Przenieś odpowiadający jej commit lub patch źródłowy, bez mechanicznych zmian formatowania całego repozytorium, a następnie wykonaj zwykłą synchronizację powyżej.
 
 Nie minifikuj ręcznie kodu podczas pracy. Nazwy funkcji, reguły, testy i mapa modułów mają umożliwiać zrozumienie zmiany bez rozpakowywania wydanego HTML.
