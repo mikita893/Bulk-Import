@@ -16,22 +16,23 @@ Otwórz http://localhost:3000. Sam `Bulk-Import-v16.html` można też otworzyć 
 
 ## Mapa modułów
 
-| Plik                                         | Odpowiedzialność i miejsca zmian                                                                                                                        |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `release.cjs`, `package.json`                | Numer wspólnego wydania i nowa nazwa HTML. Numer zapisu kampanii jest niezależny.                                                                       |
-| `multiplayer/build-client.cjs`               | Składa CSS, źródła, Three.js i dokument kampanii w jeden samodzielny HTML. Nigdy nie edytuj wygenerowanego HTML zamiast źródeł.                         |
-| `campaign/shell.html`, `campaign/style.css`  | Układ i styl kampanii, portrety, HUD, panele.                                                                                                           |
-| `campaign/game.js`                           | Stan kampanii, symulacja i rendering 3D, misje, załoga, walka, zapis. Patrz przewodnik funkcji niżej.                                                   |
-| `multiplayer/unified.js`                     | Wspólna powłoka: menu → iframe kampanii → rekreacja. Zawiesza kampanię podczas minigry, czyści instancje i przywraca terminal. Rozpoznaje tryb plikowy. |
-| `multiplayer/client.js`, `render.js`         | Klient sieciowy i render multiplayera. Lokalny HTML nie otwiera połączenia.                                                                             |
-| `multiplayer/shared.cjs`, `engine.cjs`       | Wspólny katalog misji, ulepszeń i frakcji oraz autorytatywne zasady kooperacji/VS. Ulepszenia solo nie wpływają na VS.                                  |
-| `server/index.cjs`, `server/rooms.cjs`       | HTTP/WebSocket i pokoje w pamięci Node.                                                                                                                 |
-| `cloudflare/worker.mjs`                      | Adapter tych samych reguł do Durable Objects i natywnych WebSocketów.                                                                                   |
-| `minigames/bird-sim.js`                      | Czysty model areny: gatunki, skończona pula CSV, wysokość, opóźnione sektory ataków, uniki i boty.                                                      |
-| `minigames/bird-render.js`, `bird-game-3.js` | Proceduralny las i ptaki Three.js, czerwone stożki, HUD, wejście, audio, zegar i rekordy.                                                               |
-| `minigames/cards-sim.js`                     | Katalog kart, walidacja talii/kolekcji, deterministyczny pojedynek, punktacja, zdolności i AI. Można importować w Node bez DOM.                         |
-| `minigames/cards-game.js`, `cards-game.css`  | Stół, ręka, legalne cele, kolekcja i budowanie talii. Żadnych połączeń sieciowych.                                                                      |
-| `tests/`                                     | Testy reguł, migracji i rzeczywistych klientów WebSocket oraz Chromium.                                                                                 |
+| Plik                                                     | Odpowiedzialność i miejsca zmian                                                                                                                                                                                   |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `release.cjs`, `package.json`                            | Numer wspólnego wydania i nowa nazwa HTML. Numer zapisu kampanii jest niezależny.                                                                                                                                  |
+| `multiplayer/build-client.cjs`                           | Składa CSS, źródła, Three.js i dokument kampanii w jeden samodzielny HTML. Nigdy nie edytuj wygenerowanego HTML zamiast źródeł.                                                                                    |
+| `campaign/shell.html`, `campaign/style.css`              | Układ i styl kampanii, portrety, HUD, panele.                                                                                                                                                                      |
+| `campaign/game.js`                                       | Stan kampanii, symulacja i rendering 3D, misje, załoga, walka, zapis. Patrz przewodnik funkcji niżej.                                                                                                              |
+| `multiplayer/unified.js`                                 | Wspólna powłoka: menu → iframe kampanii → rekreacja. Zawiesza kampanię podczas minigry, czyści instancje i przywraca terminal. Rozpoznaje tryb plikowy.                                                            |
+| `multiplayer/client.js`, `render.js`                     | Klient sieciowy i render multiplayera. Lokalny HTML nie otwiera połączenia.                                                                                                                                        |
+| `multiplayer/shared.cjs`, `engine.cjs`                   | Wspólny katalog misji, ulepszeń i frakcji oraz autorytatywne zasady kooperacji/VS. Ulepszenia solo nie wpływają na VS.                                                                                             |
+| `server/index.cjs`, `server/rooms.cjs`                   | HTTP/WebSocket i pokoje w pamięci Node.                                                                                                                                                                            |
+| `cloudflare/worker.mjs`                                  | Adapter tych samych reguł do Durable Objects i natywnych WebSocketów.                                                                                                                                              |
+| `minigames/bird-sim.js`                                  | Czysty model areny: gatunki, skończona pula CSV, wysokość, opóźnione sektory ataków, uniki i boty.                                                                                                                 |
+| `minigames/bird-render.js`, `bird-game-3.js`             | Proceduralny las i ptaki Three.js, czerwone stożki, HUD, wejście, audio, zegar i rekordy.                                                                                                                          |
+| `minigames/cards-sim.js`                                 | Katalog kart, walidacja talii/kolekcji, deterministyczny pojedynek, punktacja, zdolności i AI. Można importować w Node bez DOM.                                                                                    |
+| `minigames/cards-game.js`, `cards-game.css`              | Stół, ręka, legalne cele, kolekcja i budowanie talii. Żadnych połączeń sieciowych.                                                                                                                                 |
+| `deploy/alwaysdata/`, `.github/workflows/alwaysdata.yml` | Paczka produkcyjna, start na adresie `IP`/`PORT` alwaysdata, publikacja przez SSH, restart API i kontrola wdrożonego commita. Pierwsza konfiguracja: `docs/ALWAYSDATA-SETUP.md`. Publikuje tylko główna gałąź gry. |
+| `tests/`                                                 | Testy reguł, migracji i rzeczywistych klientów WebSocket oraz Chromium.                                                                                                                                            |
 
 ### Przewodnik po kampanii
 
@@ -55,6 +56,7 @@ npm run format:check
 npm run build:client
 npm test
 npm run test:solo
+npm run test:hosting
 npm run test:browser
 ```
 
