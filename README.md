@@ -1,14 +1,14 @@
-# Bulk Import: Wspólna Galaktyka — v16
+# Bulk Import: Wspólna Galaktyka — v17
 
 Historia zmian: [CHANGELOG.md](CHANGELOG.md) — aktualizowana przy każdym nowym wydaniu, począwszy od v16.
 
-**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v16.html](Bulk-Import-v16.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3** i **Gwintforce: Wojna rekordów**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
+**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v17.html](Bulk-Import-v17.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów** i **CSV Double**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
 
 ## Pobierz HTML i graj lokalnie
 
-Pobierz **Bulk-Import-v16.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3 i Gwintforce są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
+Pobierz **Bulk-Import-v17.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce i CSV Double są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
 
-Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo działa offline; Obie minigry uruchomisz w jej głównym terminalu na statku. Kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
+Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo działa offline; Bird Game 3 i Gwintforce uruchomisz w terminalu na statku; CSV Double otworzysz wewnątrz Bird Game 3. Kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
 
 ## Ten sam HTML na serwerze
 
@@ -27,6 +27,8 @@ Otwórz `http://localhost:3000`. Serwer udostępnia ten sam HTML; po udanym poł
 - **Bird Game 3:** leśna arena 3D inspirowana ekranami i żartami z mema. Wybierz gołębia, wronę, sowę, kolibra albo kaczkę: różnią się modelem, statystykami i mocą Q. Zbieraj CSV, dziob boty i dostarcz 8 rekordów do niebieskiego gniazda w 120 sekund. Masz trzy próby i limit trzech CSV w dziobie, sygnalizowany stałym komunikatem o pełnym dziobie. Jest tylko 12 CSV: sześć luźnych (także w powietrzu), sześć u botów. Pliki nie odrastają; odbierz je przeciwnikom lub z ich gniazda Camp Cache. Czerwony stożek uprzedza atak o 0,9–1,05 s i pozostaje skierowany w to samo miejsce, aby dało się uniknąć trafienia. Las, staw, gniazda, ptaki i portrety są proceduralne, bez pobierania assetów.
 
 - **Gwintforce: Wojna rekordów:** lokalna karcianka przeciw Vaelowi, Syrze albo ExcelBotowi. Trzy rzędy, maksymalnie trzy rundy, pas, więzi, morale, szpiedzy, medycy, bohaterowie, pogoda, Keynote, podmiana i DELETE. Darmowa talia startowa liczy 20 kart. Nowe karty kupisz za kredyty w **Zbrojownia → Karty do Gwintforce**. Pierwsza wygrana z każdym rywalem daje unikalną kartę. W terminalu ułożysz talię (16–24 kart, minimum 12 jednostek). Nieobecny załogant nie zagra; ExcelBot jest zawsze dostępny. Kolekcja, talia i wygrane zapisują się z kampanią, także w JSON. Starsze zapisy otrzymują darmowy zestaw.
+
+- **CSV Double — Ptasie duplikaty:** gra refleksu w Bird Game 3. Każda z 31 kart ma siedem symboli, a każda para dokładnie jeden wspólny. Klikaj symbol na swojej karcie, zanim zrobi to 1–3 botów. Pięć trudności, konfigurowalny czas botów, kara 1 / 1,5 / 2 s, dźwięki, pauza, trening bez botów i pełne wyniki. Błędne kliknięcie blokuje wszystkie odpowiedzi także po przejęciu karty przez bota. Wejście: **terminal E → Bird Game 3 → CSV Double · gra w symbole**. Powrót zachowuje tę samą ptasią arenę, a trwający mecz czeka na ręczne wznowienie. Ustawienia zapisują się osobno, bez zmiany zapisów kampanii.
 
 Bird Game 3 jest częścią kampanii, dostępną wyłącznie w **głównym terminalu na statku**. Rozpocznij lub kontynuuj kampanię, podejdź do niebieskiego hologramu pośrodku statku, naciśnij **E** i wybierz **Rekreacja: Bird Game 3** albo **Rekreacja: Gwintforce / wojna rekordów**. Nie ma osobnego kafelka minigry ani skrótów na paskach. Kampania zamraża się na czas rekreacji, a **Wróć do terminala** przywraca tę samą konsolę i pozycję postaci. Terminal zawiera także mapę misji, zbrojownię i zapis. Podczas walki jest niedostępny. Wyjście z kampanii do menu zapisuje postęp. Aktywny pokój multiplayer trzeba najpierw opuścić, aby zmienić tryb.
 
@@ -56,7 +58,9 @@ Przy każdym nowym wydaniu dodaj wpis na początku [CHANGELOG.md](CHANGELOG.md):
 
 ## Hosting
 
-**alwaysdata Free — automatyczne publikacje z tego czatu:** gotowy workflow oraz instrukcja pierwszego podłączenia są w [ALWAYSDATA-SETUP.md](docs/ALWAYSDATA-SETUP.md). Po skonfigurowaniu danych w GitHub Secrets/Variables push na `feature/bulk-import-unified-v13` publikuje pełną grę pod stałym adresem. Bez danych dostępowych automat pomija publikację.
+**alwaysdata — publikacja obecnie wstrzymana na prośbę użytkownika.** Steruje tym `deploy/alwaysdata/settings.json` (`paused: true`); push aktualizuje repozytorium i testy, bez wysyłania gry na hosting. Powrót do publikowania nastąpi po wyraźnym wznowieniu prac nad wdrożeniem.
+
+**alwaysdata Free — przygotowana automatyzacja:** gotowy workflow oraz instrukcja pierwszego podłączenia są w [ALWAYSDATA-SETUP.md](docs/ALWAYSDATA-SETUP.md). Po skonfigurowaniu danych w GitHub Secrets/Variables push na `feature/bulk-import-unified-v13` publikuje pełną grę pod stałym adresem. Bez danych dostępowych automat pomija publikację.
 
 Przygotowano `Dockerfile`, `render.yaml` i adapter Cloudflare Workers z jednym Durable Object obsługującym wspólną pamięć pokojów. `npm run build:cloudflare` buduje aktualny wspólny HTML. `npm run dev:cloudflare` uruchamia lokalny adapter na porcie 8787; `npm run deploy:cloudflare` publikuje dopiero po zalogowaniu na własne konto.
 
@@ -67,6 +71,7 @@ Konfiguracja Codespaces automatycznie uruchamia grę przy wznowieniu środowiska
 ```sh
 npm test
 npm run test:solo
+npm run test:hosting
 npm run test:browser
 # Przy działającym lokalnym npm run dev:cloudflare:
 npm run test:cloudflare
@@ -74,4 +79,4 @@ npm run test:cloudflare
 
 Testy przeglądarkowe wymagają Playwright i Chromium; nie są potrzebne do grania. Sprawdzają samodzielny HTML, wygaszone opcje sieciowe, pełną kampanię i JSON, arcade na statku, rekord, pauzę, widok mobilny i rzeczywiste połączenia multiplayer. W zarządzanym Chromium na tym środowisku polityka administratora blokuje adresy `file://`; wtedy test ładuje zawartość samodzielnego pliku w pustym dokumencie bez sieci. Nie zmienia zasad bezpieczeństwa przeglądarki. Format i timingi kampanii są dodatkowo sprawdzane z payloadu rzeczywiście osadzonego w nowym HTML.
 
-Karcianka i poprawki ptasiej areny: [DESIGN-v16.md](DESIGN-v16.md). Integracja minigry z terminalem: [DESIGN-v15.md](DESIGN-v15.md). Opis ptasiej areny i źródła inspiracji: [DESIGN-v14.md](DESIGN-v14.md). Scalenie gry: [DESIGN-v13.md](DESIGN-v13.md). Mechaniki frakcji: [DESIGN-v12.md](DESIGN-v12.md); historia kampanii: [DESIGN-v10.md](DESIGN-v10.md).
+CSV Double i zagnieżdżona rekreacja: [DESIGN-v17.md](DESIGN-v17.md). Karcianka i poprawki ptasiej areny: [DESIGN-v16.md](DESIGN-v16.md). Integracja minigry z terminalem: [DESIGN-v15.md](DESIGN-v15.md). Opis ptasiej areny i źródła inspiracji: [DESIGN-v14.md](DESIGN-v14.md). Scalenie gry: [DESIGN-v13.md](DESIGN-v13.md). Mechaniki frakcji: [DESIGN-v12.md](DESIGN-v12.md); historia kampanii: [DESIGN-v10.md](DESIGN-v10.md).
