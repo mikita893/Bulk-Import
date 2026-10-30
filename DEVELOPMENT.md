@@ -1,6 +1,6 @@
 # Czytelne źródła Bulk Import
 
-Ta gałąź, `dev/readable-source`, zawiera tę samą grę v16 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
+Ta gałąź, `dev/readable-source`, zawiera tę samą grę v17 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
 
 ## Pierwsze uruchomienie
 
@@ -12,7 +12,7 @@ npm run build:client
 npm start
 ```
 
-Otwórz http://localhost:3000. Sam `Bulk-Import-v16.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
+Otwórz http://localhost:3000. Sam `Bulk-Import-v17.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
 
 ## Mapa modułów
 
@@ -32,6 +32,9 @@ Otwórz http://localhost:3000. Sam `Bulk-Import-v16.html` można też otworzyć 
 | `minigames/cards-sim.js`                                 | Katalog kart, walidacja talii/kolekcji, deterministyczny pojedynek, punktacja, zdolności i AI. Można importować w Node bez DOM.                                                                                    |
 | `minigames/cards-game.js`, `cards-game.css`              | Stół, ręka, legalne cele, kolekcja i budowanie talii. Żadnych połączeń sieciowych.                                                                                                                                 |
 | `deploy/alwaysdata/`, `.github/workflows/alwaysdata.yml` | Paczka produkcyjna, start na adresie `IP`/`PORT` alwaysdata, publikacja przez SSH, restart API i kontrola wdrożonego commita. Pierwsza konfiguracja: `docs/ALWAYSDATA-SETUP.md`. Publikuje tylko główna gałąź gry. |
+| `minigames/symbol-deck.js`                               | Konstrukcja 31 kart PG(2,5) z unikalnym siódmym symbolem; walidacja wszystkich 465 par.                                                                                                                            |
+| `minigames/symbol-sim.js`                                | Maszyna stanów CSV Double, chronologiczne terminy botów, wspólna walidacja odpowiedzi i kara odporna na zmianę rund.                                                                                               |
+| `minigames/symbol-game.js`, `symbol-game.css`            | UI, dotyk/klawiatura, dźwięki i animacje. Wejście wyłącznie z Bird Game 3, powrót do tego samego modelu areny.                                                                                                     |
 | `tests/`                                                 | Testy reguł, migracji i rzeczywistych klientów WebSocket oraz Chromium.                                                                                                                                            |
 
 ### Przewodnik po kampanii
@@ -73,3 +76,5 @@ Testy przeglądarkowe wymagają Playwright i Chromium (opcjonalnie `BULK_CHROMIU
 5. Zmiana zrobiona najpierw na gałęzi developera powinna trafić również do wspólnej gry. Przenieś odpowiadający jej commit lub patch źródłowy, bez mechanicznych zmian formatowania całego repozytorium, a następnie wykonaj zwykłą synchronizację powyżej.
 
 Nie minifikuj ręcznie kodu podczas pracy. Nazwy funkcji, reguły, testy i mapa modułów mają umożliwiać zrozumienie zmiany bez rozpakowywania wydanego HTML.
+
+Publikacja alwaysdata pozostaje wstrzymana przez `deploy/alwaysdata/settings.json` (`paused: true`). Push uruchamia testy, ale nie wysyła plików na hosting. Wznowienie wymaga wyraźnej prośby użytkownika.

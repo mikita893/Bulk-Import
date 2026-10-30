@@ -249,7 +249,19 @@ test('alwaysdata entry serves the actual HTML and WebSocket game using the platf
   await once(ws, 'close');
 });
 
-test('publishing is paused before reading credentials or starting SSH',t=>{
- const dir=temporary(t);fs.copyFileSync(path.join(__dirname,'../deploy/alwaysdata/deploy.cjs'),path.join(dir,'deploy.cjs'));fs.writeFileSync(path.join(dir,'settings.json'),JSON.stringify({paused:true}));
- const r=spawnSync(process.execPath,[path.join(dir,'deploy.cjs'),'--check'],{env:{...process.env,...config()},encoding:'utf8'});assert.notEqual(r.status,0);assert.match(r.stderr,/wstrzymana/);assert(!r.stderr.includes(config().ALWAYSDATA_SSH_PASSWORD));assert(!r.stderr.includes(config().ALWAYSDATA_API_TOKEN));
+test('publishing is paused before reading credentials or starting SSH', (t) => {
+  const dir = temporary(t);
+  fs.copyFileSync(
+    path.join(__dirname, '../deploy/alwaysdata/deploy.cjs'),
+    path.join(dir, 'deploy.cjs'),
+  );
+  fs.writeFileSync(path.join(dir, 'settings.json'), JSON.stringify({ paused: true }));
+  const r = spawnSync(process.execPath, [path.join(dir, 'deploy.cjs'), '--check'], {
+    env: { ...process.env, ...config() },
+    encoding: 'utf8',
+  });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /wstrzymana/);
+  assert(!r.stderr.includes(config().ALWAYSDATA_SSH_PASSWORD));
+  assert(!r.stderr.includes(config().ALWAYSDATA_API_TOKEN));
 });
