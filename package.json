@@ -15,8 +15,12 @@
     "deploy:cloudflare": "npm run build:cloudflare && wrangler deploy",
     "test:cloudflare": "node tests/cloudflare-smoke.cjs",
     "test:balance": "node --test tests/multiplayer-kit-balance.test.cjs",
-    "format": "prettier --write campaign multiplayer minigames server cloudflare tests .devcontainer release.cjs package.json .prettierrc.json DEVELOPMENT.md",
-    "format:check": "prettier --check campaign multiplayer minigames server cloudflare tests .devcontainer release.cjs package.json .prettierrc.json DEVELOPMENT.md"
+    "format": "prettier --write campaign multiplayer minigames server cloudflare tests deploy .github .devcontainer release.cjs package.json .prettierrc.json DEVELOPMENT.md",
+    "format:check": "prettier --check campaign multiplayer minigames server cloudflare tests deploy .github .devcontainer release.cjs package.json .prettierrc.json DEVELOPMENT.md",
+    "start:alwaysdata": "node deploy/alwaysdata/start.cjs",
+    "build:alwaysdata": "node deploy/alwaysdata/package.cjs",
+    "deploy:alwaysdata": "node deploy/alwaysdata/deploy.cjs",
+    "test:hosting": "node --test tests/alwaysdata-deploy.test.cjs"
   },
   "engines": {
     "node": ">=20"

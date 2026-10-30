@@ -35,3 +35,9 @@ Plik gry: [Bulk-Import-v16.html](Bulk-Import-v16.html).
 
 - Dodano równoległą gałąź [dev/readable-source](https://github.com/mikita893/Bulk-Import/tree/dev/readable-source) ze sformatowanymi źródłami, komentarzami, konfiguracją Prettiera i przewodnikiem `DEVELOPMENT.md`.
 - Weryfikacja wydania obejmowała 56 testów mechanik, zgodność zapisów, pełną partię karcianki w przeglądarce, zakup i zapis talii, tryb offline oraz rzeczywistych klientów multiplayer i lokalny adapter Cloudflare.
+
+### Konfiguracja hostingu — 2026-10-30 (gra pozostaje v16)
+
+- Przygotowano automatyczne publikowanie pełnej gry na alwaysdata po pushu oraz instrukcję jednorazowego podłączenia konta.
+- Dodano sprawdzanie wdrożonego commita, instalację przed przełączeniem oraz powrót do poprzedniej wersji po nieudanej kontroli.
+- HTML i formaty zapisów pozostają bez zmian. Publikacja wymaga ustawienia danych konta w GitHubie; nie uruchomiono jeszcze serwera na alwaysdata.

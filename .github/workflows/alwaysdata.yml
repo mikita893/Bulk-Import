@@ -1,0 +1,62 @@
+name: Publikuj grę na alwaysdata
+
+on:
+  push:
+    branches: [feature/bulk-import-unified-v13]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alwaysdata-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Zainstaluj zależności i sprawdź grę
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run build:client
+          npm test
+          npm run test:solo
+          npm run test:hosting
+      - name: Sprawdź pierwszą konfigurację
+        id: configuration
+        env:
+          ALWAYSDATA_ACCOUNT: ${{ vars.ALWAYSDATA_ACCOUNT }}
+          ALWAYSDATA_SITE_ID: ${{ vars.ALWAYSDATA_SITE_ID }}
+          ALWAYSDATA_SSH_FINGERPRINT: ${{ vars.ALWAYSDATA_SSH_FINGERPRINT }}
+          ALWAYSDATA_SSH_USER: ${{ vars.ALWAYSDATA_SSH_USER }}
+          ALWAYSDATA_SSH_PASSWORD: ${{ secrets.ALWAYSDATA_SSH_PASSWORD }}
+          ALWAYSDATA_API_TOKEN: ${{ secrets.ALWAYSDATA_API_TOKEN }}
+        run: |
+          if node deploy/alwaysdata/deploy.cjs --check; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo '### Uzupełnij konfigurację alwaysdata' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Instrukcja: docs/ALWAYSDATA-SETUP.md. Gra nie została opublikowana.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Przygotuj paczkę
+        if: steps.configuration.outputs.ready == 'true'
+        run: npm run build:alwaysdata
+      - name: Opublikuj i sprawdź nową wersję
+        if: steps.configuration.outputs.ready == 'true'
+        env:
+          ALWAYSDATA_ACCOUNT: ${{ vars.ALWAYSDATA_ACCOUNT }}
+          ALWAYSDATA_SITE_ID: ${{ vars.ALWAYSDATA_SITE_ID }}
+          ALWAYSDATA_SSH_FINGERPRINT: ${{ vars.ALWAYSDATA_SSH_FINGERPRINT }}
+          ALWAYSDATA_SSH_USER: ${{ vars.ALWAYSDATA_SSH_USER }}
+          ALWAYSDATA_SSH_PASSWORD: ${{ secrets.ALWAYSDATA_SSH_PASSWORD }}
+          ALWAYSDATA_API_TOKEN: ${{ secrets.ALWAYSDATA_API_TOKEN }}
+        run: npm run deploy:alwaysdata

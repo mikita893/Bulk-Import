@@ -56,6 +56,8 @@ Przy każdym nowym wydaniu dodaj wpis na początku [CHANGELOG.md](CHANGELOG.md):
 
 ## Hosting
 
+**alwaysdata Free — automatyczne publikacje z tego czatu:** gotowy workflow oraz instrukcja pierwszego podłączenia są w [ALWAYSDATA-SETUP.md](docs/ALWAYSDATA-SETUP.md). Po skonfigurowaniu danych w GitHub Secrets/Variables push na `feature/bulk-import-unified-v13` publikuje pełną grę pod stałym adresem. Bez danych dostępowych automat pomija publikację.
+
 Przygotowano `Dockerfile`, `render.yaml` i adapter Cloudflare Workers z jednym Durable Object obsługującym wspólną pamięć pokojów. `npm run build:cloudflare` buduje aktualny wspólny HTML. `npm run dev:cloudflare` uruchamia lokalny adapter na porcie 8787; `npm run deploy:cloudflare` publikuje dopiero po zalogowaniu na własne konto.
 
 Konfiguracja Codespaces automatycznie uruchamia grę przy wznowieniu środowiska. Do pierwszego utworzenia użyj obecnej gałęzi **feature/bulk-import-unified-v13**. Codzienny Start / Stop: [CODESPACES-START.md](docs/CODESPACES-START.md). Porównanie bezpłatnych hostingów: [HOSTING-MULTIPLAYER.md](docs/HOSTING-MULTIPLAYER.md). Żadnego nowego hostingu nie uruchomiono ani nie opublikowano automatycznie. Ochrona publicznego serwera wspólnym hasłem pozostaje osobnym, niewdrożonym jeszcze rozszerzeniem.
