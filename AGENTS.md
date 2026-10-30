@@ -12,3 +12,6 @@
 
 - Gwintforce uruchamiaj wyłącznie z głównego terminala kampanii; sklep kart pozostaje częścią zbrojowni. Kolekcja jest opcjonalnym rozszerzeniem zapisu solo w formacie 10. Starsze zapisy otrzymują zestaw startowy.
 - Utrzymuj równolegle `dev/readable-source`: po zmianach gry scal do niej bieżące wydanie, sformatuj własne źródła i uruchom testy. Nie formatuj bibliotek vendor ani archiwalnych HTML. Zachowuj czytelne nazwy, komentarze opisujące mechaniki i instrukcję dla developera. Wydawaj jeden wspólny numer gry, a nie osobną grę na tej gałęzi.
+
+- Changelog dla użytkownika podawaj w krótkim bloku tekstowym do skopiowania: numer wersji i maksymalnie 4 krótkie punkty.
+- Hosting alwaysdata: wdrażaj przez `.github/workflows/alwaysdata.yml` po pushu na `feature/bulk-import-unified-v13`. `dev/readable-source` nie publikuje drugi raz. Instrukcja: `docs/ALWAYSDATA-SETUP.md`. Dane dostępowe należą do GitHub Secrets/Variables; nie zapisuj ich w kodzie ani nie proś o wklejanie do czatu. Zmiana samej infrastruktury wdrażania nie tworzy nowej wersji gry ani nowego HTML.

@@ -14,7 +14,11 @@
     "dev:cloudflare": "npm run build:cloudflare && wrangler dev --port 8787",
     "deploy:cloudflare": "npm run build:cloudflare && wrangler deploy",
     "test:cloudflare": "node tests/cloudflare-smoke.cjs",
-    "test:balance": "node --test tests/multiplayer-kit-balance.test.cjs"
+    "test:balance": "node --test tests/multiplayer-kit-balance.test.cjs",
+    "start:alwaysdata": "node deploy/alwaysdata/start.cjs",
+    "build:alwaysdata": "node deploy/alwaysdata/package.cjs",
+    "deploy:alwaysdata": "node deploy/alwaysdata/deploy.cjs",
+    "test:hosting": "node --test tests/alwaysdata-deploy.test.cjs"
   },
   "engines": {
     "node": ">=20"
