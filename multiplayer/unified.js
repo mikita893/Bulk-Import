@@ -1,7 +1,7 @@
 'use strict';
 (() => {
  const $=id=>document.getElementById(id),local=!/^https?:$/.test(location.protocol);
- let screen='main',network=null,campaign=null,bird=null,cards=null;
+ let screen='main',network=null,campaign=null,bird=null,cards=null,double=null;
  const storage=Object.freeze({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)});
  const onlineControls=['create-coop','create-versus','join-room','join-code','connect-server','server-url'];
  function networkReady(ready){
@@ -13,9 +13,9 @@
   screen=next;document.body.dataset.screen=next;
   document.querySelector('body > header').hidden=next!=='main';
   document.querySelector('body > main').hidden=next!=='main';
-  $('unified-stage').hidden=next==='main';$('campaign-host').hidden=next!=='campaign';$('bird-host').hidden=next!=='bird';$('cards-host').hidden=next!=='cards';
-  $('unified-title').textContent=next==='campaign'?'KAMPANIA SOLO · WSPÓLNA GALAKTYKA':next==='cards'?'GWINTFORCE · WOJNA REKORDÓW':'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
-  $('unified-back').textContent=['bird','cards'].includes(next)?'← Wróć do terminala':'← Menu główne';
+  $('unified-stage').hidden=next==='main';$('campaign-host').hidden=next!=='campaign';$('bird-host').hidden=next!=='bird';$('cards-host').hidden=next!=='cards';$('double-host').hidden=next!=='double';
+  $('unified-title').textContent=next==='campaign'?'KAMPANIA SOLO · WSPÓLNA GALAKTYKA':next==='double'?'CSV DOUBLE · PTAKI I DUPLIKATY':next==='cards'?'GWINTFORCE · WOJNA REKORDÓW':'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
+  $('unified-back').textContent=next==='double'?'← Wróć do Bird Game 3':['bird','cards'].includes(next)?'← Wróć do terminala':'← Menu główne';
  }
  function leaveNetwork(){return network?.suspend()!==false;}
  function openCampaign(){
@@ -30,7 +30,7 @@
   const api=campaign?.contentWindow?.BulkCampaign;
   if(screen!=='campaign'||!api?.canPlayBird())return false;
   api.suspend();setScreen('bird');
-  bird=new BulkBirdGame($('bird-host'),{storage,soundEnabled:()=>$('sound-toggle').textContent.includes('ON')});
+  bird=new BulkBirdGame($('bird-host'),{storage,soundEnabled:()=>$('sound-toggle').textContent.includes('ON'),openDouble});
   return true;
  }
  function openCards(){
@@ -38,7 +38,13 @@
   if(screen!=='campaign'||!api?.canPlayCards())return false;
   api.suspend();setScreen('cards');cards=new BulkCardGame($('cards-host'),api);return true;
  }
+ function openDouble(){
+  if(screen!=='bird'||!bird)return false;
+  bird.suspendForMinigame();setScreen('double');
+  double=new BulkDoubleGame($('double-host'),{storage,soundEnabled:()=>$('sound-toggle').textContent.includes('ON'),onExit:back});return true;
+ }
  function back(){
+  if(screen==='double'){double?.destroy();double=null;setScreen('bird');bird?.resumeFromMinigame();return;}
   if(screen==='cards'){cards?.destroy();cards=null;setScreen('campaign');campaign.contentWindow.BulkCampaign?.resume();campaign.contentWindow.focus();return;}
   if(screen==='bird'){
    bird?.destroy();bird=null;$('bird-host').replaceChildren();
@@ -49,6 +55,6 @@
  }
  $('play-campaign').onclick=$('nav-campaign').onclick=openCampaign;
  $('unified-back').onclick=back;
- window.BulkUnified=Object.freeze({storage,local,networkReady,openCampaign,openBird,openCards,back,registerNetwork(api){network=api;},get screen(){return screen;},get bird(){return bird;},get cards(){return cards;}});
+ window.BulkUnified=Object.freeze({storage,local,networkReady,openCampaign,openBird,openCards,openDouble,back,registerNetwork(api){network=api;},get screen(){return screen;},get bird(){return bird;},get cards(){return cards;},get double(){return double;}});
  networkReady(false);
 })();

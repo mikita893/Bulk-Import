@@ -1,8 +1,10 @@
 # alwaysdata: jednorazowa konfiguracja i automatyczne aktualizacje
 
+**Publikacja wstrzymana od v17 na prośbę użytkownika.** `deploy/alwaysdata/settings.json` ma `paused: true`; workflow nie publikuje gry nawet po wpisaniu danych konta. Gdy wrócimy do wdrażania, asystent zmieni ten przełącznik i uruchomi publikację. Poniższe kroki pozostają instrukcją podłączenia konta.
+
 Docelowy adres: **https://bulkimport.alwaysdata.net** (jeżeli nazwa `bulkimport` jest dostępna). Kampania, minigry, kooperacja i VS działają pod jednym adresem. Gracze nie zakładają kont. Konfigurację właściciela wykonujesz raz; kolejne publikacje uruchamia push z tego czatu do `feature/bulk-import-unified-v13`.
 
-Gotowy workflow: [alwaysdata.yml](../.github/workflows/alwaysdata.yml). Wydanie gry pozostaje v16 — dodajemy konfigurację hostingu, bez zmiany HTML ani formatu zapisów.
+Gotowy workflow: [alwaysdata.yml](../.github/workflows/alwaysdata.yml). Bieżące wydanie gry to v17. Format zapisów kampanii pozostaje zgodny.
 
 ## 1. Załóż konto Free
 
@@ -87,7 +89,7 @@ Otwórz zakładkę **Actions** repozytorium i włącz workflowy, jeżeli GitHub 
 
 Asystent może wtedy wykonać push uruchamiający pierwszą publikację. Samo zapisanie sekretów nie uruchamia workflowa. Nie musisz scalać gry do `main` ani uruchamiać terminala/Codespaces. Workflow uruchamia się po pushu na `feature/bulk-import-unified-v13`; nie zakładamy dostępności przycisku „Run workflow” dla pliku istniejącego tylko na tej gałęzi.
 
-W **Actions → Publikuj grę na alwaysdata** zobaczysz testy i wdrożenie. Zielony wynik z wpisem **„Gra opublikowana”** oraz adresem w podsumowaniu oznacza, że nowa wersja odpowiedziała na kontrolę `/healthz`. Zielony przebieg z komunikatem **„Uzupełnij konfigurację alwaysdata”** oznacza, że sprawdzono grę, ale publikacja została pominięta.
+W **Actions → Publikuj grę na alwaysdata** zobaczysz testy i wdrożenie. Zielony wynik z wpisem **„Gra opublikowana”** oraz adresem w podsumowaniu oznacza, że nowa wersja odpowiedziała na kontrolę `/healthz`. Zielony przebieg z komunikatem **„Publikacja wstrzymana lub brak konfiguracji alwaysdata”** oznacza, że sprawdzono grę, ale publikacja została pominięta.
 
 ## 9. Link do grania
 

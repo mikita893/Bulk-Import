@@ -12,3 +12,6 @@
 
 .bird-cargo-full{position:absolute;top:125px;left:50%;transform:translateX(-50%);width:max-content;max-width:95%;text-align:center;background:#3d290af0;border:2px solid #ffcb5a;color:#fff3b5;padding:10px 14px;font:bold 12px monospace;box-shadow:0 4px 20px #0005}.bird-cargo-full[hidden]{display:none}
 @media(max-width:760px){.bird-cargo-full{top:132px;font-size:10px;width:90%}}
+
+.bird-bottom>div{flex-wrap:wrap;justify-content:flex-end}#bird-double{border-color:#bbcf8d;color:#deebad;background:#20443c}
+@media(max-width:760px){.bird-bottom{flex-wrap:wrap}.bird-bottom>div{width:100%;justify-content:flex-start}#bird-double{flex:1}}

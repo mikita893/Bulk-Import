@@ -44,7 +44,7 @@ jobs:
             echo 'ready=true' >> "$GITHUB_OUTPUT"
           else
             echo 'ready=false' >> "$GITHUB_OUTPUT"
-            echo '### Uzupełnij konfigurację alwaysdata' >> "$GITHUB_STEP_SUMMARY"
+            echo '### Publikacja wstrzymana lub brak konfiguracji alwaysdata' >> "$GITHUB_STEP_SUMMARY"
             echo 'Instrukcja: docs/ALWAYSDATA-SETUP.md. Gra nie została opublikowana.' >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Przygotuj paczkę

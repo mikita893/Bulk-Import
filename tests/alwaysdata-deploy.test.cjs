@@ -65,3 +65,8 @@ test('alwaysdata entry serves the actual HTML and WebSocket game using the platf
  const {url}=await game.listen();t.after(()=>game.close());const health=await fetch(url+'/healthz').then(r=>r.json());assert.equal(health.ok,true);assert.equal(health.version,require('../release.cjs').major);
  const html=await fetch(url+'/play').then(r=>r.text());assert(html.includes('GWINTFORCE'));const ws=new WebSocket(url.replace('http:','ws:')+'/ws');t.after(()=>ws.terminate());const [message]=await once(ws,'message');assert.equal(JSON.parse(String(message)).t,'welcome');ws.close();await once(ws,'close');
 });
+
+test('publishing is paused before reading credentials or starting SSH',t=>{
+ const dir=temporary(t);fs.copyFileSync(path.join(__dirname,'../deploy/alwaysdata/deploy.cjs'),path.join(dir,'deploy.cjs'));fs.writeFileSync(path.join(dir,'settings.json'),JSON.stringify({paused:true}));
+ const r=spawnSync(process.execPath,[path.join(dir,'deploy.cjs'),'--check'],{env:{...process.env,...config()},encoding:'utf8'});assert.notEqual(r.status,0);assert.match(r.stderr,/wstrzymana/);assert(!r.stderr.includes(config().ALWAYSDATA_SSH_PASSWORD));assert(!r.stderr.includes(config().ALWAYSDATA_API_TOKEN));
+});

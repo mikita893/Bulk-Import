@@ -40,6 +40,7 @@ async function publish({remote,upload,restart,verify,log=console.log}){
   try{await remote('prune',previous);}catch{log('Wersja działa. Sprzątanie starszych katalogów wymaga ponowienia.');}
 }
 async function main(){
+  if(require('./settings.json').paused)throw Error('Publikacja na alwaysdata jest wstrzymana na prośbę użytkownika.');
   const config=readConfiguration();if(process.argv.includes('--check')){console.log('Dane do wdrożenia są ustawione.');return;}
   const sha=process.env.GITHUB_SHA;
   if(!/^[a-f0-9]{40}$/.test(sha||''))throw Error('Brak pełnego GITHUB_SHA');

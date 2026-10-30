@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v17.0.0 — 2026-10-30
+
+Plik gry: [Bulk-Import-v17.html](Bulk-Import-v17.html).
+
+- Dodano CSV Double wewnątrz Bird Game 3: 31 kart po 7 symboli, 1–3 botów i pięć trudności.
+- Dodano karę za błędne kliknięcie, pauzę, dźwięki, trening, ustawienia czasów botów i ekran wyników.
+- Powrót zachowuje stan Bird Game 3; starsze zapisy kampanii i pozostałe tryby pozostają zgodne.
+- Wstrzymano publikowanie na alwaysdata; aktualizacja repozytorium nie wdraża gry na serwer.
+
 ## v16.0.0 — 2026-10-29
 
 Plik gry: [Bulk-Import-v16.html](Bulk-Import-v16.html).

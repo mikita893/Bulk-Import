@@ -15,3 +15,6 @@
 
 - Changelog dla użytkownika podawaj w krótkim bloku tekstowym do skopiowania: numer wersji i maksymalnie 4 krótkie punkty.
 - Hosting alwaysdata: wdrażaj przez `.github/workflows/alwaysdata.yml` po pushu na `feature/bulk-import-unified-v13`. `dev/readable-source` nie publikuje drugi raz. Instrukcja: `docs/ALWAYSDATA-SETUP.md`. Dane dostępowe należą do GitHub Secrets/Variables; nie zapisuj ich w kodzie ani nie proś o wklejanie do czatu. Zmiana samej infrastruktury wdrażania nie tworzy nowej wersji gry ani nowego HTML.
+
+- CSV Double jest zagnieżdżone w Bird Game 3: wejście tylko przyciskiem wewnątrz ptasiej minigry, powrót do tej samej areny. Nie dodawaj osobnego kafelka w menu głównym ani skrótu w terminalu kampanii.
+- Publikowanie na alwaysdata jest wstrzymane na prośbę użytkownika (`deploy/alwaysdata/settings.json`, `paused: true`). Aktualizuj i pushuj repozytorium oraz wersjonowany HTML, ale zachowuj pauzę do czasu wyraźnego wznowienia wdrożenia przez użytkownika.
