@@ -18,7 +18,9 @@
     "start:alwaysdata": "node deploy/alwaysdata/start.cjs",
     "build:alwaysdata": "node deploy/alwaysdata/package.cjs",
     "deploy:alwaysdata": "node deploy/alwaysdata/deploy.cjs",
-    "test:hosting": "node --test tests/alwaysdata-deploy.test.cjs"
+    "test:hosting": "node --test tests/alwaysdata-deploy.test.cjs",
+    "build:pages": "node deploy/pages/build.cjs",
+    "test:pages": "node tests/pages-browser.cjs"
   },
   "engines": {
     "node": ">=20"

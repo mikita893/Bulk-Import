@@ -2,6 +2,12 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v18 — konfiguracja publikacji solo, 2026-11-04
+
+- Przygotowano publiczną stronę GitHub Pages i automatyczne odświeżanie folderu `/docs` przy budowaniu kolejnych wydań.
+- Dodano pobieranie oryginalnego HTML, zapis pod stałym adresem i uruchamianie solo bez serwera multiplayer.
+- Włączenie Pages wymaga jednorazowego wyboru gałęzi i folderu w ustawieniach repozytorium. Mechaniki oraz numer gry pozostają v18; publikacja alwaysdata nadal jest wstrzymana.
+
 ## v18.0.0 — 2026-11-04
 
 Plik gry: [Bulk-Import-v18.html](Bulk-Import-v18.html).

@@ -18,3 +18,5 @@
 
 - CSV Double jest zagnieżdżone w Bird Game 3: wejście tylko przyciskiem wewnątrz ptasiej minigry, powrót do tej samej areny. Nie dodawaj osobnego kafelka w menu głównym ani skrótu w terminalu kampanii.
 - Publikowanie na alwaysdata jest wstrzymane na prośbę użytkownika (`deploy/alwaysdata/settings.json`, `paused: true`). Aktualizuj i pushuj repozytorium oraz wersjonowany HTML, ale zachowuj pauzę do czasu wyraźnego wznowienia wdrożenia przez użytkownika.
+
+- Publiczna wersja solo korzysta z GitHub Pages: gałąź `feature/bulk-import-unified-v13`, folder `/docs`. `npm run build:client` musi też generować `docs/index.html` przez `deploy/pages/build.cjs`. Zachowuj stały URL, oryginalny HTML do pobrania i lokalny tryb w ramce srcdoc (bez WebSocketów). Sama konfiguracja hostingu nie zwiększa numeru gry. Szczegóły: `docs/GITHUB-PAGES.md`; kontrola: `npm run test:pages`. Włączenie Pages w panelu to jednorazowa czynność właściciela; nie twierdź, że strona działa, zanim potwierdzisz publikację.
