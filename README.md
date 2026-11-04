@@ -10,6 +10,12 @@ Pobierz **Bulk-Import-v18.html** i otwórz go w przeglądarce z WebGL. Wystarcza
 
 Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo działa offline; Bird Game 3 i Gwintforce uruchomisz w terminalu na statku; CSV Double otworzysz wewnątrz Bird Game 3. Kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
 
+## Publiczny link do solo — GitHub Pages
+
+Przygotowana strona: **https://mikita893.github.io/Bulk-Import/**. Właściciel musi ją jednorazowo włączyć: **Settings → Pages → Deploy from a branch → feature/bulk-import-unified-v13 → /docs → Save**. Po publikacji gracze wchodzą bez logowania, konta i karty. Pełna instrukcja: [docs/GITHUB-PAGES.md](docs/GITHUB-PAGES.md).
+
+`npm run build:client` aktualizuje też `docs/index.html`, więc kolejne pushe na gałąź gry publikują nowe wydanie pod tym samym linkiem. Dostępne są solo i wszystkie minigry, multi pozostaje wyszarzone. Postęp zapisuje się w przeglądarce pod stałym adresem. Przy przejściu z lokalnego pliku przenieś zapis eksportem/importem JSON. Przycisk nad grą pobiera aktualny oryginalny HTML. Alwaysdata nadal jest wstrzymane.
+
 ## Ten sam HTML na serwerze
 
 Wymagany Node.js 20+, zalecany 22.

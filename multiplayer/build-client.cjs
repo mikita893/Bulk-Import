@@ -84,3 +84,4 @@ console.log(
     Buffer.byteLength(output) +
     ' bytes): standalone campaign + multiplayer + Bird Game 3 + Gwintforce + CSV Double',
 );
+console.log('GitHub Pages: ' + require('../deploy/pages/build.cjs').buildPages());

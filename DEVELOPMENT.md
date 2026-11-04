@@ -84,3 +84,11 @@ Publikacja alwaysdata pozostaje wstrzymana przez `deploy/alwaysdata/settings.jso
 `BULK_BIRDS.opium` określa statystyki i opisy szóstego ptaka. `freezeBird` przerywa zamach i blokuje ruch, a `tickBird` po odmarznięciu przyznaje 2 s odporności. `updateFrost` rozlicza opóźnienie oddechu i ciągłą ekspozycję na aurę; `resolveFrostBreath` sprawdza zablokowany kierunek, stożek, odległość i wysokość. Zegar symulacji jest jedynym źródłem trafień.
 
 `makeOpiumBody` tworzy biały, dwunożny model z maskowym dziobem i instancjonowanymi piórami. `renderFrost` aktualizuje gotową pulę 32 drobin, sektor i pierścień, bez alokacji geometrii w pętli. `syncBird` pokazuje osłonkę lodową na zamrożonych botach. Przy zmianie zasięgów synchronizuj wizualizację i model. Testy w `tests/bird-game.test.cjs` chronią odporność po odmarznięciu, pauzę, anulowanie po śmierci i skończoną pulę CSV; `tests/unified-browser.cjs` sprawdza Q oraz układ sześciu ptaków. Szczegóły: [DESIGN-v18.md](DESIGN-v18.md).
+
+## Publikacja solo na GitHub Pages
+
+Publiczna strona korzysta z gałęzi gry i folderu `/docs`, wybieranych jednorazowo w Settings → Pages. `multiplayer/build-client.cjs` po zbudowaniu zwykłego wydania wywołuje `deploy/pages/build.cjs`, który generuje `docs/index.html` i `.nojekyll`. To konfiguracja publikacji: nie zmienia numeru gry ani mechanik.
+
+`renderPages` bezpiecznie osadza niezmieniony HTML w JSON i przypisuje go do `iframe.srcdoc`. Własne `about:` ramki wybiera istniejący tryb lokalny, a odziedziczone pochodzenie zachowuje localStorage na stałym adresie. Oryginalny HTML można pobrać przez Blob z wersjonowaną nazwą. Przejście przez logo wraca do głównej strony, aby nie opuścić konfiguracji solo. Nie dodawaj backendu, tokenów ani klientów WebSocket do tej strony.
+
+Kontrola po zmianie buildera: `npm run test:pages`. Test używa zwykłego serwera jednego pliku pod prefiksem `/Bulk-Import/`, sprawdza brak połączeń sieciowych gry, pobieranie oryginalnego HTML, terminal i wszystkie minigry, ekran mobilny oraz zapis po przeładowaniu. Instrukcja właściciela: [docs/GITHUB-PAGES.md](docs/GITHUB-PAGES.md). Wdrożenie alwaysdata nadal ma osobną pauzę.
