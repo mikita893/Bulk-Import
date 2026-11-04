@@ -18,6 +18,11 @@ class BulkBirdRenderer {
   const points=[];for(let i=0;i<24;i++){const a=-Math.PI/3+i*Math.PI*2/3/24,b=a+Math.PI*2/3/24;points.push(0,0,0,Math.sin(a),0,Math.cos(a),Math.sin(b),0,Math.cos(b));}
   this.geo.attack=new THREE.BufferGeometry();this.geo.attack.setAttribute('position',new THREE.Float32BufferAttribute(points,3));
   this.attackCones=this.enemies.map(()=>{const m=new THREE.Mesh(this.geo.attack,new THREE.MeshBasicMaterial({color:0xff302f,transparent:true,opacity:.45,side:THREE.DoubleSide,depthWrite:false}));m.visible=false;this.scene.add(m);return m;});
+  const frostPoints=[];for(let i=0;i<24;i++){const a=-Math.PI*2/9+i*Math.PI*4/9/24,b=a+Math.PI*4/9/24;frostPoints.push(0,0,0,Math.sin(a),0,Math.cos(a),Math.sin(b),0,Math.cos(b));}
+  this.geo.frost=new THREE.BufferGeometry();this.geo.frost.setAttribute('position',new THREE.Float32BufferAttribute(frostPoints,3));
+  this.frostBreath=new THREE.Mesh(this.geo.frost,new THREE.MeshBasicMaterial({color:0xb8edff,transparent:true,opacity:.3,side:THREE.DoubleSide,depthWrite:false}));this.frostBreath.visible=false;this.scene.add(this.frostBreath);
+  this.frostAura=new THREE.Mesh(new THREE.RingGeometry(5.25,5.5,48),new THREE.MeshBasicMaterial({color:0x9fe9ff,transparent:true,opacity:.6,side:THREE.DoubleSide,depthWrite:false}));this.frostAura.rotation.x=-Math.PI/2;this.frostAura.visible=false;this.scene.add(this.frostAura);
+  this.frostShards=new THREE.InstancedMesh(this.geo.cone,this.mat('frostShard',0xc9f3ff,0x4d9cc1),32);this.frostShards.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.frostShards.count=0;this.scene.add(this.frostShards);
   this.decoy.root.visible=false;this.enemies.forEach(m=>m.root.visible=false);
   this.onResize=()=>this.resize();this.observer=new ResizeObserver(this.onResize);this.observer.observe(canvas);this.resize();
  }
@@ -52,12 +57,47 @@ class BulkBirdRenderer {
   for(let i=0;i<3;i++)this.mesh(g,this.geo.sphere,this.mat('egg',0xe8dfb1),i*.5-.5,.4,.1,.24,.33,.24);
  }
  csvTexture(){const canvas=document.createElement('canvas');canvas.width=canvas.height=128;const c=canvas.getContext('2d');c.fillStyle='#ffda80';c.fillRect(21,7,86,111);c.fillStyle='#fff0b2';c.beginPath();c.moveTo(87,7);c.lineTo(107,28);c.lineTo(87,28);c.fill();c.fillStyle='#6c623e';c.font='bold 26px monospace';c.textAlign='center';c.fillText('CSV',64,66);for(let i=0;i<3;i++)c.fillRect(36,80+i*8,55,3);const t=new THREE.CanvasTexture(canvas);t.colorSpace=THREE.SRGBColorSpace;this.textures.add(t);return t;}
+ makeOpiumBody(body){
+  const snow=this.mat('opiumSnow',0xf4f8ff),shade=this.mat('opiumShade',0xc5d9e6),mask=this.mat('opiumMask',0x233a53),ice=this.mat('opiumEye',0x9deaff,0x60bde9);
+  this.geo.feather=new THREE.BufferGeometry();
+  this.geo.feather.setAttribute('position',new THREE.Float32BufferAttribute([-1,.5,0,0,.55,.28,1,.5,0,0,-.6,.1,0,0,.32],3));
+  this.geo.feather.setIndex([0,1,4,1,2,4,2,3,4,3,0,4]);this.geo.feather.computeVertexNormals();
+  const featherMat=this.mat('opiumFeather',0xecf5ff);featherMat.side=THREE.DoubleSide;
+  this.mesh(body,this.geo.sphere,snow,0,.05,-.05,.59,.85,.52);
+  this.mesh(body,this.geo.sphere,snow,0,.65,.03,.47,.64,.43);
+  this.mesh(body,this.geo.sphere,snow,0,1.1,.3,.32,.37,.35);
+  // Two tapered segments form a long, downward-curving plague-mask beak.
+  const bill=this.mesh(body,this.geo.cone,mask,0,1.03,.82,.18,.9,.17);bill.rotation.x=Math.PI/2+.22;
+  const tip=this.mesh(body,this.geo.cone,mask,0,.79,1.26,.11,.4,.1);tip.rotation.x=2.55;
+  for(const side of [-1,1]){
+   this.mesh(body,this.geo.sphere,mask,side*.24,1.19,.51,.095,.105,.055);
+   this.mesh(body,this.geo.sphere,ice,side*.245,1.20,.56,.036,.035,.018);
+   this.mesh(body,this.geo.cylinder,shade,side*.24,-.72,.05,.075,.5,.075);
+   this.mesh(body,this.geo.box,mask,side*.24,-.97,.22,.19,.09,.46);
+  }
+  // Layered, drooping feathers use one instanced mesh instead of dozens of draw calls.
+  const fur=new THREE.InstancedMesh(this.geo.feather,featherMat,56);
+  for(let i=0;i<56;i++){
+   const layer=Math.floor(i/14),angle=i%14/14*Math.PI*2,r=.39+layer*.06;
+   this.tmp.position.set(Math.sin(angle)*r,.92-layer*.4,Math.cos(angle)*r-.07);
+   this.tmp.rotation.set(Math.sin(angle)*.12,angle,0);this.tmp.scale.set(.14,.72+(i%3)*.12,.2);this.tmp.updateMatrix();fur.setMatrixAt(i,this.tmp.matrix);
+  }
+  body.add(fur);
+  const wings=[];for(const side of [-1,1]){
+   const wing=new THREE.Group();wing.position.set(side*.45,.55,-.06);body.add(wing);
+   this.mesh(wing,this.geo.sphere,shade,side*.06,-.3,-.06,.19,.58,.26);
+   for(let i=0;i<5;i++){const f=this.mesh(wing,this.geo.feather,featherMat,side*(.07+i*.045),-.4-i*.075,-.05-i*.065,.12,.8-i*.03,.2);f.rotation.z=-side*.13;}
+   wings.push(wing);
+  }
+  return wings;
+ }
  makeBird(type){
   const root=new THREE.Group(),body=new THREE.Group();root.add(body);const cfg=BULK_BIRDS[type];const base=this.mat(type+'body',cfg.color),dark=this.mat(type+'dark',type==='crow'?0x171e2c:0x526d72),pale=this.mat('featherPale',0xeee6c8),beak=this.mat(type+'beak',type==='crow'?0x383b36:0xf0bd52);
+  let wings=[];if(type==='opium')wings=this.makeOpiumBody(body);else{
   this.mesh(body,this.geo.sphere,base,0,.18,0,.55,.54,.75);const head=this.mesh(body,this.geo.sphere,base,0,.76,.48,type==='owl'?.56:.35,type==='owl'?.52:.35,.35);
   if(type==='duck')head.material=this.mat('duckHead',0x2e876b);
   const bill=this.mesh(body,type==='duck'?this.geo.box:this.geo.cone,beak,0,.68,type==='hummingbird'?1.16:1,type==='duck'?.25:.13,type==='hummingbird'?.8:.4,type==='duck'?.5:.14);if(type!=='duck')bill.rotation.x=Math.PI/2;
-  const wings=[];for(const side of [-1,1]){
+  for(const side of [-1,1]){
    const wing=new THREE.Group();wing.position.set(side*.37,.36,0);body.add(wing);for(let i=0;i<5;i++){const feather=this.mesh(wing,this.geo.sphere,(type==='owl'&&i%2===0)?pale:(i%3===0?dark:base),side*(.22+i*.17),-.05,-i*.1,.21,.075,.5-i*.025);feather.rotation.y=side*(.1+i*.07);}wings.push(wing);
    if(type==='owl'){this.mesh(body,this.geo.sphere,pale,side*.22,.84,.76,.22,.26,.06);const tuft=this.mesh(body,this.geo.cone,dark,side*.4,1.3,.4,.14,.35,.1);tuft.rotation.z=-side*.35;}
    this.mesh(body,this.geo.sphere,this.mat('eye',0x141e19),side*.22,.85,.76,.07,.085,.05);this.mesh(body,this.geo.sphere,pale,side*.23,.88,.8,.018,.022,.016);
@@ -66,15 +106,32 @@ class BulkBirdRenderer {
   const tail=this.mesh(body,this.geo.sphere,dark,0,.12,-.75,.35,.08,.53);tail.rotation.x=-.2;
   if(type==='pigeon'){const neck=this.mesh(body,this.geo.sphere,this.mat('pigeonNeck',0x3c8e83),0,.58,.35,.36,.23,.4);neck.rotation.x=-.15;}
   const scale=type==='hummingbird'?.66:type==='owl'?1.17:type==='duck'?1.06:1;body.scale.setScalar(scale);
+  }
   const hp=new THREE.Group();hp.position.set(0,1.9,0);const bg=new THREE.Sprite(new THREE.SpriteMaterial({color:0x152b28,depthWrite:false})),fill=new THREE.Sprite(new THREE.SpriteMaterial({color:0x8de8c3,depthWrite:false}));bg.scale.set(1.5,.11,1);fill.scale.set(1.45,.065,1);fill.position.z=.01;hp.add(bg,fill);root.add(hp);
   const cargo=[];for(let i=0;i<3;i++){const item=this.mesh(root,this.geo.box,this.mat('cargo',0xffd475),i*.25-.25,.38,-.66,.17,.28,.035);item.visible=false;cargo.push(item);}
-  return {root,body,wings,fill,hp,cargo,type};
+  const frozen=new THREE.Mesh(this.geo.rock,new THREE.MeshBasicMaterial({color:0x94ddff,transparent:true,opacity:.32,wireframe:true,depthWrite:false}));frozen.position.set(0,.3,.1);frozen.scale.set(.95,1.2,1);frozen.visible=false;root.add(frozen);
+  return {root,body,wings,fill,hp,cargo,frozen,type};
  }
  resize(){if(this.dead)return;const w=Math.max(1,this.canvas.clientWidth),h=Math.max(1,this.canvas.clientHeight);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();}
  moveVector(x,z){return {x:x*Math.cos(this.yaw)+z*Math.sin(this.yaw),z:z*Math.cos(this.yaw)-x*Math.sin(this.yaw)};}
  syncBird(model,b,time,preview=false){model.root.visible=preview||b.alive;if(!model.root.visible)return;model.root.scale.setScalar(preview?1.8:1);model.root.position.set(preview?0:b.x,preview?2.4+Math.sin(time*2)*.035:b.y,preview?0:b.z);model.root.rotation.y=preview?Math.sin(time*.5)*.22+.7:b.heading;
   model.body.rotation.x=b.peck>0?.3:0;model.hp.visible=!preview;model.fill.scale.x=1.45*Math.max(0,b.hp/b.maxHp);model.fill.position.x=-.725*(1-b.hp/b.maxHp);
-  const flap=preview?.36+Math.sin(time*2)*.12:Math.sin(b.flap)*(b.y>1.3?.7:.16);model.wings[0].rotation.z=flap;model.wings[1].rotation.z=-flap;model.cargo.forEach((m,i)=>m.visible=!preview&&i<b.cargo);
+  model.frozen.visible=!preview&&b.frozen>0;
+  const flap=b.frozen>0?0:model.type==='opium'?Math.sin(time*2)*.06:preview?.36+Math.sin(time*2)*.12:Math.sin(b.flap)*(b.y>1.3?.7:.16);model.wings[0].rotation.z=flap;model.wings[1].rotation.z=-flap;model.cargo.forEach((m,i)=>m.visible=!preview&&i<b.cargo);
+ }
+ renderFrost(game,time,preview){
+  const p=game.player,active=!preview&&p.alive&&p.type==='opium';
+  this.frostAura.visible=active&&p.frostAura>0;
+  if(this.frostAura.visible){this.frostAura.position.set(p.x,Math.max(.14,p.y-.8),p.z);this.frostAura.material.opacity=.35+Math.sin(time*8)*.12;}
+  const casting=active&&(p.breathWindup>0||p.breathVisual>0);this.frostBreath.visible=casting;this.frostShards.count=casting?32:0;
+  if(!casting)return;
+  this.frostBreath.position.set(p.x,Math.max(.16,p.breathY-.7),p.z);this.frostBreath.rotation.y=p.breathAngle;this.frostBreath.scale.setScalar(10);this.frostBreath.material.opacity=p.breathWindup>0?.15:.32*p.breathVisual/.65;
+  for(let i=0;i<32;i++){
+   const travel=(time*1.7+i*.137)%1,distance=1+travel*9,angle=p.breathAngle+(i%9-4)*.14;
+   this.tmp.position.set(p.x+Math.sin(angle)*distance,p.breathY+.55+Math.sin(i*2.3)*.55,p.z+Math.cos(angle)*distance);
+   this.tmp.rotation.set(Math.PI/2,0,-angle);this.tmp.scale.set(.035,.15+travel*.15,.035);this.tmp.updateMatrix();this.frostShards.setMatrixAt(i,this.tmp.matrix);
+  }
+  this.frostShards.instanceMatrix.needsUpdate=true;
  }
  render(game,dt,time){
   const preview=game.mode==='ready';this.perch.visible=preview;for(const [id,model]of Object.entries(this.players)){model.root.visible=id===game.selected;if(id===game.selected)this.syncBird(model,game.player,time,preview);}
@@ -82,6 +139,7 @@ class BulkBirdRenderer {
   this.decoy.root.visible=!preview&&!!game.decoy;if(this.decoy.root.visible){this.syncBird(this.decoy,{...game.player,...game.decoy,alive:true,cargo:0},time);this.decoy.root.visible=Math.sin(time*15)>.0;}
   let n=0;if(!preview)for(const item of game.pickups){if(item.wait>0||n>=24)continue;this.tmp.position.set(item.x,item.y+Math.sin(time*2+item.id)*.16,item.z);this.tmp.rotation.set(-.65,this.yaw+Math.sin(time*.6+item.id)*.1,0);this.tmp.scale.set(1.1,1.3,1.1);this.tmp.updateMatrix();this.pickups.setMatrixAt(n++,this.tmp.matrix);}this.pickups.count=n;this.pickups.instanceMatrix.needsUpdate=true;
   this.rings.forEach((ring,i)=>{const f=!preview&&game.fx[i];ring.visible=!!f;if(f){ring.position.set(f.x,.2,f.z);const size=(1-f.life/f.total)*3+.3;ring.scale.setScalar(size);ring.material.color.setHex(f.color);ring.material.opacity=f.life/f.total*.7;}});
+  this.renderFrost(game,time,preview);
   if(preview){this.target.set(-6,4.8,8);this.look.set(1.6,2.2,0);}else{const p=game.player;this.target.set(p.x+Math.sin(this.yaw)*14,p.y+8.5,p.z+Math.cos(this.yaw)*14);this.look.set(p.x-Math.sin(this.yaw)*2,p.y+.5,p.z-Math.cos(this.yaw)*2);}
   this.camera.position.lerp(this.target,1-Math.exp(-Math.max(.016,dt)*7));this.camera.lookAt(this.look);this.renderer.render(this.scene,this.camera);
  }

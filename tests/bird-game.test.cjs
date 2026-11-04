@@ -1,8 +1,8 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const {BulkBirdState,BULK_BIRDS,BIRD_NEST,BIRD_RIVAL_NEST,readBulkBirdSave}=require('../minigames/bird-sim.js');
-test('five selectable birds have different real stats and deterministic bounded arenas',()=>{
- const ids=Object.keys(BULK_BIRDS);assert.equal(ids.length,5);assert.equal(new Set(ids.map(id=>BULK_BIRDS[id].skill)).size,5);
+test('six selectable birds have different real stats and deterministic bounded arenas',()=>{
+ const ids=Object.keys(BULK_BIRDS);assert.equal(ids.length,6);assert.equal(new Set(ids.map(id=>BULK_BIRDS[id].skill)).size,6);
  for(const id of ids){const g=new BulkBirdState(42,id);assert.equal(g.selected,id);assert.equal(g.player.maxHp,BULK_BIRDS[id].hp);assert.equal(g.player.hp,g.player.maxHp);assert.equal(g.lives,3);assert.equal(g.mode,'ready');assert.deepEqual(g.pickups,new BulkBirdState(42,id).pickups);}
  assert.equal(new BulkBirdState(42,'toString').selected,'pigeon');
 });
@@ -74,4 +74,62 @@ test('finite CSV survive bot defeats/respawns, theft, deposits and enemy-base ra
  for(let i=0;i<3000&&g.mode==='playing';i++){if(i%240===0){const e=g.enemies[i/240%3|0];if(e.alive){e.inv=0;g.damage(e,1000,g.player);}}g.step(1/60);assert.equal(g.csvTotal,12);}
  const h=new BulkBirdState(2);h.start();h.pickups=[];h.enemies.forEach(e=>{e.cargo=0;e.grace=100;});h.enemyVault=12;h.player.x=BIRD_RIVAL_NEST.x;h.player.z=BIRD_RIVAL_NEST.z;h.step(1/60);assert.equal(h.player.cargo,3);assert.equal(h.enemyVault,9);assert.equal(h.csvTotal,12);
  h.player.x=BIRD_NEST.x;h.player.z=BIRD_NEST.z;h.step(1/60);assert.equal(h.delivered,3);assert.equal(h.csvTotal,12);
+});
+
+function frostArena(){
+ const g=new BulkBirdState(18,'opium');g.start();
+ Object.assign(g.player,{x:0,z:-10,y:1.1,heading:0});
+ g.enemies.forEach(e=>Object.assign(e,{x:20,z:20,grace:100}));
+ return g;
+}
+function birdFrames(g,n,input={}){for(let i=0;i<n;i++)g.step(1/60,input);}
+
+test('Opium touch cancels a telegraphed attack and thaw immunity prevents permanent freezing',()=>{
+ const g=frostArena(),p=g.player,e=g.enemies[0];Object.assign(e,{x:0,z:-8,grace:0});
+ assert(g.beginEnemyAttack(e));const hp=e.hp;g.peck(p);
+ assert.equal(e.hp,hp-16);assert.equal(e.frozen,.8);assert.equal(e.attackWindup,0);
+ assert.equal(g.beginEnemyAttack(e),false);
+ const position={x:e.x,z:e.z};birdFrames(g,30);
+ assert.equal(e.x,position.x);assert.equal(e.z,position.z);assert.equal(p.hp,p.maxHp);
+ birdFrames(g,19);assert.equal(e.frozen,0);assert(e.frostImmune>1.9);
+ e.inv=0;p.attackCooldown=0;g.peck(p);assert.equal(e.frozen,0);assert.equal(e.hp,hp-32);
+ assert.equal(g.freezeBird(e,1),false);e.grace=100;birdFrames(g,122);assert.equal(e.frostImmune,0);
+ assert(g.freezeBird(e,.8));assert.equal(g.freezeBird(e,1.8),false,'Repeated freeze does not extend a stun');
+});
+
+test('Winter Release resolves after windup in its locked cone with range and altitude checks',()=>{
+ const g=frostArena(),p=g.player,[front,back,high]=g.enemies;
+ Object.assign(front,{x:0,z:-2});Object.assign(back,{x:0,z:-18});Object.assign(high,{x:0,z:-1,y:4.5});
+ assert(g.useSkill());assert(!g.useSkill());assert.equal(p.skillCooldown,12);p.heading=Math.PI;
+ birdFrames(g,30);assert.equal(front.hp,front.maxHp);assert.equal(front.frozen,0);
+ birdFrames(g,4);assert.equal(front.hp,front.maxHp-12);assert(front.frozen>1.7);
+ assert.equal(back.hp,back.maxHp);assert.equal(high.hp,high.maxHp);assert.equal(back.frozen,0);assert.equal(high.frozen,0);
+ assert(p.breathVisual>0);assert.equal(g.csvTotal,12);
+ const distant=frostArena();Object.assign(distant.enemies[0],{x:0,z:.1});distant.useSkill();birdFrames(distant,34);assert.equal(distant.enemies[0].hp,distant.enemies[0].maxHp);
+});
+
+test('frost aura slows and freezes sustained contact, but respects height and requires new exposure on return',()=>{
+ const g=frostArena(),p=g.player,[near,far,high]=g.enemies;
+ Object.assign(near,{x:4,z:-10});Object.assign(far,{x:6,z:-10});Object.assign(high,{x:-3,z:-10,y:4.5});
+ g.useSkill();birdFrames(g,35);assert(near.slow>0);assert.equal(near.frozen,0);
+ assert.equal(far.slow,0);assert.equal(high.slow,0);
+ near.x=7;g.step(1/60);assert.equal(near.frostExposure,0);near.x=4;
+ birdFrames(g,50);assert.equal(near.frozen,0);birdFrames(g,24);assert(near.frozen>0);assert.equal(near.hp,near.maxHp,'Aura control deals no hidden damage');
+ birdFrames(g,50);assert.equal(near.frozen,0);assert(near.frostImmune>0);
+ birdFrames(g,140);assert.equal(p.frostAura,0);assert.equal(near.frozen,0);assert.equal(near.frostExposure,0);
+});
+
+test('frost timers pause, death cancels breath, and respawn clears effects without changing CSV totals',()=>{
+ const g=frostArena(),e=g.enemies[0];Object.assign(e,{x:0,z:-6});g.useSkill();birdFrames(g,10);
+ g.mode='paused';const before=JSON.stringify(g);birdFrames(g,180,{skill:true});assert.equal(JSON.stringify(g),before);
+ g.mode='playing';g.damage(g.player,1000);assert.equal(g.player.breathWindup,0);assert.equal(g.player.frostAura,0);
+ birdFrames(g,140);assert(g.player.alive);assert.equal(e.hp,e.maxHp);assert.equal(g.player.breathVisual,0);assert.equal(g.csvTotal,12);
+ g.freezeBird(e,1);e.inv=0;g.damage(e,1000,g.player);assert.equal(e.frozen,0);birdFrames(g,305);assert(e.alive);assert.equal(e.frostImmune,0);assert.equal(g.csvTotal,12);
+});
+
+test('v16/v17 bird saves keep records and the sixth bird persists under the same schema',()=>{
+ const old=readBulkBirdSave({version:2,best:975,selected:'duck',records:{duck:975,pigeon:300}});
+ assert.equal(old.best,975);assert.equal(old.selected,'duck');assert.equal(old.records.duck,975);assert.equal(old.records.opium,0);
+ const next=readBulkBirdSave({...old,selected:'opium',records:{...old.records,opium:1200}});
+ assert.equal(next.version,2);assert.equal(next.selected,'opium');assert.equal(next.records.opium,1200);assert.equal(next.records.duck,975);
 });

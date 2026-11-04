@@ -5,7 +5,8 @@ const BULK_BIRDS=Object.freeze({
  crow:{name:'Wrona',code:'CACHE MASTER',role:'Zbieraczka danych',hp:95,speed:9.7,damage:17,interval:.53,skill:'Cache & Carry',cooldown:8,color:0x303442,description:'Błyskotki? Nie. Cudze External ID. Każdy ma jakieś hobby.',power:'Q: zbierasz CSV w promieniu 9 m; możesz też wykraść jeden z dzioba pobliskiego bota. Limit: 3.',meme:'Wrona main: „Kradzież? Ja tylko przenoszę ownership.”'},
  owl:{name:'Sowa',code:'NOCNY AUDYT',role:'Pancerna kontrola',hp:135,speed:7.3,damage:25,interval:.82,skill:'Nocny audyt',cooldown:10,color:0x987455,description:'Widzi błędy w ciemności. I każde pole, które „na pewno było wymagane”.',power:'Q: spowalniasz pobliskie boty na 3,5 s i zadajesz im 10 obrażeń.',meme:'Sowa main: „Nie śpię. Czekam, aż batch przestanie mielić.”'},
  hummingbird:{name:'Koliber',code:'GOVERNOR LIMIT',role:'Szybki, kruchy napastnik',hp:75,speed:12,damage:11,interval:.32,skill:'Bulk API Burst',cooldown:9,color:0x49c7a0,description:'Podobno miał dostać nerfa. Release manager nadal szuka go w logach.',power:'Q: błyskawiczna seria zadaje 32 obrażenia botom w promieniu 5 m. Mało życia, dużo zamieszania.',meme:'Koliber main: „Jeśli widzisz moje skrzydła, masz za wysoki ping.”'},
- duck:{name:'Kaczka',code:'FLOW BUILDER',role:'Wytrzymała pomoc',hp:120,speed:8,damage:20,interval:.66,skill:'Naprawczy Flow',cooldown:11,color:0x47a67b,description:'Kwa, kwa. Flow zakończony pomyślnie. Nikt nie wie, co właściwie zmienił.',power:'Q: odzyskujesz 24 HP i dostajesz 18 punktów osłony na 3 s. Nadmiar leczenia przepada.',meme:'Kaczka main: „Nie ma bugów. Są nieudokumentowane kacze ścieżki.”'}
+ duck:{name:'Kaczka',code:'FLOW BUILDER',role:'Wytrzymała pomoc',hp:120,speed:8,damage:20,interval:.66,skill:'Naprawczy Flow',cooldown:11,color:0x47a67b,description:'Kwa, kwa. Flow zakończony pomyślnie. Nikt nie wie, co właściwie zmienił.',power:'Q: odzyskujesz 24 HP i dostajesz 18 punktów osłony na 3 s. Nadmiar leczenia przepada.',meme:'Kaczka main: „Nie ma bugów. Są nieudokumentowane kacze ścieżki.”'},
+ opium:{name:'Opium Bird',code:'FREEZE VALIDATION',role:'Lodowa kontrola',hp:125,speed:7.6,damage:16,interval:.85,skill:'Winter Release',cooldown:12,color:0xf1f7ff,description:'Dwumetrowy, dwunożny ptak w śnieżnobiałym futrze i piórach. Dziób jak maska lekarza plagi. Wdrożył zimę prosto na produkcję.',power:'Dziób: mróz 0,8 s. Q: po 0,55 s oddech (stożek 10 m, 12 obrażeń, mróz 1,8 s). Aura 5,5 m przez 3,8 s: spowalnia, po 1,2 s kontaktu zamraża na 0,65 s. Po odmarznięciu: 2 s odporności.',meme:'Opium main: „Zamroziłem rekordy. Excel nazywa to ochroną arkusza.”'}
 });
 const BIRD_NEST={x:-14,z:13},BIRD_RIVAL_NEST={x:17,z:-15};
 const BIRD_CSV_NODES=[[-10,10,1.1],[-6,11,4.2],[-7,6,1.1],[-1,8,5],[5,8,1.1],[10,3,3.5]];
@@ -29,7 +30,9 @@ class BulkBirdState {
       cargo: 0, heading: Math.PI, attackCooldown: 0, attackWindup: 0, attackTotal: .9,
       attackAngle: 0, attackY: 1.1, attackRange: 3.6, attackArc: Math.PI * 2 / 3,
       skillCooldown: 0, dashCooldown: 0, dashRemaining: 0, inv: 0, shield: 0,
-      shieldTime: 0, slow: 0, alive: true, respawn: 0, flap: 0, peck: 0 };
+      shieldTime: 0, slow: 0, frozen: 0, frostImmune: 0, frostAura: 0, frostExposure: 0,
+      breathWindup: 0, breathVisual: 0, breathAngle: 0, breathY: 1.1,
+      alive: true, respawn: 0, flap: 0, peck: 0 };
   }
   reset(seed = 1, bird = 'pigeon') {
     this.seed = seed >>> 0 || 1;
@@ -77,7 +80,7 @@ class BulkBirdState {
     b.hp = Math.max(0, b.hp - (amount - blocked)); b.inv = .2;
     this.effect('hit',b.x,b.z,attacker?.id === 'you' ? 0xffd18b : 0xff8f87);
     if (b.hp > 0) return true;
-    b.alive = false; b.attackWindup = 0; b.respawn = b.id === 'you' ? 2.2 : 5;
+    b.alive = false; b.attackWindup = 0; b.frozen = 0; b.frostAura = 0; b.breathWindup = 0; b.breathVisual = 0; b.respawn = b.id === 'you' ? 2.2 : 5;
     // A defeated bird drops only its actual cargo. Respawning never grants new CSV.
     for (let i=0; i<b.cargo; i++) this.spawnCSV(b.x+(i%2?1:-1)*.6,b.z+Math.floor(i/2)*.7,.8);
     b.cargo = 0;
@@ -88,7 +91,7 @@ class BulkBirdState {
     return true;
   }
   beginEnemyAttack(e, target = this.player) {
-    if (!e.alive || e.attackCooldown > 0 || e.attackWindup > 0 || !target.alive) return false;
+    if (!e.alive || e.frozen > 0 || e.attackCooldown > 0 || e.attackWindup > 0 || !target.alive) return false;
     if (Math.hypot(target.x-e.x,target.z-e.z) > 3.3 || Math.abs(target.y-e.y) > 1.8) return false;
     e.attackTotal = e.type === 'owl' ? 1.05 : .9;
     e.attackWindup = e.attackTotal;
@@ -113,7 +116,42 @@ class BulkBirdState {
       const d = Math.hypot(b.x-t.x,b.z-t.z);
       if (t.alive && d < best && Math.abs(t.y-b.y) < 1.8) { best = d; target = t; }
     }
-    if (target) { b.heading = Math.atan2(target.x-b.x,target.z-b.z); this.damage(target,BULK_BIRDS[b.type].damage,b); }
+    if (target) {
+      b.heading = Math.atan2(target.x-b.x,target.z-b.z);
+      if (this.damage(target,BULK_BIRDS[b.type].damage,b) && b.type === 'opium') this.freezeBird(target,.8);
+    }
+  }
+  // Immunity starts after thawing, so neither repeated pecks nor Q can create a permanent stun.
+  freezeBird(b, duration) {
+    if (!b.alive || b.frozen > 0 || b.frostImmune > 0 || b.inv > .2) return false;
+    b.frozen = duration; b.attackWindup = 0;
+    b.attackCooldown = Math.max(b.attackCooldown,.6);
+    this.effect('freeze',b.x,b.z,0xa9e7ff); return true;
+  }
+  resolveFrostBreath(p) {
+    p.breathVisual = .65; let hits = 0;
+    for (const e of this.enemies) {
+      const distance = Math.hypot(e.x-p.x,e.z-p.z);
+      const angle = Math.atan2(e.x-p.x,e.z-p.z)-p.breathAngle;
+      const difference = Math.abs(Math.atan2(Math.sin(angle),Math.cos(angle)));
+      if (!e.alive || distance > 10 || Math.abs(e.y-p.breathY) > 1.8 || (distance > .45 && difference > Math.PI*2/9)) continue;
+      if (this.damage(e,12,p)) { this.freezeBird(e,1.8); hits++; }
+    }
+    this.effect('frost',p.x,p.z,0xc5f3ff);
+    this.event(hits ? 'Winter Release: '+hits+' botów na lodzie. Salesforce: rekord zablokowany. Excel: cały plik.' : 'Winter Release: zimny oddech w pusty backlog. Aura nadal chłodzi pobliskie boty.');
+  }
+  updateFrost(p,dt) {
+    if (!p.alive || p.type !== 'opium') return;
+    if (p.breathWindup > 0) {
+      p.breathWindup = Math.max(0,p.breathWindup-dt);
+      if (p.breathWindup === 0) this.resolveFrostBreath(p);
+    }
+    for (const e of this.enemies) {
+      const inside = p.frostAura > 0 && e.alive && Math.hypot(e.x-p.x,e.z-p.z) <= 5.5 && Math.abs(e.y-p.y) <= 1.8;
+      if (inside) e.slow = Math.max(e.slow,.25);
+      e.frostExposure = inside && e.frozen === 0 && e.frostImmune === 0 ? e.frostExposure+dt : 0;
+      if (e.frostExposure >= 1.2 && this.freezeBird(e,.65)) e.frostExposure = 0;
+    }
   }
   useSkill() {
     const p=this.player,c=BULK_BIRDS[p.type]; if (!p.alive || p.skillCooldown>0) return false;
@@ -122,6 +160,7 @@ class BulkBirdState {
     if(p.type==='owl'){for(const e of this.enemies)if(e.alive&&Math.hypot(e.x-p.x,e.z-p.z)<9){e.slow=3.5;this.damage(e,10,p);}this.event('Nocny audyt: wstrzymano automatyzacje przeciwników.');}
     if(p.type==='hummingbird'){for(const e of this.enemies)if(e.alive&&Math.hypot(e.x-p.x,e.z-p.z)<5&&Math.abs(e.y-p.y)<2.5)this.damage(e,32,p);this.event('Bulk API Burst! Patch z nerfem nadal w kolejce.');}
     if(p.type==='duck'){p.hp=Math.min(p.maxHp,p.hp+24);p.shield=18;p.shieldTime=3;this.event('Naprawczy Flow: +24 HP, do limitu. Kwa-lidacja przeszła.');}
+    if(p.type==='opium'){p.breathWindup=.55;p.breathAngle=p.heading;p.breathY=p.y;p.frostAura=3.8;this.event('Winter Release: wdech… Kierunek oddechu zablokowany. Aura: zamrożenie budżetu na licencje.');}
     if(p.type==='crow'){
       let n=0;this.pickups=this.pickups.filter(item=>{if(p.cargo<3&&item.wait<=0&&Math.hypot(item.x-p.x,item.z-p.z)<9&&Math.abs(p.y-item.y)<1.5){p.cargo++;n++;return false;}return true;});
       const victim=this.enemies.find(e=>e.alive&&e.cargo>0&&Math.hypot(e.x-p.x,e.z-p.z)<8&&Math.abs(e.y-p.y)<1.8);
@@ -131,7 +170,8 @@ class BulkBirdState {
     this.noticeCargoFull(); return true;
   }
   tickBird(b,dt) {
-    for(const k of ['attackCooldown','skillCooldown','dashCooldown','dashRemaining','inv','shieldTime','slow','peck'])b[k]=Math.max(0,b[k]-dt);
+    for(const k of ['attackCooldown','skillCooldown','dashCooldown','dashRemaining','inv','shieldTime','slow','peck','frostImmune','frostAura','breathVisual'])b[k]=Math.max(0,b[k]-dt);
+    if(b.frozen>0){b.frozen=Math.max(0,b.frozen-dt);if(b.frozen===0)b.frostImmune=2;}
     if(!b.shieldTime)b.shield=0;b.flap+=dt*(b.type==='hummingbird'?38:12);
     if(!b.alive){b.respawn-=dt;if(b.respawn<=0&&this.mode==='playing'){
       const x=b.id==='you'?BIRD_NEST.x:BIRD_RIVAL_NEST.x,z=b.id==='you'?BIRD_NEST.z:BIRD_RIVAL_NEST.z;
@@ -173,8 +213,9 @@ class BulkBirdState {
         if(this.delivered>=this.goal){this.finish(true,'Import zakończony. Ptasia rada zatwierdza deployment.');return;}
       }
     }
+    this.updateFrost(p,dt);
     for(const e of this.enemies){
-      this.tickBird(e,dt);if(!e.alive)continue;
+      this.tickBird(e,dt);if(!e.alive||e.frozen>0)continue;
       if(e.attackWindup>0){
         e.attackWindup=Math.max(0,e.attackWindup-dt);
         if(e.attackWindup===0)this.resolveEnemyAttack(e);
