@@ -74,6 +74,9 @@ function table(count = 2, cooldown = 1500) {
     start,
     advance,
     answer,
+    elapse(ms) {
+      clock += ms;
+    },
     get clock() {
       return clock;
     },
@@ -314,6 +317,19 @@ test('connection grace and explicit exit abort without a false winner; rematches
   e.host.command({ t: 'leave' });
   assert.equal(fresh.last('state').state.result.outcome, 'aborted');
   assert.equal(e.room.hostId, fresh.last('welcome').id);
+});
+
+test('an idle Workers loop cannot extend reconnection grace when everyone was offline', () => {
+  const e = table();
+  e.start();
+  e.advance(3000);
+  const credentials = e.host.last('welcome');
+  e.peers.forEach((p) => p.close());
+  e.elapse(RECONNECT_MS + 1); // No ticks while the Worker sleeps.
+  const returning = e.peer();
+  returning.command({ t: 'join', code: e.code, token: credentials.token });
+  assert.equal(e.room.match.state, 'GAME_OVER');
+  assert.equal(returning.last('state').state.result.outcome, 'aborted');
 });
 
 test('empty/lost lobby sessions are removed and transport limits reject oversized/binary/flood input', () => {

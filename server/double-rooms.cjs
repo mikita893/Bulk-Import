@@ -288,6 +288,9 @@ function createDoubleRoomService({ now = () => performance.now() } = {}) {
     }
   }
   function connect(ws) {
+    // Workers stop their loop while nobody is connected. Expire old grace periods
+    // before accepting a returning session, just as the continuously ticking Node host does.
+    tick();
     if (connections.size >= MAX_DOUBLE_SESSIONS) {
       ws.close(1013, 'Server full');
       return false;
