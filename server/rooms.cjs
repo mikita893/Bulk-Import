@@ -217,5 +217,5 @@ function createRoomService(options={}){
   function disconnectAll(){for(const s of connections)s.ws?.terminate();rooms.clear();sessions.clear();connections.clear()}
   return {rooms,sessions,connections,tick,broadcastRoom,broadcastState,broadcastStates,connect,heartbeat,disconnectAll};
 }
-function publicConfig(){return {protocol:1,version:shared.VERSION,limits:{coop:3,versus:6,team:3},missions:missions(),upgrades:shared.UPGRADES,teams:shared.FACTIONS,factionKits:shared.FACTION_KITS,stats:shared.VS_STATS,versus:{scoreLimit:15,duration:360}}}
+function publicConfig(options={}){return {protocol:1,version:shared.VERSION,features:{csvDoubleMultiplayer:options.doubleEnabled===true},limits:{coop:3,versus:6,team:3},missions:missions(),upgrades:shared.UPGRADES,teams:shared.FACTIONS,factionKits:shared.FACTION_KITS,stats:shared.VS_STATS,versus:{scoreLimit:15,duration:360}}}
 module.exports={createRoomService,validateCheckpoint,freshProgress,publicConfig,MAX_SESSIONS};

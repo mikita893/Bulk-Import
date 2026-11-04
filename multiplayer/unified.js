@@ -41,7 +41,7 @@
  function openDouble(){
   if(screen!=='bird'||!bird)return false;
   bird.suspendForMinigame();setScreen('double');
-  double=new BulkDoubleGame($('double-host'),{storage,soundEnabled:()=>$('sound-toggle').textContent.includes('ON'),onExit:back});return true;
+  double=new BulkDoubleGame($('double-host'),{storage,soundEnabled:()=>$('sound-toggle').textContent.includes('ON'),onExit:back,network:local?{enabled:false}:network?.doubleInfo?.()});return true;
  }
  function back(){
   if(screen==='double'){double?.destroy();double=null;setScreen('bird');bird?.resumeFromMinigame();return;}

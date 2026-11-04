@@ -1,6 +1,7 @@
 import roomModule from '../server/rooms.cjs';
 import shared from '../multiplayer/shared.cjs';
 import release from '../release.cjs';
+import doubleModule from '../server/double-rooms.cjs';
 const { createRoomService, publicConfig, MAX_SESSIONS } = roomModule;
 
 // One named object owns the rooms. A room can never split across Worker isolates or regions.
@@ -9,6 +10,8 @@ export class GameRooms {
     this.ctx = ctx;
     this.env = env;
     this.service = createRoomService({ tickRate:30 });
+    this.doubleEnabled = env.BULK_DOUBLE_MULTIPLAYER === '1';
+    this.doubleService = doubleModule.createDoubleRoomService();
     this.timer = null;
     this.lastTick = 0;
     this.accumulator = 0;
@@ -28,23 +31,27 @@ export class GameRooms {
         this.snapshotClock += 1/30;
         this.heartbeatClock += 1/30;
       }
+      if (this.doubleEnabled) this.doubleService.tick();
       if (this.snapshotClock >= 1/15) { this.snapshotClock=0;this.service.broadcastStates(); }
-      if (this.heartbeatClock >= 20) { this.heartbeatClock=0;this.service.heartbeat(); }
-      if (!this.service.connections.size) { clearInterval(this.timer);this.timer=null;this.accumulator=0; }
+      if (this.heartbeatClock >= 20) { this.heartbeatClock=0;this.service.heartbeat();this.doubleService.heartbeat(); }
+      if (!this.service.connections.size && !this.doubleService.connections.size) { clearInterval(this.timer);this.timer=null;this.accumulator=0; }
     }, 1000/30);
   }
   async fetch(request) {
     const url = new URL(request.url);
     const headers = {'X-Content-Type-Options':'nosniff','Cache-Control':'no-store'};
     if (url.pathname === '/healthz') return Response.json({ok:true,version:shared.VERSION,rooms:this.service.rooms.size},{headers});
-    if (url.pathname === '/api/info' || url.pathname === '/api/config') return Response.json(publicConfig(),{headers});
-    if (url.pathname !== '/ws') return new Response('Not found',{status:404,headers});
+    if (url.pathname === '/api/info' || url.pathname === '/api/config') return Response.json(publicConfig({doubleEnabled:this.doubleEnabled}),{headers});
+    const isDouble = url.pathname === '/ws/double';
+    if (url.pathname !== '/ws' && !isDouble) return new Response('Not found',{status:404,headers});
+    if (isDouble && !this.doubleEnabled) return new Response('CSV Double multiplayer disabled',{status:503,headers});
     if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('WebSocket upgrade required',{status:426,headers});
-    if (this.service.connections.size >= MAX_SESSIONS) return new Response('Server full',{status:503,headers});
+    const activeService = isDouble ? this.doubleService : this.service;
+    if (activeService.connections.size >= (isDouble ? doubleModule.MAX_DOUBLE_SESSIONS : MAX_SESSIONS)) return new Response('Server full',{status:503,headers});
     const pair = new WebSocketPair();
     const client = pair[0], server = pair[1];
     server.accept();
-    this.service.connect(new WorkerSocket(server));
+    activeService.connect(new WorkerSocket(server));
     this.startLoop();
     return new Response(null,{status:101,webSocket:client});
   }
@@ -69,7 +76,7 @@ export class WorkerSocket {
 export default {
   async fetch(request, env) {
     const url=new URL(request.url);
-    if(url.pathname==='/ws'||url.pathname==='/healthz'||url.pathname==='/api/info'||url.pathname==='/api/config'){
+    if(url.pathname==='/ws'||url.pathname==='/ws/double'||url.pathname==='/healthz'||url.pathname==='/api/info'||url.pathname==='/api/config'){
       const id=env.GAME_ROOMS.idFromName('bulk-import-v11');
       return env.GAME_ROOMS.get(id).fetch(request);
     }

@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v19.0.0 — 2026-11-04
+
+Plik gry: [Bulk-Import-v19.html](Bulk-Import-v19.html).
+
+- Przygotowano multiplayer CSV Double dla 2–4 osób: prywatne pokoje z kodem, lobby, gotowość, wspólny stos, punktacja i rewanże.
+- Dodano serwerowe rozstrzyganie odpowiedzi, osobne kary, ukryte karty rywali, wspólną pauzę gospodarza i odzyskiwanie połączenia przez 30 s.
+- Multiplayer CSV Double pozostaje wyłączony domyślnie. Lokalny HTML i GitHub Pages pokazują wyszarzone opcje; nie uruchomiono hostingu gry sieciowej, a alwaysdata nadal jest wstrzymane.
+- Zachowano kampanię, pozostałe minigry, boty i dotychczasowe formaty zapisów. Publiczna strona solo oraz przycisk pobierania otrzymują v19 pod tym samym adresem.
+
 ## v18 — konfiguracja publikacji solo, 2026-11-04
 
 - Przygotowano publiczną stronę GitHub Pages i automatyczne odświeżanie folderu `/docs` przy budowaniu kolejnych wydań.

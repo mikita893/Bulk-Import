@@ -9,7 +9,7 @@ function packageRelease({output=path.join(root,'dist/alwaysdata'),sha=process.en
   if(!fs.existsSync(path.join(root,release.filename)))throw Error('Build the current HTML first');
   fs.mkdirSync(output,{recursive:true});const stage=fs.mkdtempSync(path.join(output,'stage-'));
   try{
-    const files=['package.json','package-lock.json','release.cjs','index.html','server','multiplayer/engine.cjs','multiplayer/shared.cjs','deploy/alwaysdata/start.cjs',...fs.readdirSync(root).filter(name=>/^Bulk-Import.*\.html$/.test(name))];
+    const files=['package.json','package-lock.json','release.cjs','index.html','server','minigames/symbol-deck.js','minigames/symbol-sim.js','multiplayer/engine.cjs','multiplayer/shared.cjs','deploy/alwaysdata/start.cjs',...fs.readdirSync(root).filter(name=>/^Bulk-Import.*\.html$/.test(name))];
     for(const name of files){const target=path.join(stage,name);fs.mkdirSync(path.dirname(target),{recursive:true});fs.cpSync(path.join(root,name),target,{recursive:true});}
     fs.writeFileSync(path.join(stage,'DEPLOYMENT.json'),JSON.stringify({sha,version:release.version,major:release.major,filename:release.filename})+'\n');
     const archive=path.join(output,'bulk-import.tar.gz');execFileSync('tar',['-czf',archive,'-C',stage,'.']);return archive;

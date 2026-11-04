@@ -23,7 +23,7 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const requests=[];page.on('request',r=>requests.push(r.url()));page.on('websocket',ws=>requests.push(ws.url()));
   await page.waitForFunction(()=>window.BulkUnified);assert.equal(await page.locator('[id="play-double"],[id="nav-double"]').count(),0);
   const frame=await enterBird(page);await page.locator('#bird-start').click();await sleep(120);const beforeBird=await page.evaluate(()=>JSON.stringify(BulkUnified.bird.game));
-  await openDouble(page);const frozen=await page.evaluate(()=>JSON.stringify(BulkUnified.bird.game));const campaign=await frame.evaluate(()=>JSON.stringify({player,time}));
+  await openDouble(page);assert(await page.locator('[data-double-action="net-create"]').isDisabled());assert.equal(await page.evaluate(()=>BulkUnified.double.online.socket),null);const frozen=await page.evaluate(()=>JSON.stringify(BulkUnified.bird.game));const campaign=await frame.evaluate(()=>JSON.stringify({player,time}));
   assert.equal(await page.evaluate(()=>BulkUnified.bird.game.mode),'paused');assert.notEqual(beforeBird,frozen);
   await page.locator('#double-bots').selectOption('3');
   for(const id of ['gentle','easy','normal','hard','expert']){await page.locator('#double-difficulty').selectOption(id);assert.equal(await page.locator('#double-difficulty').inputValue(),id);}
