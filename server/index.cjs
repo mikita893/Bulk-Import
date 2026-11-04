@@ -12,11 +12,15 @@ const {
   publicConfig,
   MAX_SESSIONS,
 } = require('./rooms.cjs');
+const { createDoubleRoomService, MAX_DOUBLE_SESSIONS } = require('./double-rooms.cjs');
 const ROOT = path.resolve(__dirname, '..');
 function createGameServer(options = {}) {
   const tickRate = options.tickRate || 30,
     snapshotRate = options.snapshotRate || 15;
   const service = createRoomService({ tickRate });
+  const doubleEnabled =
+    (options.doubleEnabled ?? process.env.BULK_DOUBLE_MULTIPLAYER === '1') === true;
+  const doubleService = createDoubleRoomService();
   const { rooms, sessions, tick, broadcastRoom } = service;
   const port = options.port ?? Number(process.env.PORT || 3000),
     host = options.host || '0.0.0.0';
@@ -57,9 +61,9 @@ function createGameServer(options = {}) {
       res.writeHead(200, {
         ...headers,
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=60',
+        'Cache-Control': 'no-store',
       });
-      res.end(req.method === 'HEAD' ? '' : JSON.stringify(publicConfig()));
+      res.end(req.method === 'HEAD' ? '' : JSON.stringify(publicConfig({ doubleEnabled })));
       return;
     }
     let file;
@@ -98,6 +102,15 @@ function createGameServer(options = {}) {
       socket.destroy();
       return;
     }
+    if (pathname === '/ws/double') {
+      if (!doubleEnabled || doubleService.connections.size >= MAX_DOUBLE_SESSIONS) {
+        socket.write('HTTP/1.1 503 Service Unavailable\r\nConnection: close\r\n\r\n');
+        socket.destroy();
+        return;
+      }
+      wss.handleUpgrade(req, socket, head, (ws) => doubleService.connect(ws));
+      return;
+    }
     if (pathname !== '/ws' || service.connections.size >= MAX_SESSIONS) {
       socket.write('HTTP/1.1 503 Service Unavailable\r\nConnection: close\r\n\r\n');
       socket.destroy();
@@ -124,13 +137,17 @@ function createGameServer(options = {}) {
         accumulator -= 1 / tickRate;
         snapshotClock += 1 / tickRate;
       }
+      if (doubleEnabled) doubleService.tick();
       if (snapshotClock >= 1 / snapshotRate) {
         snapshotClock = 0;
         service.broadcastStates();
       }
     }, 1000 / tickRate);
     timer.unref();
-    heartbeat = setInterval(() => service.heartbeat(), 20000);
+    heartbeat = setInterval(() => {
+      service.heartbeat();
+      if (doubleEnabled) doubleService.heartbeat();
+    }, 20000);
     heartbeat.unref();
     const actualPort = server.address().port;
     return { port: actualPort, url: `http://127.0.0.1:${actualPort}` };
@@ -139,11 +156,12 @@ function createGameServer(options = {}) {
     clearInterval(timer);
     clearInterval(heartbeat);
     service.disconnectAll();
+    doubleService.disconnectAll();
     for (const ws of wss.clients) ws.terminate();
     await new Promise((resolve) => wss.close(resolve));
     if (server.listening) await new Promise((resolve) => server.close(resolve));
   }
-  return { server, wss, rooms, sessions, listen, close, tick, broadcastRoom };
+  return { server, wss, rooms, sessions, listen, close, tick, broadcastRoom, doubleService };
 }
 if (require.main === module) {
   const game = createGameServer();

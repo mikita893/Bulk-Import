@@ -81,6 +81,8 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     await sleep(120);
     const beforeBird = await page.evaluate(() => JSON.stringify(BulkUnified.bird.game));
     await openDouble(page);
+    assert(await page.locator('[data-double-action="net-create"]').isDisabled());
+    assert.equal(await page.evaluate(() => BulkUnified.double.online.socket), null);
     const frozen = await page.evaluate(() => JSON.stringify(BulkUnified.bird.game));
     const campaign = await frame.evaluate(() => JSON.stringify({ player, time }));
     assert.equal(await page.evaluate(() => BulkUnified.bird.game.mode), 'paused');

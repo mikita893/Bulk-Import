@@ -109,6 +109,7 @@
       storage,
       soundEnabled: () => $('sound-toggle').textContent.includes('ON'),
       onExit: back,
+      network: local ? { enabled: false } : network?.doubleInfo?.(),
     });
     return true;
   }

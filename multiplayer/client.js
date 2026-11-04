@@ -397,6 +397,9 @@
       if (!response.ok) return;
       const config = await response.json();
       if (Array.isArray(config.missions)) app.config.missions = config.missions;
+      app.config.features = {
+        csvDoubleMultiplayer: config.features?.csvDoubleMultiplayer === true,
+      };
       if (config.upgrades && typeof config.upgrades === 'object')
         app.config.upgrades = config.upgrades;
       if (config.factionKits && typeof config.factionKits === 'object')
@@ -1482,6 +1485,14 @@
     configurable: false,
   });
   window.BulkUnified.registerNetwork({
+    doubleInfo() {
+      const u = app.endpoint ? new URL(app.endpoint) : null;
+      if (u) u.pathname = '/ws/double';
+      return {
+        enabled: !window.BulkUnified.local && app.config.features?.csvDoubleMultiplayer === true,
+        endpoint: u?.toString() || '',
+      };
+    },
     suspend() {
       if (app.room) {
         notice('Najpierw opuść pokój, aby uruchomić kampanię albo automat. Koledzy nadal grają.');

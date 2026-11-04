@@ -43,6 +43,7 @@ const app =
     'minigames/cards-game.js',
     'minigames/symbol-deck.js',
     'minigames/symbol-sim.js',
+    'minigames/symbol-network.js',
     'minigames/symbol-game.js',
     'multiplayer/unified.js',
     'multiplayer/render.js',

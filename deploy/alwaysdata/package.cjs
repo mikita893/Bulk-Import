@@ -21,6 +21,8 @@ function packageRelease({
       'release.cjs',
       'index.html',
       'server',
+      'minigames/symbol-deck.js',
+      'minigames/symbol-sim.js',
       'multiplayer/engine.cjs',
       'multiplayer/shared.cjs',
       'deploy/alwaysdata/start.cjs',

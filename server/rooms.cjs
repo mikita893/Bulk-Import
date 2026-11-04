@@ -631,10 +631,11 @@ function createRoomService(options = {}) {
     disconnectAll,
   };
 }
-function publicConfig() {
+function publicConfig(options = {}) {
   return {
     protocol: 1,
     version: shared.VERSION,
+    features: { csvDoubleMultiplayer: options.doubleEnabled === true },
     limits: { coop: 3, versus: 6, team: 3 },
     missions: missions(),
     upgrades: shared.UPGRADES,

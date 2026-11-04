@@ -92,3 +92,15 @@ Publiczna strona korzysta z gałęzi gry i folderu `/docs`, wybieranych jednoraz
 `renderPages` bezpiecznie osadza niezmieniony HTML w JSON i przypisuje go do `iframe.srcdoc`. Własne `about:` ramki wybiera istniejący tryb lokalny, a odziedziczone pochodzenie zachowuje localStorage na stałym adresie. Oryginalny HTML można pobrać przez Blob z wersjonowaną nazwą. Przejście przez logo wraca do głównej strony, aby nie opuścić konfiguracji solo. Nie dodawaj backendu, tokenów ani klientów WebSocket do tej strony.
 
 Kontrola po zmianie buildera: `npm run test:pages`. Test używa zwykłego serwera jednego pliku pod prefiksem `/Bulk-Import/`, sprawdza brak połączeń sieciowych gry, pobieranie oryginalnego HTML, terminal i wszystkie minigry, ekran mobilny oraz zapis po przeładowaniu. Instrukcja właściciela: [docs/GITHUB-PAGES.md](docs/GITHUB-PAGES.md). Wdrożenie alwaysdata nadal ma osobną pauzę.
+
+## v19: przygotowany multiplayer CSV Double
+
+Funkcja ma pozostać wyłączona: `BULK_DOUBLE_MULTIPLAYER` nie jest ustawione w konfiguracji. Nie włączaj jej przy zwykłej aktualizacji. API zwraca `features.csvDoubleMultiplayer: false`, a bez jawnej zgody i flagi endpoint `/ws/double` odmawia połączenia. Pages i plik lokalny zawsze korzystają z solo. Pauza alwaysdata pozostaje osobna.
+
+- `server/double-match.cjs`: `DoubleOnlineMatch` używa starego silnika talii i przejść, dodając niezależne kary, liczniki i odpowiedzi ludzi. `view(id)` musi nadal ujawniać wyłącznie własną rękę i publiczne informacje. Nie serializuj całego modelu, seedów, stosu ani obiektów uczestników.
+- `server/double-rooms.cjs`: protokół pokoi, gotowość, uprawnienia gospodarza, monotoniczne sekwencje, sesje, pauza przy rozłączeniu i limit powrotu 30 s. Zegar jest serwerowy i wstrzymuje także karę. Ręczna pauza pozostaje ręczna po odzyskaniu sesji. Przerwanie nie przyznaje zwycięstwa.
+- `server/index.cjs`, `cloudflare/worker.mjs`: ten sam serwis CSV Double na istniejącym porcie, osobny endpoint i te same reguły. `deploy/alwaysdata/package.cjs` pakuje także oba pliki zasad/talii, których wymaga serwer.
+- `minigames/symbol-network.js`: sieć i lobby. `BulkDoubleRemoteView` podaje istniejącemu UI tylko projekcję stanu; nigdy nie rozlicza punktów. Połączenie jest otwierane po akcji gracza i zamykane przy wyjściu. Token wznowienia jest prywatny, związany z serwerem i przechowywany w sessionStorage.
+- `minigames/symbol-game.js`: wspólny widok solo/sieciowy. W online ukrycie karty przeglądarki nie pauzuje meczu. Tylko host może wstrzymać stół. `multiplayer/unified.js` nadal udostępnia CSV Double wyłącznie wewnątrz Bird Game 3.
+
+Testy `symbol-multiplayer.test.cjs` sprawdzają m.in. domyślne wyłączenie, prywatność, autorytet, kary, wyścigi, rozłączenia, limity i 100 pełnych meczów. `symbol-multiplayer-browser.cjs` rozgrywa cały mecz dwoma klientami z automatycznym wznowieniem, wynikami i powrotem do tej samej areny. `test:pages` i lokalny test CSV Double chronią brak socketów bez serwera. Pełne zasady i ograniczenia: [DESIGN-v19.md](DESIGN-v19.md). Formaty zapisów pozostają bez zmian.
