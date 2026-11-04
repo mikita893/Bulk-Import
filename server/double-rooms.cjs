@@ -134,6 +134,9 @@ function createDoubleRoomService({now = () => performance.now()} = {}) {
     }
   }
   function connect(ws) {
+    // Workers stop their loop while nobody is connected. Expire old grace periods
+    // before accepting a returning session, just as the continuously ticking Node host does.
+    tick();
     if (connections.size >= MAX_DOUBLE_SESSIONS) {ws.close(1013, 'Server full'); return false;}
     const s = {id: crypto.randomUUID(), token: randomHex(24), ws, room: null, ready: false, lastSeq: -1, seen: now(), rateAt: now(), rate: 0, pong: true};
     ws._session = s; sessions.set(s.token, s); connections.add(s); welcome(s);
