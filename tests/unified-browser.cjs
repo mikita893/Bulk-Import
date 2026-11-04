@@ -143,7 +143,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     assert.equal(await page.evaluate(() => BulkUnified.openCards()), false);
   }
   async function playBird(page) {
-    for (const id of ['pigeon', 'crow', 'owl', 'hummingbird', 'duck']) {
+    for (const id of ['pigeon', 'crow', 'owl', 'hummingbird', 'duck', 'opium']) {
       await page.locator('[data-bird="' + id + '"]').click();
       assert.equal(await page.evaluate(() => BulkUnified.bird.game.selected), id);
       assert.equal(
@@ -151,6 +151,39 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
         'true',
       );
     }
+    await page.waitForFunction(() => BulkUnified.bird.renderer?.players.opium.root.visible);
+    assert.match(await page.locator('#bird-description').textContent(), /śnieżnobiałym/);
+    await sleep(250);
+    await page.screenshot({ path: '/tmp/bulk-unified-v' + release.major + '-opium-select.png' });
+    await page.setViewportSize({ width: 430, height: 932 });
+    await sleep(150);
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
+    assert.equal(await page.locator('.bird-choice').count(), 6);
+    await page.screenshot({ path: '/tmp/bulk-unified-v' + release.major + '-opium-mobile.png' });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.locator('#bird-start').click();
+    await page.evaluate(() => {
+      const g = BulkUnified.bird.game,
+        p = g.player;
+      Object.assign(p, { x: 0, z: -10, y: 1.1, heading: 0 });
+      g.enemies.forEach((e) => Object.assign(e, { x: 20, z: 20, grace: 100 }));
+      Object.assign(g.enemies[0], { x: 0, z: -6, y: 1.1, inv: 0 });
+    });
+    await page.keyboard.press('KeyQ');
+    await page.waitForFunction(
+      () =>
+        BulkUnified.bird.renderer.frostAura.visible &&
+        BulkUnified.bird.renderer.frostBreath.visible,
+    );
+    await page.waitForFunction(() => BulkUnified.bird.game.enemies[0].frozen > 0);
+    await page.waitForFunction(() => BulkUnified.bird.renderer.enemies[0].frozen.visible);
+    assert.match(await page.locator('#bird-skill-status').textContent(), /AURA/);
+    await page.screenshot({ path: '/tmp/bulk-unified-v' + release.major + '-opium-freeze.png' });
+    await page.keyboard.press('KeyP');
+    const iced = await page.evaluate(() => JSON.stringify(BulkUnified.bird.game));
+    await sleep(150);
+    assert.equal(await page.evaluate(() => JSON.stringify(BulkUnified.bird.game)), iced);
+    await page.locator('#bird-reselect').click();
     await page.locator('[data-bird="crow"]').click();
     await page.waitForFunction(() => BulkUnified.bird.renderer?.players.crow.root.visible);
     await page.screenshot({ path: '/tmp/bulk-unified-v' + release.major + '-bird-select.png' });

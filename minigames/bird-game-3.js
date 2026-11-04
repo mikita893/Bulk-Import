@@ -1,5 +1,7 @@
 'use strict';
 function bulkBirdPortrait(id) {
+  if (id === 'opium')
+    return '<svg viewBox="0 0 90 65" aria-hidden="true"><path d="M25 60q-7-22 0-39Q29 5 44 5q16 1 19 13l-7 10 2 31-8-7-4 10-6-10-7 9-2-11z" fill="#f2f7ff"/><path d="M26 24l-8 33 9-8 2 11 6-31M48 31l3 25 7-6 8 8-5-33" fill="#c4d9e9"/><path d="M52 17q20-1 21 13l-2 16-6-16-13-6" fill="#263e58"/><circle cx="51" cy="16" r="3" fill="#83e5ff"/><path d="M34 56v7h7m7-7v7h7" fill="none" stroke="#435b72" stroke-width="3"/></svg>';
   const colors = {
       pigeon: ['#94aab3', '#397f76'],
       crow: ['#3d4254', '#252a39'],
@@ -65,7 +67,7 @@ class BulkBirdGame {
     }
     this.best = this.saveData.best;
     this.game = new BulkBirdState(Date.now(), this.saveData.selected);
-    host.innerHTML = `<div class="bird-page"><div class="bird-heading"><div><div class="eyebrow">WYBIERZ SWOJEGO MAINA / POZNAJ PTAKA PO COMMITACH</div><h1>BIRD GAME <em>3</em></h1><p>Leśna arena BvB · lokalna rozgrywka z botami · hotfix 3.0.416</p></div><div class="bird-record"><small>REKORD ARENY</small><strong id="bird-best">0</strong><span id="bird-storage-note"></span><span id="bird-legacy"></span></div></div>
+    host.innerHTML = `<div class="bird-page"><div class="bird-heading"><div><div class="eyebrow">WYBIERZ SWOJEGO MAINA / POZNAJ PTAKA PO COMMITACH</div><h1>BIRD GAME <em>3</em></h1><p>Leśna arena BvB · 6 ptaków · Winter Release / v${window.BULK_RELEASE?.major || 18}</p></div><div class="bird-record"><small>REKORD ARENY</small><strong id="bird-best">0</strong><span id="bird-storage-note"></span><span id="bird-legacy"></span></div></div>
   <div class="bird-arena is-selecting" id="bird-arena"><canvas id="bird-canvas" tabindex="0" aria-label="Bird Game 3: leśna arena 3D i podgląd wybranego ptaka"></canvas>
    <div class="bird-selection-scene" id="bird-selection-scene"><div class="bird-select-label">◂ CHARACTER SELECTION <span>WYBÓR PTAKA</span></div><div class="bird-preview-caption"><b id="bird-preview-name"></b><span>Wszystkie ptaki odblokowane. Bez kupowania piórek.</span></div><div class="bird-loadout"><div class="eyebrow">TWÓJ MAIN / KARTA POSTACI</div><h2 id="bird-name"></h2><div id="bird-role" class="bird-role"></div><p id="bird-description"></p><div id="bird-stats"></div><div class="bird-power"><kbd>Q</kbd><div><b id="bird-skill-name"></b><p id="bird-power"></p></div></div><p id="bird-meme" class="bird-meme"></p><button id="bird-start" class="primary">▶ Wybieram tego ptaka</button><small class="bird-mission">CEL: dostarcz 8 CSV do niebieskiego gniazda w 120 s. Pula: 12 plików, bez odrastania. Leć po CSV w powietrzu i odbierz dane botom lub z Camp Cache.</small></div></div>
    <div id="bird-hud" class="bird-hud" hidden><div class="bird-vitals"><span id="bird-player-name"></span><div class="bird-health-track"><i id="bird-hp-fill"></i><b id="bird-hp"></b></div><div class="bird-stamina-track"><i id="bird-stamina-fill"></i></div><small id="bird-cargo"></small></div><div class="bird-objective"><b id="bird-delivered"></b><span id="bird-timer"></span><small id="bird-lives"></small></div><div class="bird-bottom-hud"><span id="bird-skill-status"></span><span id="bird-dash-status"></span><b id="bird-score"></b></div><div id="bird-cargo-full" class="bird-cargo-full" role="status" hidden>PEŁNY DZIÓB · 3/3 CSV — wróć do niebieskiego gniazda!</div><div id="bird-respawn" hidden></div></div>
@@ -354,7 +356,9 @@ class BulkBirdGame {
       'Q · ' +
         c.skill +
         ' / ' +
-        (p.skillCooldown > 0 ? p.skillCooldown.toFixed(1) + ' s' : 'GOTOWE'),
+        (p.skillCooldown > 0 ? p.skillCooldown.toFixed(1) + ' s' : 'GOTOWE') +
+        (p.frostAura > 0 ? ' · AURA ' + p.frostAura.toFixed(1) + ' s' : '') +
+        (p.breathWindup > 0 ? ' · WDECH' : ''),
     );
     this.set(
       'bird-dash-status',

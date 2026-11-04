@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v18.0.0 — 2026-11-04
+
+Plik gry: [Bulk-Import-v18.html](Bulk-Import-v18.html).
+
+- Dodano szóstego grywalnego ptaka w Bird Game 3: Opium Birda z białym futrem i piórami, dwunożną sylwetką i zakrzywionym dziobem przypominającym maskę lekarza plagi.
+- Dodano zamrażające dziobnięcie oraz Winter Release pod Q: kierunkowy lodowy oddech, aura spowalniająca i zamrażająca po dłuższym kontakcie, efekty lodu oraz odporność po odmarznięciu.
+- Dostosowano wybór sześciu ptaków do telefonu i dodano żarty o zamrożonych rekordach, licencjach i ochronie arkusza.
+- Zachowano klucze i formaty zapisów v16/v17, dotychczasowe rekordy oraz wszystkie tryby i minigry. Publikacja na alwaysdata pozostaje wstrzymana.
+
 ## v17.0.0 — 2026-10-30
 
 Plik gry: [Bulk-Import-v17.html](Bulk-Import-v17.html).

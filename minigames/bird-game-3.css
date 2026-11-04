@@ -217,7 +217,7 @@
 }
 .bird-roster {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   margin-top: 12px;
 }
@@ -582,7 +582,7 @@
   }
   .bird-roster {
     gap: 5px;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
   .bird-choice {
     flex-direction: column;
@@ -727,5 +727,21 @@
   }
   #bird-double {
     flex: 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .bird-roster {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .bird-choice {
+    flex-direction: row;
+    padding: 6px;
+    text-align: left;
+  }
+  .bird-choice svg {
+    width: 38px;
+    min-width: 30px;
+    max-width: 40%;
   }
 }

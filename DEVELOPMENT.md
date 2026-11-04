@@ -78,3 +78,9 @@ Testy przeglądarkowe wymagają Playwright i Chromium (opcjonalnie `BULK_CHROMIU
 Nie minifikuj ręcznie kodu podczas pracy. Nazwy funkcji, reguły, testy i mapa modułów mają umożliwiać zrozumienie zmiany bez rozpakowywania wydanego HTML.
 
 Publikacja alwaysdata pozostaje wstrzymana przez `deploy/alwaysdata/settings.json` (`paused: true`). Push uruchamia testy, ale nie wysyła plików na hosting. Wznowienie wymaga wyraźnej prośby użytkownika.
+
+## v18: Opium Bird i mróz
+
+`BULK_BIRDS.opium` określa statystyki i opisy szóstego ptaka. `freezeBird` przerywa zamach i blokuje ruch, a `tickBird` po odmarznięciu przyznaje 2 s odporności. `updateFrost` rozlicza opóźnienie oddechu i ciągłą ekspozycję na aurę; `resolveFrostBreath` sprawdza zablokowany kierunek, stożek, odległość i wysokość. Zegar symulacji jest jedynym źródłem trafień.
+
+`makeOpiumBody` tworzy biały, dwunożny model z maskowym dziobem i instancjonowanymi piórami. `renderFrost` aktualizuje gotową pulę 32 drobin, sektor i pierścień, bez alokacji geometrii w pętli. `syncBird` pokazuje osłonkę lodową na zamrożonych botach. Przy zmianie zasięgów synchronizuj wizualizację i model. Testy w `tests/bird-game.test.cjs` chronią odporność po odmarznięciu, pauzę, anulowanie po śmierci i skończoną pulę CSV; `tests/unified-browser.cjs` sprawdza Q oraz układ sześciu ptaków. Szczegóły: [DESIGN-v18.md](DESIGN-v18.md).

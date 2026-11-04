@@ -78,6 +78,23 @@ const BULK_BIRDS = Object.freeze({
     power: 'Q: odzyskujesz 24 HP i dostajesz 18 punktów osłony na 3 s. Nadmiar leczenia przepada.',
     meme: 'Kaczka main: „Nie ma bugów. Są nieudokumentowane kacze ścieżki.”',
   },
+  opium: {
+    name: 'Opium Bird',
+    code: 'FREEZE VALIDATION',
+    role: 'Lodowa kontrola',
+    hp: 125,
+    speed: 7.6,
+    damage: 16,
+    interval: 0.85,
+    skill: 'Winter Release',
+    cooldown: 12,
+    color: 0xf1f7ff,
+    description:
+      'Dwumetrowy, dwunożny ptak w śnieżnobiałym futrze i piórach. Dziób jak maska lekarza plagi. Wdrożył zimę prosto na produkcję.',
+    power:
+      'Dziób: mróz 0,8 s. Q: po 0,55 s oddech (stożek 10 m, 12 obrażeń, mróz 1,8 s). Aura 5,5 m przez 3,8 s: spowalnia, po 1,2 s kontaktu zamraża na 0,65 s. Po odmarznięciu: 2 s odporności.',
+    meme: 'Opium main: „Zamroziłem rekordy. Excel nazywa to ochroną arkusza.”',
+  },
 });
 const BIRD_NEST = { x: -14, z: 13 },
   BIRD_RIVAL_NEST = { x: 17, z: -15 };
@@ -154,6 +171,14 @@ class BulkBirdState {
       shield: 0,
       shieldTime: 0,
       slow: 0,
+      frozen: 0,
+      frostImmune: 0,
+      frostAura: 0,
+      frostExposure: 0,
+      breathWindup: 0,
+      breathVisual: 0,
+      breathAngle: 0,
+      breathY: 1.1,
       alive: true,
       respawn: 0,
       flap: 0,
@@ -253,6 +278,10 @@ class BulkBirdState {
     if (b.hp > 0) return true;
     b.alive = false;
     b.attackWindup = 0;
+    b.frozen = 0;
+    b.frostAura = 0;
+    b.breathWindup = 0;
+    b.breathVisual = 0;
     b.respawn = b.id === 'you' ? 2.2 : 5;
     // A defeated bird drops only its actual cargo. Respawning never grants new CSV.
     for (let i = 0; i < b.cargo; i++)
@@ -271,7 +300,8 @@ class BulkBirdState {
     return true;
   }
   beginEnemyAttack(e, target = this.player) {
-    if (!e.alive || e.attackCooldown > 0 || e.attackWindup > 0 || !target.alive) return false;
+    if (!e.alive || e.frozen > 0 || e.attackCooldown > 0 || e.attackWindup > 0 || !target.alive)
+      return false;
     if (Math.hypot(target.x - e.x, target.z - e.z) > 3.3 || Math.abs(target.y - e.y) > 1.8)
       return false;
     e.attackTotal = e.type === 'owl' ? 1.05 : 0.9;
@@ -313,7 +343,62 @@ class BulkBirdState {
     }
     if (target) {
       b.heading = Math.atan2(target.x - b.x, target.z - b.z);
-      this.damage(target, BULK_BIRDS[b.type].damage, b);
+      if (this.damage(target, BULK_BIRDS[b.type].damage, b) && b.type === 'opium')
+        this.freezeBird(target, 0.8);
+    }
+  }
+  // Immunity starts after thawing, so neither repeated pecks nor Q can create a permanent stun.
+  freezeBird(b, duration) {
+    if (!b.alive || b.frozen > 0 || b.frostImmune > 0 || b.inv > 0.2) return false;
+    b.frozen = duration;
+    b.attackWindup = 0;
+    b.attackCooldown = Math.max(b.attackCooldown, 0.6);
+    this.effect('freeze', b.x, b.z, 0xa9e7ff);
+    return true;
+  }
+  resolveFrostBreath(p) {
+    p.breathVisual = 0.65;
+    let hits = 0;
+    for (const e of this.enemies) {
+      const distance = Math.hypot(e.x - p.x, e.z - p.z);
+      const angle = Math.atan2(e.x - p.x, e.z - p.z) - p.breathAngle;
+      const difference = Math.abs(Math.atan2(Math.sin(angle), Math.cos(angle)));
+      if (
+        !e.alive ||
+        distance > 10 ||
+        Math.abs(e.y - p.breathY) > 1.8 ||
+        (distance > 0.45 && difference > (Math.PI * 2) / 9)
+      )
+        continue;
+      if (this.damage(e, 12, p)) {
+        this.freezeBird(e, 1.8);
+        hits++;
+      }
+    }
+    this.effect('frost', p.x, p.z, 0xc5f3ff);
+    this.event(
+      hits
+        ? 'Winter Release: ' +
+            hits +
+            ' botów na lodzie. Salesforce: rekord zablokowany. Excel: cały plik.'
+        : 'Winter Release: zimny oddech w pusty backlog. Aura nadal chłodzi pobliskie boty.',
+    );
+  }
+  updateFrost(p, dt) {
+    if (!p.alive || p.type !== 'opium') return;
+    if (p.breathWindup > 0) {
+      p.breathWindup = Math.max(0, p.breathWindup - dt);
+      if (p.breathWindup === 0) this.resolveFrostBreath(p);
+    }
+    for (const e of this.enemies) {
+      const inside =
+        p.frostAura > 0 &&
+        e.alive &&
+        Math.hypot(e.x - p.x, e.z - p.z) <= 5.5 &&
+        Math.abs(e.y - p.y) <= 1.8;
+      if (inside) e.slow = Math.max(e.slow, 0.25);
+      e.frostExposure = inside && e.frozen === 0 && e.frostImmune === 0 ? e.frostExposure + dt : 0;
+      if (e.frostExposure >= 1.2 && this.freezeBird(e, 0.65)) e.frostExposure = 0;
     }
   }
   useSkill() {
@@ -345,6 +430,15 @@ class BulkBirdState {
       p.shield = 18;
       p.shieldTime = 3;
       this.event('Naprawczy Flow: +24 HP, do limitu. Kwa-lidacja przeszła.');
+    }
+    if (p.type === 'opium') {
+      p.breathWindup = 0.55;
+      p.breathAngle = p.heading;
+      p.breathY = p.y;
+      p.frostAura = 3.8;
+      this.event(
+        'Winter Release: wdech… Kierunek oddechu zablokowany. Aura: zamrożenie budżetu na licencje.',
+      );
     }
     if (p.type === 'crow') {
       let n = 0;
@@ -392,8 +486,15 @@ class BulkBirdState {
       'shieldTime',
       'slow',
       'peck',
+      'frostImmune',
+      'frostAura',
+      'breathVisual',
     ])
       b[k] = Math.max(0, b[k] - dt);
+    if (b.frozen > 0) {
+      b.frozen = Math.max(0, b.frozen - dt);
+      if (b.frozen === 0) b.frostImmune = 2;
+    }
     if (!b.shieldTime) b.shield = 0;
     b.flap += dt * (b.type === 'hummingbird' ? 38 : 12);
     if (!b.alive) {
@@ -494,9 +595,10 @@ class BulkBirdState {
         }
       }
     }
+    this.updateFrost(p, dt);
     for (const e of this.enemies) {
       this.tickBird(e, dt);
-      if (!e.alive) continue;
+      if (!e.alive || e.frozen > 0) continue;
       if (e.attackWindup > 0) {
         e.attackWindup = Math.max(0, e.attackWindup - dt);
         if (e.attackWindup === 0) this.resolveEnemyAttack(e);

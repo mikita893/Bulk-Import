@@ -124,6 +124,47 @@ class BulkBirdRenderer {
       this.scene.add(m);
       return m;
     });
+    const frostPoints = [];
+    for (let i = 0; i < 24; i++) {
+      const a = (-Math.PI * 2) / 9 + (i * Math.PI * 4) / 9 / 24,
+        b = a + (Math.PI * 4) / 9 / 24;
+      frostPoints.push(0, 0, 0, Math.sin(a), 0, Math.cos(a), Math.sin(b), 0, Math.cos(b));
+    }
+    this.geo.frost = new THREE.BufferGeometry();
+    this.geo.frost.setAttribute('position', new THREE.Float32BufferAttribute(frostPoints, 3));
+    this.frostBreath = new THREE.Mesh(
+      this.geo.frost,
+      new THREE.MeshBasicMaterial({
+        color: 0xb8edff,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      }),
+    );
+    this.frostBreath.visible = false;
+    this.scene.add(this.frostBreath);
+    this.frostAura = new THREE.Mesh(
+      new THREE.RingGeometry(5.25, 5.5, 48),
+      new THREE.MeshBasicMaterial({
+        color: 0x9fe9ff,
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      }),
+    );
+    this.frostAura.rotation.x = -Math.PI / 2;
+    this.frostAura.visible = false;
+    this.scene.add(this.frostAura);
+    this.frostShards = new THREE.InstancedMesh(
+      this.geo.cone,
+      this.mat('frostShard', 0xc9f3ff, 0x4d9cc1),
+      32,
+    );
+    this.frostShards.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.frostShards.count = 0;
+    this.scene.add(this.frostShards);
     this.decoy.root.visible = false;
     this.enemies.forEach((m) => (m.root.visible = false));
     this.onResize = () => this.resize();
@@ -338,6 +379,74 @@ class BulkBirdRenderer {
     this.textures.add(t);
     return t;
   }
+  makeOpiumBody(body) {
+    const snow = this.mat('opiumSnow', 0xf4f8ff),
+      shade = this.mat('opiumShade', 0xc5d9e6),
+      mask = this.mat('opiumMask', 0x233a53),
+      ice = this.mat('opiumEye', 0x9deaff, 0x60bde9);
+    this.geo.feather = new THREE.BufferGeometry();
+    this.geo.feather.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(
+        [-1, 0.5, 0, 0, 0.55, 0.28, 1, 0.5, 0, 0, -0.6, 0.1, 0, 0, 0.32],
+        3,
+      ),
+    );
+    this.geo.feather.setIndex([0, 1, 4, 1, 2, 4, 2, 3, 4, 3, 0, 4]);
+    this.geo.feather.computeVertexNormals();
+    const featherMat = this.mat('opiumFeather', 0xecf5ff);
+    featherMat.side = THREE.DoubleSide;
+    this.mesh(body, this.geo.sphere, snow, 0, 0.05, -0.05, 0.59, 0.85, 0.52);
+    this.mesh(body, this.geo.sphere, snow, 0, 0.65, 0.03, 0.47, 0.64, 0.43);
+    this.mesh(body, this.geo.sphere, snow, 0, 1.1, 0.3, 0.32, 0.37, 0.35);
+    // Two tapered segments form a long, downward-curving plague-mask beak.
+    const bill = this.mesh(body, this.geo.cone, mask, 0, 1.03, 0.82, 0.18, 0.9, 0.17);
+    bill.rotation.x = Math.PI / 2 + 0.22;
+    const tip = this.mesh(body, this.geo.cone, mask, 0, 0.79, 1.26, 0.11, 0.4, 0.1);
+    tip.rotation.x = 2.55;
+    for (const side of [-1, 1]) {
+      this.mesh(body, this.geo.sphere, mask, side * 0.24, 1.19, 0.51, 0.095, 0.105, 0.055);
+      this.mesh(body, this.geo.sphere, ice, side * 0.245, 1.2, 0.56, 0.036, 0.035, 0.018);
+      this.mesh(body, this.geo.cylinder, shade, side * 0.24, -0.72, 0.05, 0.075, 0.5, 0.075);
+      this.mesh(body, this.geo.box, mask, side * 0.24, -0.97, 0.22, 0.19, 0.09, 0.46);
+    }
+    // Layered, drooping feathers use one instanced mesh instead of dozens of draw calls.
+    const fur = new THREE.InstancedMesh(this.geo.feather, featherMat, 56);
+    for (let i = 0; i < 56; i++) {
+      const layer = Math.floor(i / 14),
+        angle = ((i % 14) / 14) * Math.PI * 2,
+        r = 0.39 + layer * 0.06;
+      this.tmp.position.set(Math.sin(angle) * r, 0.92 - layer * 0.4, Math.cos(angle) * r - 0.07);
+      this.tmp.rotation.set(Math.sin(angle) * 0.12, angle, 0);
+      this.tmp.scale.set(0.14, 0.72 + (i % 3) * 0.12, 0.2);
+      this.tmp.updateMatrix();
+      fur.setMatrixAt(i, this.tmp.matrix);
+    }
+    body.add(fur);
+    const wings = [];
+    for (const side of [-1, 1]) {
+      const wing = new THREE.Group();
+      wing.position.set(side * 0.45, 0.55, -0.06);
+      body.add(wing);
+      this.mesh(wing, this.geo.sphere, shade, side * 0.06, -0.3, -0.06, 0.19, 0.58, 0.26);
+      for (let i = 0; i < 5; i++) {
+        const f = this.mesh(
+          wing,
+          this.geo.feather,
+          featherMat,
+          side * (0.07 + i * 0.045),
+          -0.4 - i * 0.075,
+          -0.05 - i * 0.065,
+          0.12,
+          0.8 - i * 0.03,
+          0.2,
+        );
+        f.rotation.z = -side * 0.13;
+      }
+      wings.push(wing);
+    }
+    return wings;
+  }
   makeBird(type) {
     const root = new THREE.Group(),
       body = new THREE.Group();
@@ -347,100 +456,103 @@ class BulkBirdRenderer {
       dark = this.mat(type + 'dark', type === 'crow' ? 0x171e2c : 0x526d72),
       pale = this.mat('featherPale', 0xeee6c8),
       beak = this.mat(type + 'beak', type === 'crow' ? 0x383b36 : 0xf0bd52);
-    this.mesh(body, this.geo.sphere, base, 0, 0.18, 0, 0.55, 0.54, 0.75);
-    const head = this.mesh(
-      body,
-      this.geo.sphere,
-      base,
-      0,
-      0.76,
-      0.48,
-      type === 'owl' ? 0.56 : 0.35,
-      type === 'owl' ? 0.52 : 0.35,
-      0.35,
-    );
-    if (type === 'duck') head.material = this.mat('duckHead', 0x2e876b);
-    const bill = this.mesh(
-      body,
-      type === 'duck' ? this.geo.box : this.geo.cone,
-      beak,
-      0,
-      0.68,
-      type === 'hummingbird' ? 1.16 : 1,
-      type === 'duck' ? 0.25 : 0.13,
-      type === 'hummingbird' ? 0.8 : 0.4,
-      type === 'duck' ? 0.5 : 0.14,
-    );
-    if (type !== 'duck') bill.rotation.x = Math.PI / 2;
-    const wings = [];
-    for (const side of [-1, 1]) {
-      const wing = new THREE.Group();
-      wing.position.set(side * 0.37, 0.36, 0);
-      body.add(wing);
-      for (let i = 0; i < 5; i++) {
-        const feather = this.mesh(
-          wing,
-          this.geo.sphere,
-          type === 'owl' && i % 2 === 0 ? pale : i % 3 === 0 ? dark : base,
-          side * (0.22 + i * 0.17),
-          -0.05,
-          -i * 0.1,
-          0.21,
-          0.075,
-          0.5 - i * 0.025,
-        );
-        feather.rotation.y = side * (0.1 + i * 0.07);
-      }
-      wings.push(wing);
-      if (type === 'owl') {
-        this.mesh(body, this.geo.sphere, pale, side * 0.22, 0.84, 0.76, 0.22, 0.26, 0.06);
-        const tuft = this.mesh(body, this.geo.cone, dark, side * 0.4, 1.3, 0.4, 0.14, 0.35, 0.1);
-        tuft.rotation.z = -side * 0.35;
-      }
-      this.mesh(
+    let wings = [];
+    if (type === 'opium') wings = this.makeOpiumBody(body);
+    else {
+      this.mesh(body, this.geo.sphere, base, 0, 0.18, 0, 0.55, 0.54, 0.75);
+      const head = this.mesh(
         body,
         this.geo.sphere,
-        this.mat('eye', 0x141e19),
-        side * 0.22,
-        0.85,
-        0.76,
-        0.07,
-        0.085,
-        0.05,
-      );
-      this.mesh(body, this.geo.sphere, pale, side * 0.23, 0.88, 0.8, 0.018, 0.022, 0.016);
-      const foot = this.mesh(
-        body,
-        this.geo.box,
-        this.mat('feet', 0xc38b49),
-        side * 0.22,
-        -0.37,
-        0.22,
-        0.14,
-        0.08,
-        type === 'duck' ? 0.38 : 0.25,
-      );
-      foot.rotation.y = side * 0.2;
-    }
-    const tail = this.mesh(body, this.geo.sphere, dark, 0, 0.12, -0.75, 0.35, 0.08, 0.53);
-    tail.rotation.x = -0.2;
-    if (type === 'pigeon') {
-      const neck = this.mesh(
-        body,
-        this.geo.sphere,
-        this.mat('pigeonNeck', 0x3c8e83),
+        base,
         0,
-        0.58,
+        0.76,
+        0.48,
+        type === 'owl' ? 0.56 : 0.35,
+        type === 'owl' ? 0.52 : 0.35,
         0.35,
-        0.36,
-        0.23,
-        0.4,
       );
-      neck.rotation.x = -0.15;
+      if (type === 'duck') head.material = this.mat('duckHead', 0x2e876b);
+      const bill = this.mesh(
+        body,
+        type === 'duck' ? this.geo.box : this.geo.cone,
+        beak,
+        0,
+        0.68,
+        type === 'hummingbird' ? 1.16 : 1,
+        type === 'duck' ? 0.25 : 0.13,
+        type === 'hummingbird' ? 0.8 : 0.4,
+        type === 'duck' ? 0.5 : 0.14,
+      );
+      if (type !== 'duck') bill.rotation.x = Math.PI / 2;
+      for (const side of [-1, 1]) {
+        const wing = new THREE.Group();
+        wing.position.set(side * 0.37, 0.36, 0);
+        body.add(wing);
+        for (let i = 0; i < 5; i++) {
+          const feather = this.mesh(
+            wing,
+            this.geo.sphere,
+            type === 'owl' && i % 2 === 0 ? pale : i % 3 === 0 ? dark : base,
+            side * (0.22 + i * 0.17),
+            -0.05,
+            -i * 0.1,
+            0.21,
+            0.075,
+            0.5 - i * 0.025,
+          );
+          feather.rotation.y = side * (0.1 + i * 0.07);
+        }
+        wings.push(wing);
+        if (type === 'owl') {
+          this.mesh(body, this.geo.sphere, pale, side * 0.22, 0.84, 0.76, 0.22, 0.26, 0.06);
+          const tuft = this.mesh(body, this.geo.cone, dark, side * 0.4, 1.3, 0.4, 0.14, 0.35, 0.1);
+          tuft.rotation.z = -side * 0.35;
+        }
+        this.mesh(
+          body,
+          this.geo.sphere,
+          this.mat('eye', 0x141e19),
+          side * 0.22,
+          0.85,
+          0.76,
+          0.07,
+          0.085,
+          0.05,
+        );
+        this.mesh(body, this.geo.sphere, pale, side * 0.23, 0.88, 0.8, 0.018, 0.022, 0.016);
+        const foot = this.mesh(
+          body,
+          this.geo.box,
+          this.mat('feet', 0xc38b49),
+          side * 0.22,
+          -0.37,
+          0.22,
+          0.14,
+          0.08,
+          type === 'duck' ? 0.38 : 0.25,
+        );
+        foot.rotation.y = side * 0.2;
+      }
+      const tail = this.mesh(body, this.geo.sphere, dark, 0, 0.12, -0.75, 0.35, 0.08, 0.53);
+      tail.rotation.x = -0.2;
+      if (type === 'pigeon') {
+        const neck = this.mesh(
+          body,
+          this.geo.sphere,
+          this.mat('pigeonNeck', 0x3c8e83),
+          0,
+          0.58,
+          0.35,
+          0.36,
+          0.23,
+          0.4,
+        );
+        neck.rotation.x = -0.15;
+      }
+      const scale =
+        type === 'hummingbird' ? 0.66 : type === 'owl' ? 1.17 : type === 'duck' ? 1.06 : 1;
+      body.scale.setScalar(scale);
     }
-    const scale =
-      type === 'hummingbird' ? 0.66 : type === 'owl' ? 1.17 : type === 'duck' ? 1.06 : 1;
-    body.scale.setScalar(scale);
     const hp = new THREE.Group();
     hp.position.set(0, 1.9, 0);
     const bg = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0x152b28, depthWrite: false })),
@@ -466,7 +578,21 @@ class BulkBirdRenderer {
       item.visible = false;
       cargo.push(item);
     }
-    return { root, body, wings, fill, hp, cargo, type };
+    const frozen = new THREE.Mesh(
+      this.geo.rock,
+      new THREE.MeshBasicMaterial({
+        color: 0x94ddff,
+        transparent: true,
+        opacity: 0.32,
+        wireframe: true,
+        depthWrite: false,
+      }),
+    );
+    frozen.position.set(0, 0.3, 0.1);
+    frozen.scale.set(0.95, 1.2, 1);
+    frozen.visible = false;
+    root.add(frozen);
+    return { root, body, wings, fill, hp, cargo, frozen, type };
   }
   resize() {
     if (this.dead) return;
@@ -496,12 +622,50 @@ class BulkBirdRenderer {
     model.hp.visible = !preview;
     model.fill.scale.x = 1.45 * Math.max(0, b.hp / b.maxHp);
     model.fill.position.x = -0.725 * (1 - b.hp / b.maxHp);
-    const flap = preview
-      ? 0.36 + Math.sin(time * 2) * 0.12
-      : Math.sin(b.flap) * (b.y > 1.3 ? 0.7 : 0.16);
+    model.frozen.visible = !preview && b.frozen > 0;
+    const flap =
+      b.frozen > 0
+        ? 0
+        : model.type === 'opium'
+          ? Math.sin(time * 2) * 0.06
+          : preview
+            ? 0.36 + Math.sin(time * 2) * 0.12
+            : Math.sin(b.flap) * (b.y > 1.3 ? 0.7 : 0.16);
     model.wings[0].rotation.z = flap;
     model.wings[1].rotation.z = -flap;
     model.cargo.forEach((m, i) => (m.visible = !preview && i < b.cargo));
+  }
+  renderFrost(game, time, preview) {
+    const p = game.player,
+      active = !preview && p.alive && p.type === 'opium';
+    this.frostAura.visible = active && p.frostAura > 0;
+    if (this.frostAura.visible) {
+      this.frostAura.position.set(p.x, Math.max(0.14, p.y - 0.8), p.z);
+      this.frostAura.material.opacity = 0.35 + Math.sin(time * 8) * 0.12;
+    }
+    const casting = active && (p.breathWindup > 0 || p.breathVisual > 0);
+    this.frostBreath.visible = casting;
+    this.frostShards.count = casting ? 32 : 0;
+    if (!casting) return;
+    this.frostBreath.position.set(p.x, Math.max(0.16, p.breathY - 0.7), p.z);
+    this.frostBreath.rotation.y = p.breathAngle;
+    this.frostBreath.scale.setScalar(10);
+    this.frostBreath.material.opacity = p.breathWindup > 0 ? 0.15 : (0.32 * p.breathVisual) / 0.65;
+    for (let i = 0; i < 32; i++) {
+      const travel = (time * 1.7 + i * 0.137) % 1,
+        distance = 1 + travel * 9,
+        angle = p.breathAngle + ((i % 9) - 4) * 0.14;
+      this.tmp.position.set(
+        p.x + Math.sin(angle) * distance,
+        p.breathY + 0.55 + Math.sin(i * 2.3) * 0.55,
+        p.z + Math.cos(angle) * distance,
+      );
+      this.tmp.rotation.set(Math.PI / 2, 0, -angle);
+      this.tmp.scale.set(0.035, 0.15 + travel * 0.15, 0.035);
+      this.tmp.updateMatrix();
+      this.frostShards.setMatrixAt(i, this.tmp.matrix);
+    }
+    this.frostShards.instanceMatrix.needsUpdate = true;
   }
   render(game, dt, time) {
     const preview = game.mode === 'ready';
@@ -551,6 +715,7 @@ class BulkBirdRenderer {
         ring.material.opacity = (f.life / f.total) * 0.7;
       }
     });
+    this.renderFrost(game, time, preview);
     if (preview) {
       this.target.set(-6, 4.8, 8);
       this.look.set(1.6, 2.2, 0);
