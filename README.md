@@ -1,12 +1,12 @@
-# Bulk Import: Wspólna Galaktyka — v25
+# Bulk Import: Wspólna Galaktyka — v26
 
 Historia zmian: [CHANGELOG.md](CHANGELOG.md) — aktualizowana przy każdym nowym wydaniu, począwszy od v16.
 
-**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v25.html](Bulk-Import-v25.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów**, **CSV Double**, **Sudoku**, **Metro Import 3D** i **Apex Souls 3D**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
+**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v26.html](Bulk-Import-v26.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów**, **CSV Double**, **Sudoku**, **Metro Import 3D**, **Apex Souls 3D** i **Grand Theft CSV: Vice Import**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
 
 ## Pobierz HTML i graj lokalnie
 
-Pobierz **Bulk-Import-v25.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce, CSV Double, Sudoku, Metro Import i Apex Souls są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
+Pobierz **Bulk-Import-v26.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce, CSV Double, Sudoku, Metro Import, Apex Souls i Vice Import są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
 
 Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo działa offline; Bird Game 3 i Gwintforce uruchomisz w terminalu na statku; CSV Double otworzysz wewnątrz Bird Game 3, a Sudoku wewnątrz CSV Double. Kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
 
@@ -26,6 +26,8 @@ npm start
 ```
 
 Otwórz `http://localhost:3000`. Serwer udostępnia ten sam HTML; po udanym połączeniu dostępne są również kooperacja i VS. HTTP i WebSocket `/ws` korzystają z jednego portu, ustawianego przez `PORT`. Gospodarz tworzy pokój i przekazuje znajomym link lub kod.
+
+- **Nowości v26:** po pokonaniu Lorda Legacy w Apex Souls automatycznie otwiera się **Grand Theft CSV: Vice Import** — miasto 3D, chodzenie, samochód, Bulk Boost, ruch uliczny i pościg audytorów. Misja **Demolka duplikatów** wymaga samodzielnego pilotowania helikoptera, czterech zrzutów DELETE na dachy i lądowania w bazie. Są checkpointy, radio i jazda swobodna po historii. Starsze zwycięstwo w Apex Souls też odblokowuje przycisk wejścia. Sterowanie i zapis: [DESIGN-v26.md](DESIGN-v26.md).
 
 - **Nowości v25:** Metro Import kończy się po zdobyciu **25 000 punktów**: każdy metr daje 1 pkt, każdy CSV +25 pkt. Zbieranie CSV skraca bieg do kilku minut; po osiągnięciu celu automatycznie otwiera się Apex Souls. Wcześniejszy rekord co najmniej 25 000 pkt także daje odblokowanie. Szczegóły: [DESIGN-v25.md](DESIGN-v25.md).
 

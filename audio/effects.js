@@ -13,6 +13,12 @@
    if(name==='shot'){this.node('noise',0,.035,.065);this.node('triangle',190,.085,.1,0,40);this.node('sine',1600,.018,.075,.025,750);}
    else if(name==='slash'){this.node('noise',0,.028,.13);this.node('triangle',620,.025,.12,0,120);}
    else if(name==='greatsword'){this.node('noise',0,.05,.2);this.node('triangle',140,.07,.23,0,35);}
+   else if(name==='door'){this.node('noise',0,.025,.08);this.node('triangle',150,.045,.1,0,50);}
+   else if(name==='rotor'){this.node('sawtooth',85,.022,.35,0,65);this.node('noise',0,.012,.22);}
+   else if(name==='payload'){this.node('triangle',780,.025,.2,0,140);this.node('noise',0,.025,.15);}
+   else if(name==='horn'){this.node('sawtooth',220,.018,.25);this.node('sawtooth',277,.015,.25);}
+   else if(name==='siren'){this.node('triangle',600,.018,.32,0,1050);this.node('triangle',1050,.018,.32,.32,600);}
+   else if(name==='alert'){this.node('square',880,.012,.07);this.node('sine',1320,.018,.09,.13);}
    else if(name==='enemyShot'){this.node('sawtooth',360,.02,.09,0,90);this.node('noise',0,.015,.06);}
    else if(name==='upgrade'){[520,780,1040,1560].forEach((f,i)=>this.node('sine',f,.05,.17,i*.075));this.node('noise',0,.013,.18);}
    else if(name==='click'){this.node('sine',850,.025,.025,0,450);}
