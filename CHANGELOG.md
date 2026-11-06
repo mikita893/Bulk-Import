@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v24.0.0 — 2026-11-06
+
+Plik gry: [Bulk-Import-v24.html](Bulk-Import-v24.html).
+
+- Metro Import: meta 30 000 m, checkpointy co 5000 m, apteczki i zapis trasy.
+- Po mecie automatycznie odblokowuje się Apex Souls 3D: trzy lokacje i finałowy boss w trzech fazach.
+- Miecz, tarcza, wytrzymałość, uniki, flakony, ogniska, rozwój i odzyskiwanie run po śmierci.
+- Zachowano stare zapisy i jeden HTML; publiczne solo aktualizowane, multiplayer bez zmian, alwaysdata nadal wstrzymane.
+
 ## v23.0.0 — 2026-11-06
 
 Plik gry: [Bulk-Import-v23.html](Bulk-Import-v23.html).

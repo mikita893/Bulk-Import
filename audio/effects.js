@@ -65,6 +65,12 @@
         this.node('noise', 0, 0.035, 0.065);
         this.node('triangle', 190, 0.085, 0.1, 0, 40);
         this.node('sine', 1600, 0.018, 0.075, 0.025, 750);
+      } else if (name === 'slash') {
+        this.node('noise', 0, 0.028, 0.13);
+        this.node('triangle', 620, 0.025, 0.12, 0, 120);
+      } else if (name === 'greatsword') {
+        this.node('noise', 0, 0.05, 0.2);
+        this.node('triangle', 140, 0.07, 0.23, 0, 35);
       } else if (name === 'enemyShot') {
         this.node('sawtooth', 360, 0.02, 0.09, 0, 90);
         this.node('noise', 0, 0.015, 0.06);

@@ -69,6 +69,9 @@ const app =
     'minigames/runner-sim.js',
     'minigames/runner-render.js',
     'minigames/runner-game.js',
+    'minigames/souls-sim.js',
+    'minigames/souls-render.js',
+    'minigames/souls-game.js',
     'multiplayer/unified.js',
     'multiplayer/render.js',
     'multiplayer/client.js',
@@ -87,6 +90,7 @@ const output = versioned(read('multiplayer/client-shell.html'))
         'minigames/symbol-game.css',
         'minigames/sudoku-game.css',
         'minigames/runner-game.css',
+        'minigames/souls-game.css',
       ]
         .map(read)
         .join('\n') + cardArtStyle,
@@ -111,6 +115,6 @@ console.log(
     release.filename +
     ' (' +
     Buffer.byteLength(output) +
-    ' bytes): standalone campaign + multiplayer + Bird Game 3 + Gwintforce + CSV Double + Sudoku + Metro Import 3D',
+    ' bytes): standalone campaign + multiplayer + Bird Game 3 + Gwintforce + CSV Double + Sudoku + Metro Import 3D + Apex Souls',
 );
 console.log('GitHub Pages: ' + require('../deploy/pages/build.cjs').buildPages());

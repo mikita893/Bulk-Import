@@ -27,6 +27,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       if (!/^(blob|data):/.test(r.url())) traffic.push(r.url());
     });
     page.on('websocket', (s) => traffic.push(s.url()));
+    // The managed browser blocks file://. An in-memory Storage provides the same optional persistence contract in this network-free about:blank document.
+    await page.evaluate(() => {
+      const data = new Map();
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          getItem: (k) => data.get(k) ?? null,
+          setItem: (k, v) => data.set(k, String(v)),
+          removeItem: (k) => data.delete(k),
+        },
+      });
+    });
     await page.setContent(fs.readFileSync(release.filename, 'utf8'));
     await page.waitForFunction(() => window.BulkUnified);
     assert.equal(await page.evaluate(() => BulkUnified.openRunner()), false);
@@ -213,6 +224,165 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert(score > 0);
     await page.locator('[data-run-action="restart"]').click();
     await page.waitForFunction(() => BulkUnified.runner.game.state === 'playing');
+    assert.equal(await page.evaluate(() => BulkUnified.openSouls()), false);
+    // Put the runner immediately before the finish; normal RAF physics must cross the exact gate.
+    await page.evaluate(() => {
+      const g = BulkUnified.runner.game;
+      g.distance = 29999;
+      g.items = [];
+      g.nextRow = 1e8;
+      g.inv = 0;
+    });
+    await page.waitForFunction(() => BulkUnified.runner.game.state === 'won');
+    assert.equal(await page.evaluate(() => BulkUnified.runner.game.distance), 30000);
+    await page.waitForFunction(() => BulkUnified.screen === 'souls');
+    assert(await page.locator('#souls-world').isVisible());
+    assert(
+      await page.evaluate(
+        () => BulkUnified.runner.suspended && BulkUnified.runner.record.completed,
+      ),
+    );
+    const frozenRunner = await page.evaluate(() => JSON.stringify(BulkUnified.runner.game));
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-souls-ready.png' });
+    await page.locator('[data-souls-action="start"]').click();
+    await page.keyboard.down('KeyW');
+    await page.waitForFunction(() => BulkUnified.souls.game.player.z < 7);
+    await page.keyboard.up('KeyW');
+    await page.evaluate(() => {
+      const g = BulkUnified.souls.game;
+      g.player.x = 0;
+      g.player.z = 0;
+      g.player.inv = 0;
+      g.enemies = [{ ...g.enemies[0], x: 0, z: -2, state: 'chase', timer: 10 }];
+      g.target = g.enemies[0].id;
+    });
+    await page.keyboard.press('KeyJ');
+    await page.waitForFunction(() => BulkUnified.souls.game.enemies[0].hp === 50);
+    await page.waitForFunction(() => !BulkUnified.souls.game.player.action);
+    await page.keyboard.press('KeyK');
+    await page.waitForFunction(() => BulkUnified.souls.game.enemies[0].hp === 2);
+    await page.waitForFunction(() => !BulkUnified.souls.game.player.action);
+    await page.keyboard.press('KeyJ');
+    await page.waitForFunction(() => BulkUnified.souls.game.enemies[0].hp === 0);
+    assert.equal(await page.evaluate(() => BulkUnified.souls.game.progress.runes), 35);
+    await page.waitForFunction(() => !BulkUnified.souls.game.player.action);
+    await page.waitForFunction(() => BulkUnified.souls.game.player.stamina >= 28);
+    await page.keyboard.press('Space');
+    await page.waitForFunction(() => BulkUnified.souls.game.player.roll > 0);
+    await page.waitForFunction(() => BulkUnified.souls.game.player.roll === 0);
+    await page.keyboard.press('KeyP');
+    const soulsPaused = await page.evaluate(() => JSON.stringify(BulkUnified.souls.game));
+    await sleep(200);
+    await page.keyboard.press('KeyK');
+    assert.equal(await page.evaluate(() => JSON.stringify(BulkUnified.souls.game)), soulsPaused);
+    await page.locator('.souls-cover [data-souls-action="pause"]').click();
+    await page.evaluate(() => {
+      const g = BulkUnified.souls.game;
+      g.player.x = 0;
+      g.player.z = 8;
+      g.progress.runes = 100;
+      g.player.hp = 30;
+      g.player.flasks = 1;
+    });
+    await page.keyboard.press('KeyE');
+    await page.waitForFunction(() => BulkUnified.souls.game.state === 'rest');
+    await page.locator('[data-souls-action="level"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.souls.game.progress.level), 1);
+    await page.locator('[data-souls-action="rest"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.souls.game.player.flasks), 3);
+    await page.locator('[data-souls-action="leaveRest"]').click();
+    await page.setViewportSize({ width: 430, height: 932 });
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
+    await page.locator('[data-souls-action="roll"]').tap();
+    await page.waitForFunction(() => BulkUnified.souls.game.player.roll > 0);
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-souls-mobile.png' });
+    await page.setViewportSize({ width: 1440, height: 1050 });
+    // Telegraphed boss states are rendered from the same radius/direction as simulation collisions.
+    await page.evaluate(() => {
+      const s = BulkUnified.souls,
+        g = s.game;
+      g.area = 2;
+      g.progress.room = 2;
+      g.spawnRoom();
+      g.player.z = -3;
+      g.target = g.enemies[0].id;
+      const e = g.enemies[0];
+      e.hp = 250;
+      e.timer = 0;
+      e.state = 'chase';
+    });
+    await page.waitForFunction(() => BulkUnified.souls.game.enemies[0].phase === 3);
+    await page.waitForFunction(() => BulkUnified.souls.game.enemies[0].state === 'windup');
+    assert.equal(await page.locator('#souls-boss-phase').textContent(), 'FAZA 3 / 3');
+    assert(await page.evaluate(() => BulkUnified.souls.view.models.get('2-0').marker.visible));
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-souls-boss.png' });
+    const soulsBudget = await page.evaluate(() => {
+      const s = BulkUnified.souls;
+      s.game.pause();
+      s.view.render(s.game, 0.016, s.viewState);
+      const memory = s.view.renderer.info.memory.geometries;
+      for (let i = 0; i < 60; i++) s.view.render(s.game, 0.016, s.viewState);
+      return {
+        memory,
+        after: s.view.renderer.info.memory.geometries,
+        calls: s.view.renderer.info.render.calls,
+        bolts: s.game.bolts.length,
+      };
+    });
+    assert.equal(soulsBudget.after, soulsBudget.memory);
+    assert(soulsBudget.calls < 180);
+    await page.evaluate(() => {
+      const s = BulkUnified.souls,
+        g = s.game;
+      g.resume();
+      g.player.hp = 1;
+      g.player.inv = 0;
+      g.progress.runes = 80;
+      g.hurtPlayer(99, g.player.x, g.player.z - 1);
+      s.cover();
+      s.persist();
+    });
+    assert(await page.locator('[data-souls-action="retry"]').isVisible());
+    assert.equal(await page.evaluate(() => BulkUnified.souls.game.progress.lost.runes), 80);
+    await page.locator('[data-souls-action="retry"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.souls.game.progress.runes), 0);
+    await page.evaluate(() => {
+      const g = BulkUnified.souls.game;
+      g.player.x = g.progress.lost.x;
+      g.player.z = g.progress.lost.z;
+    });
+    await page.waitForFunction(() => BulkUnified.souls.game.progress.runes === 80);
+    await page.evaluate(() => {
+      const g = BulkUnified.souls.game,
+        e = g.enemies[0];
+      g.player.x = 0;
+      g.player.z = 0;
+      g.player.stamina = 100;
+      g.player.inv = 1;
+      e.x = 0;
+      e.z = -2;
+      e.hp = 20;
+      e.state = 'recover';
+      e.timer = 3;
+      g.target = e.id;
+    });
+    await page.keyboard.press('KeyJ');
+    await page.waitForFunction(() => BulkUnified.souls.game.state === 'victory');
+    assert(await page.locator('[data-souls-action="new"]').isVisible());
+    await page.evaluate(() => (window._formerSouls = BulkUnified.souls));
+    await page.locator('#unified-back').click();
+    assert(await page.evaluate(() => _formerSouls.dead && BulkUnified.souls === null));
+    assert.equal(await page.locator('#souls-host canvas').count(), 0);
+    assert.equal(await page.evaluate(() => JSON.stringify(BulkUnified.runner.game)), frozenRunner);
+    await sleep(1400);
+    assert.equal(await page.evaluate(() => BulkUnified.screen), 'runner');
+    await page.locator('[data-run-action="souls"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.souls.game.state), 'victory');
+    await page.locator('#unified-back').click();
+    console.log(
+      'PASS 30,000m gate, automatic Apex Souls, real keyboard melee/roll, pause, bonfire upgrades, mobile touch, boss phases/telegraphs, GPU budget, death/rune retrieval, victory save and suspended parent cleanup.',
+      JSON.stringify(soulsBudget),
+    );
     await page.evaluate(() => (window._formerRunner = BulkUnified.runner));
     await page.locator('#unified-back').click();
     assert(await page.evaluate(() => _formerRunner.dead && BulkUnified.runner === null));

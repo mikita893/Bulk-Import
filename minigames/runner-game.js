@@ -1,23 +1,26 @@
 'use strict';
 class BulkRunnerGame {
-  constructor(host, { storage, onExit, soundEnabled = () => true } = {}) {
+  constructor(host, { storage, onExit, onComplete, soundEnabled = () => true } = {}) {
     this.host = host;
     this.storage = storage;
     this.onExit = onExit;
+    this.onComplete = onComplete;
+    this.suspended = false;
+    this.completionTimer = null;
     this.dead = false;
     this.saved = false;
     this.record = BulkRunner.readRecord(null);
     try {
       this.record = BulkRunner.readRecord(storage.getItem('bulk-import-metro-runner-v1'));
     } catch (e) {}
-    this.game = new BulkRunner.Game();
+    this.game = new BulkRunner.Game(Date.now(), this.record.completed ? 0 : this.record.checkpoint);
     this.last = performance.now();
     this.uiAt = 0;
     this.effects = new BulkEffects.Effects({ enabled: soundEnabled });
     host.innerHTML =
-      '<div class="run-page"><canvas id="runner-world" aria-label="Metro Import: trójwymiarowy bieg przez trzy tory"></canvas><div class="run-vignette"></div><div class="run-top"><div><small>METRO IMPORT / UCIECZKA PRZED AUDYTEM</small><h1>METRO<span>IMPORT</span></h1></div><button data-run-action="pause">Ⅱ Pauza</button></div><div class="run-hud"><div><small>DYSTANS</small><b id="runner-distance">0 m</b></div><div><small>CSV</small><b id="runner-coins">0</b></div><div><small>WYNIK</small><b id="runner-score">0</b></div><div><small>REKORD</small><b id="runner-best">' +
+      '<div class="run-page"><canvas id="runner-world" aria-label="Metro Import: trójwymiarowy bieg przez trzy tory"></canvas><div class="run-vignette"></div><div class="run-top"><div><small>METRO IMPORT / UCIECZKA PRZED AUDYTEM</small><h1>METRO<span>IMPORT</span></h1></div><button data-run-action="pause">Ⅱ Pauza</button></div><div class="run-hud"><div><small>DYSTANS</small><b id="runner-distance">0 / 30 000 m</b></div><div><small>CSV</small><b id="runner-coins">0</b></div><div><small>WYNIK</small><b id="runner-score">0</b></div><div><small>REKORD</small><b id="runner-best">' +
       this.record.score +
-      '</b></div></div><div class="run-bottom"><div id="runner-lives" aria-label="Pozostałe życie">♥ ♥ ♥</div><p id="runner-powers"></p><p id="runner-message" role="status">Sudoku zaliczone. Teraz spróbuj uciec przed audytem!</p><small>← → / A D: tory · ↑ / W / spacja: skok · ↓ / S: ślizg · P: pauza</small></div><div class="run-touch" aria-label="Sterowanie dotykowe"><button data-run-action="left" aria-label="Lewy tor">←</button><button data-run-action="jump" aria-label="Skok">↑</button><button data-run-action="slide" aria-label="Ślizg">↓</button><button data-run-action="right" aria-label="Prawy tor">→</button></div><div class="run-cover" id="runner-cover"></div></div>';
+      '</b></div></div><div class="run-progress"><span id="runner-stage">ETAP 1 / 6</span><div><i id="runner-progress"></i></div></div><div class="run-bottom"><div id="runner-lives" aria-label="Pozostałe życie">♥ ♥ ♥</div><p id="runner-powers"></p><p id="runner-message" role="status">Sudoku zaliczone. Teraz spróbuj uciec przed audytem!</p><small>← → / A D: tory · ↑ / W / spacja: skok · ↓ / S: ślizg · P: pauza</small></div><div class="run-touch" aria-label="Sterowanie dotykowe"><button data-run-action="left" aria-label="Lewy tor">←</button><button data-run-action="jump" aria-label="Skok">↑</button><button data-run-action="slide" aria-label="Ślizg">↓</button><button data-run-action="right" aria-label="Prawy tor">→</button></div><div class="run-cover" id="runner-cover"></div></div>';
     try {
       this.view = new BulkRunnerRenderer(host.querySelector('#runner-world'));
     } catch (e) {
@@ -58,7 +61,9 @@ class BulkRunnerGame {
     this.onHidden = () => {
       if (document.hidden) this.pause();
     };
-    this.onResize = () => this.view?.resize();
+    this.onResize = () => {
+      if (!this.suspended) this.view?.resize();
+    };
     this.onPointerDown = (e) => {
       if (e.target.closest('button')) {
         this.swipe = null;
@@ -96,14 +101,23 @@ class BulkRunnerGame {
     return this.host.querySelector('#' + id);
   }
   action(action) {
-    if (this.dead) return;
+    if (this.dead || this.suspended) return;
+    if (action === 'souls') {
+      if (this.canEnterSouls()) this.onComplete?.();
+      return;
+    }
     if (action === 'exit') {
       this.onExit?.();
       return;
     }
     if (this.renderError) return;
-    if (action === 'start' || action === 'restart') {
-      if (action === 'restart') this.game = new BulkRunner.Game();
+    if (action === 'start' || action === 'restart' || action === 'fresh') {
+      clearTimeout(this.completionTimer);
+      if (action !== 'start')
+        this.game = new BulkRunner.Game(
+          Date.now(),
+          action === 'fresh' ? 0 : this.record.checkpoint,
+        );
       this.game.start();
       this.last = performance.now();
       this.saved = false;
@@ -126,17 +140,26 @@ class BulkRunnerGame {
     }
   }
   pause() {
-    if (this.dead || this.game.state !== 'playing') return;
+    if (this.dead || this.suspended || this.game.state !== 'playing') return;
     this.game.pause();
     this.effects.stop();
     this.swipe = null;
     this.cover();
+  }
+  canEnterSouls() {
+    return (
+      this.game.state === 'won' ||
+      (this.record.completed && this.record.bestDistance === BulkRunner.GOAL)
+    );
   }
   persist() {
     this.record = {
       version: 1,
       score: Math.max(this.record.score, this.game.score),
       coins: Math.max(this.record.coins, this.game.coins),
+      bestDistance: Math.max(this.record.bestDistance, Math.floor(this.game.distance)),
+      checkpoint: Math.max(this.record.checkpoint, this.game.checkpoint),
+      completed: this.record.completed || this.game.state === 'won',
     };
     try {
       this.storage.setItem('bulk-import-metro-runner-v1', JSON.stringify(this.record));
@@ -152,40 +175,80 @@ class BulkRunnerGame {
     }
     cover.hidden = false;
     const ready = state === 'ready',
-      over = state === 'over';
-    cover.innerHTML =
-      '<div><div class="run-eyebrow">' +
-      (ready
-        ? 'ODDZIAŁ WALIDACJI → ODDZIAŁ UCIECZKI'
+      over = state === 'over',
+      won = state === 'won',
+      checkpoint = this.record.checkpoint;
+    const title = won
+      ? '30 000 metrów.<br><em>Import ukończony!</em>'
+      : ready
+        ? 'Następny przystanek:<br><em>koniec arkusza.</em>'
         : over
-          ? 'AUDYT CIĘ DOPADŁ'
-          : 'PAUZA / CSV NIE UCIEKNĄ') +
-      '</div><h2>' +
-      (ready
-        ? 'Następny przystanek:<br><em>zero duplikatów.</em>'
-        : over
-          ? 'Koniec importu.<br><em>Jeszcze jeden bieg?</em>'
-          : 'Odpoczynek<br><em>od kontroli.</em>') +
-      '</h2><p>' +
-      (ready
-        ? 'Biegnij przez trzy tory. Omijaj pociągi, skacz nad skrzyniami, ślizgaj się pod limitami API. Zbieraj CSV, tarczę, magnes i ZIPsert. Masz trzy szanse.'
+          ? 'Audyt cię dopadł.<br><em>Backup jest gotowy.</em>'
+          : 'Odpoczynek<br><em>od kontroli.</em>';
+    const body = won
+      ? 'Cała trasa za tobą. Pieczęć Legacy pękła — za chwilę otworzy się Apex Souls 3D.'
+      : ready
+        ? 'Cel: przebiegnij 30 000 metrów. Sześć etapów po 5000 m, zapis punktów kontrolnych, apteczki i trzy życia. Skacz, ślizgaj się, omijaj pociągi. Dopiero meta odblokuje Apex Souls.'
         : over
           ? 'Wynik: ' +
             this.game.score +
             ' · dystans: ' +
             Math.floor(this.game.distance) +
-            ' m · CSV: ' +
-            this.game.coins +
-            '. Audytor: „U mnie w Excelu wyszło mniej”.'
-          : 'Wznowienie nie nadrabia czasu w tle. Audytor też poszedł po kawę.') +
+            ' m. Możesz kontynuować od ' +
+            checkpoint +
+            ' m. Audytor nie potrafi skasować backupu.'
+          : 'Zegar i bonusy zatrzymane. Trasa nadal kończy się na 30 000 m.';
+    const next = won ? 'souls' : ready ? 'start' : over ? 'restart' : 'pause',
+      label = won
+        ? '⚔ WEJDŹ DO APEX SOULS 3D'
+        : ready
+          ? this.game.distance > 0
+            ? '▶ KONTYNUUJ OD ' + this.game.distance + ' M'
+            : '▶ ROZPOCZNIJ TRASĘ'
+          : over
+            ? '↻ KONTYNUUJ OD ' + checkpoint + ' M'
+            : '▶ WZNÓW BIEG';
+    cover.innerHTML =
+      '<div><div class="run-eyebrow">' +
+      (won
+        ? 'TRASA ZAKOŃCZONA / NOWA KLĄTWA'
+        : over
+          ? 'PUNKT KONTROLNY ZACHOWANY'
+          : 'META / 30 000 M') +
+      '</div><h2>' +
+      title +
+      '</h2><p>' +
+      body +
       '</p><button class="primary" data-run-action="' +
-      (ready ? 'start' : over ? 'restart' : 'pause') +
+      next +
       '">' +
-      (ready ? '▶ ROZPOCZNIJ BIEG' : over ? '↻ NOWY BIEG' : '▶ WZNÓW BIEG') +
-      '</button><button data-run-action="exit">Wróć do ukończonego Sudoku</button><small>Na telefonie: przesuwaj palcem lub używaj przycisków.</small></div>';
+      label +
+      '</button>' +
+      (!won && this.canEnterSouls()
+        ? '<button data-run-action="souls">⚔ APEX SOULS · ODBLOKOWANE</button>'
+        : '') +
+      (won || checkpoint > 0 ? '<button data-run-action="fresh">Nowy bieg od 0 m</button>' : '') +
+      '<button data-run-action="exit">Wróć do ukończonego Sudoku</button><small>Checkpointy co 5000 m odnawiają życie. Rekord i odblokowanie zapisują się w tej przeglądarce.</small></div>';
+  }
+  suspendForMinigame() {
+    if (this.dead || this.suspended) return;
+    this.persist();
+    this.suspended = true;
+    cancelAnimationFrame(this.raf);
+    clearTimeout(this.completionTimer);
+    this.effects.stop();
+    this.swipe = null;
+  }
+  resumeFromMinigame() {
+    if (this.dead || !this.suspended) return;
+    this.suspended = false;
+    this.last = performance.now();
+    this.view?.resize();
+    this.cover();
+    this.raf = requestAnimationFrame(this.frame);
   }
   frame(now) {
-    if (this.dead) return;
+    if (this.dead || this.suspended) return;
     this.raf = requestAnimationFrame(this.frame);
     const dt = Math.min(0.1, Math.max(0, (now - this.last) / 1000));
     this.last = now;
@@ -200,8 +263,18 @@ class BulkRunnerGame {
           shield: 'powerup',
           magnet: 'powerup',
           boost: 'dash',
+          heal: 'heal',
+          checkpoint: 'powerup',
+          won: 'powerup',
         };
         if (sounds[event]) this.effects.play(sounds[event]);
+        if (event === 'checkpoint') {
+          this.persist();
+          this.$('runner-message').textContent =
+            'Punkt kontrolny ' + this.game.checkpoint + ' m zapisany. Życie odnowione!';
+        }
+        if (event === 'heal')
+          this.$('runner-message').textContent = 'Apteczka Medigelu: dodatkowe życie.';
         if (event === 'hit')
           this.$('runner-message').textContent = 'Trafienie! Validation Rule: patrz przed siebie.';
         if (event === 'boost')
@@ -210,15 +283,26 @@ class BulkRunnerGame {
           this.$('runner-message').textContent =
             'Magnes External ID: przyciąga CSV z sąsiednich torów.';
       }
-      if (this.game.state === 'over') {
+      if (this.game.state === 'over' || this.game.state === 'won') {
         this.persist();
         this.cover();
+        if (this.game.state === 'won')
+          this.completionTimer = setTimeout(() => {
+            if (!this.dead && !this.suspended && this.game.state === 'won') this.onComplete?.();
+          }, 1200);
       }
     }
     this.view?.render(this.game, now / 1000);
     if (now - this.uiAt > 100) {
       this.uiAt = now;
-      this.$('runner-distance').textContent = Math.floor(this.game.distance) + ' m';
+      this.$('runner-distance').textContent =
+        Math.floor(this.game.distance).toLocaleString('pl-PL') + ' / 30 000 m';
+      this.$('runner-progress').style.width = (this.game.distance / BulkRunner.GOAL) * 100 + '%';
+      this.$('runner-stage').textContent =
+        'ETAP ' +
+        Math.min(6, Math.floor(this.game.distance / 5000) + 1) +
+        ' / 6 · ' +
+        (this.game.state === 'won' ? 'META' : this.record.checkpoint + ' m zapisane');
       this.$('runner-coins').textContent = this.game.coins;
       this.$('runner-score').textContent = this.game.score;
       this.$('runner-best').textContent = Math.max(this.record.score, this.game.score);
@@ -235,6 +319,7 @@ class BulkRunnerGame {
     this.persist();
     this.dead = true;
     cancelAnimationFrame(this.raf);
+    clearTimeout(this.completionTimer);
     this.host.removeEventListener('pointercancel', this.onPointerCancel);
     this.host.removeEventListener('click', this.onClick);
     this.host.removeEventListener('pointerdown', this.onPointerDown);

@@ -159,6 +159,10 @@ class BulkRunnerRenderer {
     this.powerups = this.instances(this.mat(0xffffff, 0.3), 12);
     this.trainLabels = this.instances(this.label('EXCEL EXPRESS', '#adf8cf'), 24);
     this.gateLabels = this.instances(this.label('LIMIT API', '#ffe1ab'), 30);
+    this.finishArch = new THREE.Group();
+    this.scene.add(this.finishArch);
+    for (const x of [-5.5, 5.5]) this.box(this.finishArch, this.m.gold, x, 3, 0, 0.6, 6, 0.6);
+    this.box(this.finishArch, this.label('META / 30 000 M', '#c5ffdf'), 0, 6, 0, 11.4, 2, 0.25);
     const sign = this.box(
       this.scene,
       this.label('CSV CENTRAL / 01', '#87ffef'),
@@ -233,6 +237,8 @@ class BulkRunnerRenderer {
   }
   render(game, time) {
     const d = game.distance;
+    this.finishArch.visible = BulkRunner.GOAL - d < 200;
+    this.finishArch.position.z = 3 - (BulkRunner.GOAL - d);
     let n = 0;
     for (let i = 0; i < 70; i++)
       for (const lane of [-3, 0, 3])
@@ -358,7 +364,13 @@ class BulkRunnerRenderer {
         const i = counts.powerups++;
         this.set(this.powerups, i, x, 1 + Math.sin(time * 3) * 0.14, z, 0.75, 0.75, 0.75, time);
         this.color.setHex(
-          item.type === 'shield' ? 0x63e8ff : item.type === 'magnet' ? 0xff83bf : 0xb5fc69,
+          item.type === 'shield'
+            ? 0x63e8ff
+            : item.type === 'magnet'
+              ? 0xff83bf
+              : item.type === 'medkit'
+                ? 0xff8b8b
+                : 0xb5fc69,
         );
         this.powerups.setColorAt(i, this.color);
       }

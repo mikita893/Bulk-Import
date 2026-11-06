@@ -98,7 +98,8 @@ body[data-screen='cards'],
 body[data-screen='bird'],
 body[data-screen='double'],
 body[data-screen='sudoku'],
-body[data-screen='runner'] {
+body[data-screen='runner'],
+body[data-screen='souls'] {
   overflow: hidden;
 }
 @media (max-width: 700px) {

@@ -241,3 +241,55 @@
     bottom: 105px;
   }
 }
+
+.run-progress {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  top: 205px;
+  max-width: 440px;
+  pointer-events: none;
+}
+.run-progress > span {
+  font-size: 10px;
+  color: #d9f9ee;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 3px #000;
+}
+.run-progress > div {
+  height: 6px;
+  background: #172e43bb;
+  border: 1px solid #8cb9bd55;
+  margin-top: 7px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.run-progress i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #95edce;
+}
+.run-hud b {
+  font-size: 19px;
+}
+.run-cover > div {
+  max-height: 100%;
+  overflow: auto;
+}
+@media (max-width: 700px) {
+  .run-progress {
+    left: 14px;
+    right: 14px;
+    top: 163px;
+  }
+  .run-hud {
+    gap: 12px;
+  }
+  .run-hud b {
+    font-size: 14px;
+  }
+  .run-progress > span {
+    font-size: 8px;
+  }
+}

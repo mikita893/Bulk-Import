@@ -121,6 +121,32 @@ const release = require('../release.cjs');
     await game.locator('[data-run-action="start"]').click();
     await game.waitForFunction(() => BulkUnified.runner.game.distance > 1);
     await page.screenshot({ path: '/tmp/bulk-pages-v' + release.major + '-metro-mobile.png' });
+    await game.evaluate(() => {
+      const g = BulkUnified.runner.game;
+      g.distance = 29999;
+      g.items = [];
+      g.nextRow = 1e8;
+    });
+    await game.waitForFunction(() => BulkUnified.screen === 'souls');
+    assert(await game.locator('#souls-world').isVisible());
+    await game.locator('[data-souls-action="start"]').click();
+    await page.keyboard.press('KeyE');
+    await game.waitForFunction(() => BulkUnified.souls.game.state === 'rest');
+    await game.locator('[data-souls-action="rest"]').click();
+    await page.screenshot({ path: '/tmp/bulk-pages-v' + release.major + '-souls-mobile.png' });
+    await game.locator('#unified-back').click();
+    assert.equal(await game.evaluate(() => BulkUnified.screen), 'runner');
+    assert(
+      await page.evaluate(
+        () => JSON.parse(localStorage.getItem('bulk-import-metro-runner-v1')).completed,
+      ),
+    );
+    assert.equal(
+      await page.evaluate(
+        () => JSON.parse(localStorage.getItem('bulk-import-apex-souls-v1')).version,
+      ),
+      1,
+    );
     await game.locator('#unified-back').click();
     assert.equal(await game.evaluate(() => BulkUnified.screen), 'sudoku');
     assert(

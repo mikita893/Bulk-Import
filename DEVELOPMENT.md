@@ -1,6 +1,6 @@
 # Czytelne źródła Bulk Import
 
-Ta gałąź, `dev/readable-source`, zawiera tę samą grę v23 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
+Ta gałąź, `dev/readable-source`, zawiera tę samą grę v24 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
 
 ## Pierwsze uruchomienie
 
@@ -12,7 +12,7 @@ npm run build:client
 npm start
 ```
 
-Otwórz http://localhost:3000. Sam `Bulk-Import-v23.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
+Otwórz http://localhost:3000. Sam `Bulk-Import-v24.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
 
 ## Mapa modułów
 
@@ -149,3 +149,16 @@ Atlas `assets/cards/portraits.webp` zawiera szesnaście malowanych archetypów, 
 Katalog głosu bierze odpowiedzi gracza z tych samych `CREW_SCENES` co tekst UI. Profil `hero` w generatorze dodaje komandora bez ponownego generowania istniejących nagrań załogi. `speakCrew` kolejkuje bohatera i reakcję NPC w jednym kanale. Zmiana sceny przerywa kolejkę, a odtworzenie nie nalicza relacji po raz drugi. Krótkie kwestie walki mają oddzielne ograniczenia częstotliwości. Gra zawiera 290 nagrań, bez usługi TTS przy uruchamianiu.
 
 Nowe testy: `runner.test.cjs` (trasy, fizyka, bonusy, rekord, kompletność atlasu), `runner-browser.cjs` (rzeczywiste ilustracje, pełne zagnieżdżenie, wejście/wyjście, gesty, budżet GPU), `effects.test.cjs` (audio). Testy dubbingu i Pages sprawdzają też odpowiedzi komandora oraz ukończenie Sudoku prowadzące do Metro. Szczegóły: [DESIGN-v23.md](DESIGN-v23.md). Formaty zapisów kampanii i starych minigier pozostają bez zmian.
+
+## v24: skończona trasa Metro i Apex Souls
+
+- `runner-sim.js` eksportuje `GOAL = 30000` i `CHECKPOINT = 5000`. Dystans jest fizyczny, wynik zawiera także CSV. Tylko stan `won` przy mecie nadaje nowe odblokowanie. `readRecord` rozszerza schema 1 bez zmiany klucza: stare wyniki zostają, brak dystansu nie odblokowuje gry. Test przechodzi dwie pełne trasy bez zmiany życia i pozycji — wybiera tylko legalny wolny tor.
+- `runner-game.js` zapisuje najwyższy checkpoint, odtwarza go po śmierci/wczytaniu i wywołuje `onComplete` po mecie. `suspendForMinigame` anuluje RAF oraz timer automatycznego wejścia. `resumeFromMinigame` zeruje zegar i nie ponawia przejścia.
+- `souls-sim.js` jest czystym modelem: `Game.action`, `tick` i `step`, `hurtPlayer`, `hurtEnemy`, `updateEnemy`, ogniska i `interact`. Małe kroki 1/120 s utrzymują trafienia niezależne od FPS. Wytrzymałość, chwila trafienia, zasięg, kierunek, krótka nietykalność i blok są regułami modelu. Nova omija blok. Boss zmienia fazę przy 60% i 30% życia. Po śmierci przerwij resztę kroku, zanim kod odzyskiwania run dotknie nowego miejsca śmierci.
+- `souls-render.js` to proceduralni, animowani rycerze, współdzielone geometrie i instancjonowany świat. Zapowiedzi ataków używają tego samego kąta i promienia co model. Pula 12 pocisków, 40 iskier, limit 900 tys. pikseli i brak geometrii tworzonej w pętli. Wspólne zasoby zwalnia `destroy`.
+- `souls-game.js/css` obsługuje kamerę, namierzanie, klawiaturę, ruch dotykowy, HUD, menu ogniska, pauzę i dźwięki. Dźwięki zaakceptowanego ciosu/uniku wywołuj od razu w kontrolerze: następny `tick` resetuje listę zdarzeń modelu. Efekty wyniku trafienia pochodzą ze zdarzeń symulacji.
+- `multiplayer/unified.js`: `openSouls` działa wyłącznie z odblokowanego Metro przy nieaktywnej sieciowej partii Double. Zachowuje zamrożone modele rodziców i po wyjściu wraca do tego samego biegu. Nie twórz skrótów w menu/terminalu.
+
+Osobny zapis `bulk-import-apex-souls-v1` (schema 1) zawiera poziom, runy, lokację, zgony, zwycięstwa i miejsce utraty run. Nie zapisujemy ataku w połowie animacji; wczytanie wraca do ogniska. Format solo nadal 10, kooperacja 1. Wszystkie zasoby należą do jednego HTML. Dubbing i ilustracje v23 są zachowane.
+
+Testy: `souls.test.cjs` obejmuje zasady walki, checkpointy, zgony/runy i pełne zwycięstwo bez ulepszeń przy użyciu legalnych wejść. `runner-browser.cjs` sprawdza automatyczne otwarcie, walkę, dotyk, ognisko, fazy, zapis, powrót i budżet GPU. Dokument about:blank testu offline ma jawną pamięć testową (zarządzany Chromium blokuje file://); `pages-browser.cjs` dodatkowo sprawdza prawdziwy localStorage pod originem HTTP, bez backendu. Szczegóły: [DESIGN-v24.md](DESIGN-v24.md).
