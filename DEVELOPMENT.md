@@ -201,3 +201,7 @@ Wejście jest z `city`, bez wymogu ukończenia jego fabuły: pieszo przy `BulkCi
 `tests/colony.test.cjs` zawiera pełną legalną trasę dla każdej frakcji: ruch, walkę, wydobywanie, rozmowy, zakupy, naukę, ruiny, raport i bossa. Nie podmienia życia ani pozycji w tym teście. Osobne scenariusze izolują koszty, dialogi, bramki, zapis i pauzę. `runner-browser.cjs` przechodzi rzeczywisty portal oraz cały interfejs nowego RPG i sprawdza m.in. powrót do niezmienionego, zapauzowanego miasta. Czekaj na klatkę renderera przy sprawdzaniu bramy; stan zadania aktualizuje się wcześniej niż widoczność obiektu 3D. `pages-browser.cjs` sprawdza wejście z pauzy nieukończonego miasta i zachowanie zapisu po przeładowaniu strony.
 
 Formaty wcześniejszych gier i wszystkie archiwalne HTML pozostają bez zmian. Szczegóły: [DESIGN-v27.md](DESIGN-v27.md).
+
+Przed uzyskaniem przepustki (quest 0) usługi kowalki, nauczyciela i komendantki są zablokowane, także gdy gracz obejdzie obóz od północy. Chroni to skończoną rudę pierwszego zadania przed wydaniem jej przed oddaniem strażnikowi. Osobny test sprawdza odmowę usług przed przepustką i ich odblokowanie po oddaniu rudy.
+
+Ruda do przepustki może pochodzić także z łupów przeciwników. Nie wymagaj trzech wydobytych złóż w walidacji zapisu po uzyskaniu przepustki: model przyjmuje dowolne trzy bryły, a poprawny zapis ma zachować także tę legalną drogę. Osobny test obejmuje oddanie rudy z walki bez wydobywania i ponowne wczytanie takiego stanu.

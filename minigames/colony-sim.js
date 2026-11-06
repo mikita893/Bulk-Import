@@ -165,7 +165,6 @@
       Array.isArray(p.mined) &&
       p.mined.length === 8 &&
       p.mined.every((x) => typeof x === 'boolean') &&
-      (p.quest === 0 || p.mined.filter(Boolean).length >= 3) &&
       Array.isArray(p.killed) &&
       p.killed.length <= 7 &&
       new Set(p.killed).size === p.killed.length &&
@@ -537,6 +536,9 @@
         } else
           text =
             'Witaj w Kolonii. Kora przydziela frakcje, Magda sprzedaje stal, Witold rozdaje wiedzę za punkty nauki. Żaden nie akceptuje płatności makrem.';
+      } else if (p.quest === 0) {
+        text =
+          'Najpierw uzyskaj przepustkę od Boruta. Trzy bryły rudy dla strażnika mają pierwszeństwo przed zakupami i nauką.';
       } else if (!p.greeted[id]) {
         text =
           id === 'smith'

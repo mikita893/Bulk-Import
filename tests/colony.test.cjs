@@ -125,6 +125,45 @@ test('ore purchases and training spend resources, improve real stats and refuse 
   g.choose('leave');
   assert(C.valid(g.snapshot()));
 });
+test('sneaking into the camp cannot spend the ore needed for the first quest before earning a permit', () => {
+  const g = ready();
+  g.progress.ore = 3;
+  for (const id of ['smith', 'mentor', 'leader']) {
+    talk(g, id);
+    assert(!g.choose('greet'));
+    assert(!g.choose('potion'));
+    assert(!g.choose('sword'));
+    assert(!g.choose('strength'));
+    assert.equal(g.progress.ore, 3);
+    g.choose('leave');
+  }
+  g.progress.started = true;
+  g.progress.mined.splice(0, 3, true, true, true);
+  talk(g, 'guard');
+  assert(g.choose('deliver'));
+  talk(g, 'smith');
+  assert(g.choose('greet'));
+  assert(g.choose('sword'));
+  g.choose('leave');
+  assert(C.valid(g.snapshot()));
+});
+test('ore looted from enemies can pay for the permit and remains valid across save/reload without mining', () => {
+  const g = ready();
+  talk(g, 'guard');
+  g.choose('accept');
+  for (const e of g.enemies.filter((e) => e.id === 'wolf0' || e.id === 'warden'))
+    g.hurtEnemy(e, 999);
+  assert.equal(g.progress.ore, 3);
+  assert(g.progress.mined.every((x) => !x));
+  talk(g, 'guard');
+  assert(g.choose('deliver'));
+  assert.equal(g.progress.quest, 1);
+  assert(C.valid(g.snapshot()));
+  const restored = new C.Game(C.read(JSON.stringify(g.snapshot())));
+  assert.equal(restored.progress.quest, 1);
+  assert.equal(restored.progress.ore, g.progress.ore);
+  assert.deepEqual(restored.progress.killed, g.progress.killed);
+});
 test('sword timing and stamina, directional block, healing interruption and directional dodge have real effects', () => {
   const g = ready();
   g.enemies = [g.makeEnemy(['bird0', 'bird', 0, -12])];
