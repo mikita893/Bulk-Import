@@ -93,4 +93,17 @@ const VOICE_EVENTS=[
  {match:'MARC: „Zgubiłem',speaker:'marc',text:'Zgubiłem połączenie z Dreamforce. Zaraz wracam!',priority:3,cooldown:12},
  {match:'ARKUSZ CHRONIONY / bez pomocy',speaker:'ship',text:'Arkusz chroniony. Szukaj niebieskiego hologramu Marca i naciśnij E!',priority:2,cooldown:25}
 ];
-if(typeof module!=='undefined'&&module.exports)module.exports={CREW_SCENES,CREW_GREETINGS,CREW_EXTRA_LINES,CREW_SHARED_LINES,VOICE_EVENTS};
+const HERO_LINES={
+ apology:'Przepraszam. Chcę lepiej słuchać i poprzeć to działaniem.',
+ romance:'Chcę z tobą być. Czy ty też?',
+ friendship:'Chcę rozwijać naszą przyjaźń.',
+ breakup:'To trudna decyzja. Zostańmy przyjaciółmi.'
+};
+const HERO_BARKS={
+ shot:['Upsert albo nic!','Rekord namierzony. Zero duplikatów!','Ten import ma zasięg!'],
+ hit:['Tego nie było w specyfikacji!','Przydałby się permission set na nietykalność.'],
+ heal:['Medigel zaimportowany. Bez błędnych rekordów.'],
+ upgrade:['Nowa wersja mnie. Wdrożenie bez przerwy technicznej!'],
+ dash:['Przenoszę rekord!']
+};
+if(typeof module!=='undefined'&&module.exports)module.exports={CREW_SCENES,CREW_GREETINGS,CREW_EXTRA_LINES,CREW_SHARED_LINES,VOICE_EVENTS,HERO_LINES,HERO_BARKS};

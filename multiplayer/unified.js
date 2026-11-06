@@ -1,7 +1,7 @@
 'use strict';
 (() => {
  const $=id=>document.getElementById(id),local=!/^https?:$/.test(location.protocol);
- let screen='main',network=null,campaign=null,bird=null,cards=null,double=null,sudoku=null;
+ let screen='main',network=null,campaign=null,bird=null,cards=null,double=null,sudoku=null,runner=null;
  const storage=Object.freeze({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)});
  const onlineControls=['create-coop','create-versus','join-room','join-code','connect-server','server-url'];
  function networkReady(ready){
@@ -13,9 +13,9 @@
   screen=next;document.body.dataset.screen=next;
   document.querySelector('body > header').hidden=next!=='main';
   document.querySelector('body > main').hidden=next!=='main';
-  $('unified-stage').hidden=next==='main';$('campaign-host').hidden=next!=='campaign';$('bird-host').hidden=next!=='bird';$('cards-host').hidden=next!=='cards';$('double-host').hidden=next!=='double';$('sudoku-host').hidden=next!=='sudoku';
-  $('unified-title').textContent=next==='campaign'?'KAMPANIA SOLO · WSPÓLNA GALAKTYKA':next==='sudoku'?'SUDOKU · WALIDACJA WIERSZY':next==='double'?'CSV DOUBLE · PTAKI I DUPLIKATY':next==='cards'?'GWINTFORCE · WOJNA REKORDÓW':'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
-  $('unified-back').textContent=next==='sudoku'?'← Wróć do CSV Double':next==='double'?'← Wróć do Bird Game 3':['bird','cards'].includes(next)?'← Wróć do terminala':'← Menu główne';
+  $('unified-stage').hidden=next==='main';$('campaign-host').hidden=next!=='campaign';$('bird-host').hidden=next!=='bird';$('cards-host').hidden=next!=='cards';$('double-host').hidden=next!=='double';$('sudoku-host').hidden=next!=='sudoku';$('runner-host').hidden=next!=='runner';
+  $('unified-title').textContent=next==='campaign'?'KAMPANIA SOLO · WSPÓLNA GALAKTYKA':next==='runner'?'METRO IMPORT · UCIECZKA PRZED AUDYTEM':next==='sudoku'?'SUDOKU · WALIDACJA WIERSZY':next==='double'?'CSV DOUBLE · PTAKI I DUPLIKATY':next==='cards'?'GWINTFORCE · WOJNA REKORDÓW':'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
+  $('unified-back').textContent=next==='runner'?'← Wróć do Sudoku':next==='sudoku'?'← Wróć do CSV Double':next==='double'?'← Wróć do Bird Game 3':['bird','cards'].includes(next)?'← Wróć do terminala':'← Menu główne';
  }
  function leaveNetwork(){return network?.suspend()!==false;}
  function openCampaign(){
@@ -46,9 +46,14 @@
  function openSudoku(){
   if(screen!=='double'||!double||double.online.active)return false;
   double.suspendForMinigame();setScreen('sudoku');
-  sudoku=new BulkSudokuGame($('sudoku-host'),{storage,soundEnabled:()=>$('sound-toggle').textContent.includes('ON'),onExit:back});return true;
+  sudoku=new BulkSudokuGame($('sudoku-host'),{storage,soundEnabled:()=>$('sound-toggle').textContent.includes('ON'),onExit:back,onComplete:openRunner});return true;
+ }
+ function openRunner(){
+  if(screen!=='sudoku'||!sudoku?.game.solved||double?.online.active)return false;
+  sudoku.suspendForMinigame();setScreen('runner');runner=new BulkRunnerGame($('runner-host'),{storage,onExit:back,soundEnabled:()=>$('sound-toggle').textContent.includes('ON')});return true;
  }
  function back(){
+  if(screen==='runner'){runner?.destroy();runner=null;setScreen('sudoku');sudoku?.resumeFromMinigame();return;}
   if(screen==='sudoku'){sudoku?.destroy();sudoku=null;setScreen('double');double?.resumeFromMinigame();return;}
 
   if(screen==='double'){double?.destroy();double=null;setScreen('bird');bird?.resumeFromMinigame();return;}
@@ -62,6 +67,6 @@
  }
  $('play-campaign').onclick=$('nav-campaign').onclick=openCampaign;
  $('unified-back').onclick=back;
- window.BulkUnified=Object.freeze({storage,local,networkReady,openCampaign,openBird,openCards,openDouble,openSudoku,back,registerNetwork(api){network=api;},get screen(){return screen;},get bird(){return bird;},get cards(){return cards;},get double(){return double;},get sudoku(){return sudoku;}});
+ window.BulkUnified=Object.freeze({storage,local,networkReady,openCampaign,openBird,openCards,openDouble,openSudoku,openRunner,back,registerNetwork(api){network=api;},get screen(){return screen;},get bird(){return bird;},get cards(){return cards;},get double(){return double;},get sudoku(){return sudoku;},get runner(){return runner;}});
  networkReady(false);
 })();

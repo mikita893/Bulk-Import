@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v23.0.0 — 2026-11-06
+
+Plik gry: [Bulk-Import-v23.html](Bulk-Import-v23.html).
+
+- Gwintforce: malowane ilustracje ludzi, kosmitów i stworów na wszystkich 49 kartach oraz portrety rywali; zachowano zasady i kolekcje.
+- Po ukończeniu Sudoku automatycznie otwiera się Metro Import 3D: trzy tory, pociągi, skok, ślizg, CSV, tarcza, magnes, ZIPsert, rosnąca prędkość i rekord lokalny.
+- Dodano 108 nagrań komandora: odpowiedzi w rozmowach i krótkie kwestie w walce. Odpowiedź bohatera poprzedza reakcję załogi; cała paczka ma 290 nagrań offline.
+- Rozbudowano strzały, trafienia, tarcze, eliminacje i zakupy ulepszeń; efekty cichną podczas dialogów. Zachowano zapisy, jeden HTML, pauzę alwaysdata i wyłączony multiplayer.
+
 ## v22.0.0 — 2026-11-06
 
 Plik gry: [Bulk-Import-v22.html](Bulk-Import-v22.html).

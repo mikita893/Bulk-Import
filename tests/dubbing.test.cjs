@@ -10,7 +10,7 @@ function fixture(){
  const player=new Player(options);return {player,audio,pack,values,options,urls,revoked,advance:n=>clock+=n};
 }
 test('recording catalogue covers every dialogue and ships verified playable-sized MP3 assets',()=>{
- const pack=require('../voice/build.cjs')(),rows=catalogue();assert.equal(pack.length,rows.length);assert(pack.length>=180);assert.equal(new Set(pack.map(c=>c.id)).size,pack.length);assert.equal(new Set(pack.map(c=>c.speaker)).size,6);
+ const pack=require('../voice/build.cjs')(),rows=catalogue();assert.equal(pack.length,rows.length);assert(pack.length>=290);assert.equal(new Set(pack.map(c=>c.id)).size,pack.length);assert.equal(new Set(pack.map(c=>c.speaker)).size,7);
  for(const c of pack){assert(c.duration>.3&&c.duration<40);assert(Buffer.from(c.data,'base64').length>2000);assert.match(c.id,/^[a-z]+-[a-f0-9]{16}$/);}
 });
 test('one voice channel replaces a dialogue immediately and prioritizes urgent Marc support',()=>{

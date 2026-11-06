@@ -68,6 +68,7 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     for(const {i,n}of holes){await page.locator('[data-sudoku-cell="'+i+'"]').click();await page.keyboard.press(String(n));}
     assert(await page.locator('.sdk-win').isVisible());assert(await page.evaluate(()=>BulkUnified.sudoku.game.solved));
     const completeTime=await page.evaluate(()=>BulkUnified.sudoku.game.elapsed);await sleep(400);assert.equal(await page.evaluate(()=>BulkUnified.sudoku.game.elapsed),completeTime);
+    await page.waitForFunction(()=>BulkUnified.screen==='runner');assert(await page.locator('#runner-world').isVisible());await page.locator('#unified-back').click();await page.waitForFunction(()=>BulkUnified.screen==='sudoku');
     await page.screenshot({path:'/tmp/bulk-v'+release.major+'-sudoku-complete.png'});
     assert.equal(await page.evaluate(()=>JSON.stringify(BulkUnified.double.model)),frozen.double);assert.equal(await page.evaluate(()=>JSON.stringify(BulkUnified.bird.game)),frozen.bird);assert.equal(await campaign.evaluate(()=>JSON.stringify({player,time})),frozenCampaign);
     await page.evaluate(()=>window._oldSudoku=BulkUnified.sudoku);await page.locator('#unified-back').click();assert.equal(await page.evaluate(()=>BulkUnified.screen),'double');assert(await page.evaluate(()=>window._oldSudoku.dead));

@@ -1,7 +1,7 @@
 'use strict';
 (function(root,factory){const api=factory();if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.BulkVoice=api;})(typeof window!=='undefined'?window:globalThis,function(){
  const STORAGE_KEY='bulk-import-dubbing-v1';
- const SPEAKERS={vael:'Vael',syra:'Syra',excel:'Excel',reaper:'Zwiastun',marc:'Marc · hologram',ship:'Komputer statku'};
+ const SPEAKERS={hero:'Komandor Admin',vael:'Vael',syra:'Syra',excel:'Excel',reaper:'Zwiastun',marc:'Marc · hologram',ship:'Komputer statku'};
  class Player{
   constructor({pack=[],storage,soundEnabled=()=>true,onState=()=>{},createAudio=()=>new Audio(),makeURL,releaseURL,now=()=>performance.now()}={}){
    this.storage=storage;this.soundEnabled=soundEnabled;this.onState=onState;this.now=now;this.clips=new Map(pack.map(c=>[c.speaker+'\n'+c.text.trim(),c]));this.cache=new Map();this.queue=[];this.cooldowns=new Map();this.current=this.last=null;this.epoch=0;this.disposed=false;this.status='idle';this.paused=false;

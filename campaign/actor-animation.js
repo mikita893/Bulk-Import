@@ -20,7 +20,7 @@ function resetEnemyAnimation(root,e){
  if(r.gun)r.gun.position.z=r.gunRestZ;
  if(r.muzzle){r.muzzle.visible=false;r.muzzle.material.opacity=0;}
 }
-function triggerEnemyShot(e){const r=e.model?.userData.animation;if(r)r.shot=.2;}
+function triggerEnemyShot(e){const r=e.model?.userData.animation;if(r){if(r.shot<.18)soundEffects.play('enemyShot');r.shot=.2;}}
 function triggerEnemyMelee(e){const r=e.model?.userData.animation;if(r)r.melee=.3;}
 function animateEnemy(e,dt){
  const r=e.model?.userData.animation;if(!r)return;

@@ -7,13 +7,14 @@ function refreshDubbingUI(state){
  if(visible){$('voice-speaker').textContent=window.parent.BulkVoice.SPEAKERS[clip.speaker];$('voice-text').textContent=clip.text;$('voice-blocked').hidden=state.status!=='blocked';}
  const replay=$('dialogue-replay'),skip=$('dialogue-skip');if(replay){replay.disabled=!state.enabled||state.volume===0;skip.disabled=!dubbing.current;}
 }
-function speakCrew(i,text){
+function speakCrew(i,text,playerLine=null){
  const speaker=i===0?'vael':'syra',ending=' Nasz związek się kończy. Potrzebuję dystansu.';
  const hasEnding=text.endsWith(ending);if(hasEnding)text=text.slice(0,-ending.length);
- dubbing.play(speaker,text,{kind:'dialogue',priority:4});if(hasEnding)dubbing.play(speaker,ending.trim(),{kind:'dialogueTail',priority:4});
+ if(playerLine)dubbing.play('hero',playerLine,{kind:'dialogue',priority:4});
+ dubbing.play(speaker,text,{kind:playerLine?'dialogueTail':'dialogue',priority:4});if(hasEnding)dubbing.play(speaker,ending.trim(),{kind:'dialogueTail',priority:4});
  const target=$('panel-body').querySelector('.crew-line');if(!target)return;
  const controls=document.createElement('div');controls.className='dialogue-audio-controls';
- const replay=document.createElement('button');replay.id='dialogue-replay';replay.textContent='▶ Powtórz kwestię';replay.onclick=()=>{dubbing.play(speaker,text,{kind:'dialogue',priority:4});};
+ const replay=document.createElement('button');replay.id='dialogue-replay';replay.textContent='▶ Powtórz kwestię';replay.onclick=()=>{dubbing.stop();if(playerLine)dubbing.play('hero',playerLine,{kind:'dialogue',priority:4});dubbing.play(speaker,text,{kind:playerLine?'dialogueTail':'dialogue',priority:4});};
  const skip=document.createElement('button');skip.id='dialogue-skip';skip.textContent='⏹ Pomiń głos';skip.onclick=()=>dubbing.stop();
  controls.append(replay,skip);target.after(controls);refreshDubbingUI({enabled:dubbing.settings.enabled,volume:dubbing.settings.volume,status:dubbing.status,clip:null});
 }
@@ -31,4 +32,11 @@ function dubbingMenu(){
   const b=document.createElement('button');b.textContent='▶ '+name;b.dataset.voiceSample=speaker;b.onclick=()=>{const clip=[...dubbing.clips.values()].find(c=>c.speaker===speaker);dubbing.play(speaker,clip.text,{kind:'sample',priority:4});};$('voice-samples').appendChild(b);
  }
  button('Zatrzymaj odsłuch',()=>dubbing.stop());button('Wróć',back);
+}
+
+const heroBarkTimers={next:0,types:{},index:0};
+function heroBark(kind){
+ if(mode!=='combat'||!HERO_BARKS[kind]||dubbing.current||time<heroBarkTimers.next||time<(heroBarkTimers.types[kind]||0))return;
+ const lines=HERO_BARKS[kind],line=lines[heroBarkTimers.index++%lines.length];
+ if(dubbing.play('hero',line,{priority:0,cooldown:25})){heroBarkTimers.next=time+6;heroBarkTimers.types[kind]=time+(kind==='shot'?28:18);}
 }
