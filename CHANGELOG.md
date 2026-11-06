@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v21.0.0 — 2026-11-06
+
+Plik gry: [Bulk-Import-v21.html](Bulk-Import-v21.html).
+
+- Zbrojownia: zakup bezpośrednio na kafelkach, pięć segmentów zamiast poziomu liczbowego, cena i stan MAX; usunięto zdublowane przyciski.
+- Dodano chód przeciwników, ruch skrzydeł i unoszenie Banshee oraz animacje ataków, błyski lufy i odrzut broni.
+- Unik R obraca postać i zostawia krótki świetlny ślad z ograniczonej puli efektów; animacje zatrzymują się podczas pauzy.
+- Zachowano ceny, balans i zgodność zapisów. Nowy HTML i aktualizacja strony solo; multiplayer pozostaje wyłączony, a alwaysdata wstrzymane.
+
 ## v20.0.0 — 2026-11-06
 
 Plik gry: [Bulk-Import-v20.html](Bulk-Import-v20.html).
