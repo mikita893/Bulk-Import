@@ -32,6 +32,7 @@ const OUTPUT = process.env.BULK_MULTI_SCREENSHOTS || '/tmp/bulk-multiplayer-v' +
         if (
           !r.url().startsWith(ORIGIN + '/') &&
           !r.url().startsWith('data:') &&
+          !r.url().startsWith('blob:') &&
           !r.url().startsWith(ORIGIN.replace(/^http/, 'ws') + '/')
         )
           external.push(r.url());
@@ -384,7 +385,12 @@ const OUTPUT = process.env.BULK_MULTI_SCREENSHOTS || '/tmp/bulk-multiplayer-v' +
       coop = await coopContext.newPage();
     coop.on('pageerror', (e) => errors.push('coop: ' + e.message));
     coop.on('request', (r) => {
-      if (!r.url().startsWith(ORIGIN + '/') && !r.url().startsWith('data:')) external.push(r.url());
+      if (
+        !r.url().startsWith(ORIGIN + '/') &&
+        !r.url().startsWith('data:') &&
+        !r.url().startsWith('blob:')
+      )
+        external.push(r.url());
     });
     await coop.goto(URL);
     await coop.locator('#player-name').fill('Kapitan Shared');

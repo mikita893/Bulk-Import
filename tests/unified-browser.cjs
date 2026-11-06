@@ -287,7 +287,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       );
     }
     const traffic = [];
-    offline.on('request', (r) => traffic.push(r.url()));
+    offline.on('request', (r) => {
+      if (!/^(blob|data):/.test(r.url())) traffic.push(r.url());
+    });
     offline.on('websocket', (ws) => traffic.push(ws.url()));
     await offline.waitForFunction(() => BulkUnified.local);
     for (const id of ['create-coop', 'create-versus', 'join-room', 'join-code', 'connect-server'])

@@ -21,6 +21,7 @@
       <nav><span>01 / PRZEZ OMEGĘ</span><span>02 / SOJUSZ ADMINISTRATORÓW</span></nav>
       <div class="status">
         <i></i>SALESFORCE SYSTEM ONLINE <button class="audio-toggle" id="audio">DŹWIĘK: ON</button>
+        <button class="audio-toggle" id="voice-settings">DUBBING: ON</button>
         <button class="audio-toggle" id="quality" title="Kliknij: Auto → Szybka → Wysoka">
           GRAFIKA: AUTO
         </button>
@@ -78,6 +79,14 @@
         </div>
         <div id="combo-toast" aria-live="polite"></div>
         <div id="notice" role="status"></div>
+        <div id="voice-caption" class="voice-caption" hidden>
+          <div>
+            <b id="voice-speaker"></b><span id="voice-text"></span
+            ><small id="voice-blocked" hidden>Kliknij ▶, aby odtworzyć głos.</small>
+          </div>
+          <button id="voice-replay" aria-label="Powtórz nagranie">▶</button
+          ><button id="voice-skip" aria-label="Pomiń nagranie">⏹</button>
+        </div>
         <div id="prompt"></div>
         <div id="crosshair"></div>
         <div id="panel" class="panel" role="dialog" aria-modal="true" aria-labelledby="panel-title">

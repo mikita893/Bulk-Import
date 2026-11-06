@@ -26,13 +26,21 @@ const campaign = versioned(
       () => '<' + '!-- ' + read('vendor/THREE-LICENSE.txt').trim() + ' -->',
     )
     .replace('/*CAMPAIGN_APP*/', () =>
-      ['campaign/game.js', 'campaign/enemy-models.js', 'campaign/actor-animation.js']
+      [
+        'campaign/dialogues.js',
+        'campaign/game.js',
+        'campaign/enemy-models.js',
+        'campaign/actor-animation.js',
+        'campaign/dubbing-ui.js',
+      ]
         .map(read)
         .join('\n'),
     ),
 );
 const app =
-  "'use strict';\nwindow.BULK_RELEASE=" +
+  "'use strict';\nwindow.BULK_VOICE_PACK=" +
+  json(require('../voice/build.cjs')()) +
+  ';\nwindow.BULK_RELEASE=' +
   json(release) +
   ';\nwindow.BULK_CLIENT_CONFIG=' +
   json(bakedConfig) +
@@ -40,6 +48,7 @@ const app =
   json(campaign) +
   ';\n' +
   [
+    'voice/player.js',
     'minigames/bird-sim.js',
     'minigames/bird-render.js',
     'minigames/bird-game-3.js',

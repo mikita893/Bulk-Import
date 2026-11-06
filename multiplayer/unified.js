@@ -168,6 +168,7 @@
     }
     if (campaign) {
       campaign.contentWindow.BulkCampaign?.suspend();
+      campaign.contentWindow.BulkCampaign?.dispose();
       campaign.remove();
       campaign = null;
     }

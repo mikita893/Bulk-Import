@@ -79,7 +79,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       await page.setContent(html);
     }
     const traffic = [];
-    page.on('request', (r) => traffic.push(r.url()));
+    page.on('request', (r) => {
+      if (!/^(blob|data):/.test(r.url())) traffic.push(r.url());
+    });
     page.on('websocket', (ws) => traffic.push(ws.url()));
     const campaign = await enterDouble(page);
     await page.locator('#double-training').check();

@@ -72,7 +72,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       );
     }
     const requests = [];
-    page.on('request', (r) => requests.push(r.url()));
+    page.on('request', (r) => {
+      if (!/^(blob|data):/.test(r.url())) requests.push(r.url());
+    });
     page.on('websocket', (ws) => requests.push(ws.url()));
     await page.waitForFunction(() => window.BulkUnified);
     assert.equal(await page.locator('[id="play-double"],[id="nav-double"]').count(), 0);

@@ -1,0 +1,194 @@
+'use strict';
+const { chromium } = require('playwright');
+const fs = require('node:fs'),
+  assert = require('node:assert/strict');
+const { createGameServer } = require('../server/index.cjs'),
+  release = require('../release.cjs');
+(async () => {
+  const app = createGameServer({ port: 0, host: '127.0.0.1' }),
+    { url } = await app.listen();
+  let browser;
+  try {
+    browser = await chromium.launch({
+      executablePath: process.env.BULK_CHROMIUM || '/usr/bin/chromium',
+      headless: true,
+      args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
+    });
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 1050 },
+      hasTouch: true,
+    });
+    const page = await context.newPage(),
+      errors = [],
+      traffic = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('request', (r) => {
+      if (!/^(blob|data):/.test(r.url())) traffic.push(r.url());
+    });
+    page.on('websocket', (s) => traffic.push(s.url()));
+    // Only the released HTML is loaded into about:blank: no sibling files, network or TTS APIs.
+    await page.setContent(fs.readFileSync(release.filename, 'utf8'));
+    await page.waitForFunction(() => BulkUnified.local);
+    assert(await page.locator('#create-coop').isDisabled());
+    await page.locator('#play-campaign').click();
+    await page.waitForFunction(
+      () => document.querySelector('#campaign-frame')?.contentWindow?.BulkCampaign,
+    );
+    let frame = await (await page.locator('#campaign-frame').elementHandle()).contentFrame();
+    console.log('dubbing: campaign boot');
+    await frame.locator('#voice-settings').click();
+    assert.equal(await frame.locator('[data-voice-sample]').count(), 6);
+    await frame.getByRole('button', { name: 'Wróć', exact: true }).click();
+    assert(
+      await frame.getByRole('button', { name: '▶ ROZPOCZNIJ KAMPANIĘ', exact: true }).isVisible(),
+    );
+    await frame.getByRole('button', { name: '▶ ROZPOCZNIJ KAMPANIĘ', exact: true }).click();
+    console.log('dubbing: started campaign');
+    await frame.waitForFunction(
+      () =>
+        dubbing.audio.currentTime > 0.05 &&
+        !dubbing.audio.paused &&
+        dubbing.current?.clip.speaker === 'ship',
+    );
+    assert(await frame.locator('#voice-caption').isVisible());
+    console.log('dubbing: intro played');
+    await frame.locator('#crew').click();
+    await frame.getByRole('button', { name: /Porozmawiaj: Vael/ }).click();
+    await frame.waitForFunction(
+      () => dubbing.audio.currentTime > 0.05 && dubbing.current?.clip.speaker === 'vael',
+    );
+    await frame.locator('#dialogue-skip').click();
+    assert(await frame.evaluate(() => dubbing.audio.paused && !dubbing.current));
+    await frame.locator('#dialogue-replay').click();
+    await frame.waitForFunction(() => dubbing.audio.currentTime > 0.1 && !dubbing.audio.paused);
+    await frame
+      .getByRole('button', { name: 'Odprawa, załoga i ostatnie wydarzenia', exact: true })
+      .click();
+    const line = await frame.locator('.crew-line').textContent();
+    assert(line.includes('Nasza cywilizacja'));
+    assert(await frame.evaluate(() => dubbing.current.clip.text === crewScene(0, 0).line));
+    const reply = await frame.evaluate(() => crewScene(0, 0).answers[0][3]);
+    await frame.getByRole('button', { name: /Zrobimy kopię i przetestujemy/ }).click();
+    assert.equal(await frame.evaluate(() => dubbing.current.clip.text), reply);
+    assert((await frame.locator('.crew-line').textContent()).includes(reply));
+    await frame.locator('#voice-settings').click();
+    await frame.locator('#voice-enabled').uncheck();
+    await frame.getByRole('button', { name: 'Wróć', exact: true }).click();
+    assert((await frame.locator('.crew-line').textContent()).includes(reply));
+    assert(await frame.locator('#dialogue-replay').isDisabled());
+    await frame.locator('#voice-settings').click();
+    await frame.locator('#voice-enabled').check();
+    await frame.locator('#voice-volume').fill('45');
+    assert.equal(await frame.locator('#voice-volume-value').textContent(), '45%');
+    for (const speaker of ['syra', 'excel', 'reaper', 'marc', 'ship']) {
+      await frame.locator('[data-voice-sample="' + speaker + '"]').click();
+      await frame.waitForFunction(
+        (s) =>
+          dubbing.current?.clip.speaker === s &&
+          dubbing.audio.currentTime > 0.04 &&
+          !dubbing.audio.paused,
+        speaker,
+      );
+    }
+    console.log('dubbing: six samples played');
+    await page.setViewportSize({ width: 430, height: 932 });
+    assert(await frame.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-dubbing-mobile.png' });
+    await frame.getByRole('button', { name: 'Wróć', exact: true }).tap();
+    await frame.getByRole('button', { name: 'Wróć na pokład', exact: true }).click();
+    await page.setViewportSize({ width: 1440, height: 1050 });
+    await frame.evaluate(() => {
+      beginMission(0);
+      run.clock = 999;
+      indo = 999;
+      inv = 999;
+      dubbing.stop();
+      notify('EXCEL: „TABELA PRZESTAWNA!” / test');
+    });
+    await frame.waitForFunction(
+      () => dubbing.audio.currentTime > 0.05 && dubbing.current?.clip.speaker === 'excel',
+    );
+    await frame.evaluate(() =>
+      notify('MARC BENIOFF / Ohana znaczy: nikt nie zostaje sam w CSV. Podejdź i naciśnij E!'),
+    );
+    await frame.waitForFunction(
+      () => dubbing.current?.clip.speaker === 'marc' && dubbing.audio.currentTime > 0.05,
+    );
+    assert(await frame.locator('#voice-caption').isVisible());
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-dubbing.png' });
+    await frame.locator('#pause').click();
+    assert(
+      await frame.evaluate(
+        () => dubbing.audio.paused && !dubbing.current && dubbing.queue.length === 0,
+      ),
+    );
+    await frame.getByRole('button', { name: '▶ Wznów', exact: true }).click();
+    await frame.evaluate(() => notify('EXCEL: „Scal komórki” / test'));
+    await frame.waitForFunction(() => dubbing.audio.currentTime > 0.05);
+    await frame.locator('#audio').click();
+    assert(await frame.evaluate(() => dubbing.audio.paused && !dubbing.current));
+    assert.equal(await frame.evaluate(() => dubbing.play('ship', VOICE_EVENTS[0].text)), false);
+    await page.evaluate(
+      () =>
+        (window._formerVoice = document
+          .querySelector('#campaign-frame')
+          .contentWindow.eval('dubbing')),
+    );
+    await page.locator('#unified-back').click();
+    assert.equal(await page.evaluate(() => BulkUnified.screen), 'main');
+    assert(await page.evaluate(() => _formerVoice.disposed && _formerVoice.cache.size === 0));
+    console.log('dubbing: dialogue and combat passed');
+    const decoded = await page.evaluate(async () => {
+      const context = new AudioContext();
+      let count = 0;
+      for (const clip of BULK_VOICE_PACK) {
+        const raw = atob(clip.data),
+          data = Uint8Array.from(raw, (c) => c.charCodeAt(0));
+        const decoded = await context.decodeAudioData(data.buffer);
+        if (decoded.duration < 0.3 || Math.abs(decoded.duration - clip.duration) > 0.25)
+          throw Error('Bad decoded duration ' + clip.id);
+        let peak = 0;
+        for (const n of decoded.getChannelData(0)) peak = Math.max(peak, Math.abs(n));
+        if (peak < 0.01) throw Error('Silent recording ' + clip.id);
+        count++;
+      }
+      await context.close();
+      return count;
+    });
+    assert(decoded >= 180);
+    assert.deepEqual(traffic, []);
+    await context.close();
+    // Same-origin reload preserves dubbing preferences independently from campaign saves.
+    const online = await browser.newPage();
+    online.on('pageerror', (e) => errors.push(e.message));
+    await online.goto(url + '/' + release.filename);
+    await online.locator('#play-campaign').click();
+    await online.waitForFunction(
+      () => document.querySelector('#campaign-frame')?.contentWindow?.BulkCampaign,
+    );
+    frame = await (await online.locator('#campaign-frame').elementHandle()).contentFrame();
+    await frame.locator('#voice-settings').click();
+    await frame.locator('#voice-enabled').uncheck();
+    await frame.locator('#voice-volume').fill('35');
+    await online.reload();
+    await online.locator('#play-campaign').click();
+    await online.waitForFunction(
+      () => document.querySelector('#campaign-frame')?.contentWindow?.BulkCampaign,
+    );
+    frame = await (await online.locator('#campaign-frame').elementHandle()).contentFrame();
+    assert.equal(await frame.locator('#voice-settings').textContent(), 'DUBBING: OFF');
+    assert.equal(await frame.evaluate(() => dubbing.settings.volume), 0.35);
+    assert.deepEqual(errors, []);
+    console.log(
+      'PASS prerecorded dubbing: ' +
+        decoded +
+        ' real MP3s decoded with nonzero audio, standalone/no traffic, six voices, actual playback progress, crew questions/replies, skip/replay, volume/mute, Marc priority, pause/navigation cleanup, settings overlay/return, mobile and saved preferences.',
+    );
+  } finally {
+    await browser?.close();
+    await app.close();
+  }
+})().catch((e) => {
+  console.error(e);
+  process.exitCode = 1;
+});
