@@ -487,110 +487,10 @@ function buildHumanoid(kind = 'human', color = 0x73929e) {
   return { root, body, legs, arms, gun, muzzleGlow };
 }
 const hero = buildHumanoid();
-batchStaticMeshes(hero.body, [...hero.legs, ...hero.arms]);
+batchStaticMeshes(hero.gun);
+batchStaticMeshes(hero.body, [...hero.legs, ...hero.arms, hero.gun]);
 actors.add(hero.root);
-function makeEnemy(e) {
-  let reused = enemyPools[e.type]?.pop();
-  if (reused) {
-    actors.add(reused);
-    reused.userData.retired = false;
-    reused.position.set(e.x, 0, e.z);
-    reused.visible = true;
-    return reused;
-  }
-  if (e.type === 'excel') {
-    const model = makeExcelModel(e);
-    actors.add(model);
-    return model;
-  }
-  const traitor = makeBetrayerModel(e);
-  if (traitor) {
-    actors.add(traitor);
-    return traitor;
-  }
-  const special = makeNewEnemy(e);
-  if (special) {
-    actors.add(special);
-    return special;
-  }
-  let g = new THREE.Group(),
-    t = TYPES[e.type],
-    m = mat(
-      e.type === 'collector' ? 0x97813e : e.type === 'elite' ? 0x64283f : 0x4d4148,
-      0.7,
-      0.35,
-    ),
-    em = mat(t.color, 0.45, 0.3, t.color, 1.5),
-    black = M.dark;
-  let scale = e.type === 'boss' ? 2.55 : e.type === 'elite' ? 1.25 : 1;
-  if (e.type === 'collector') {
-    let body = mesh(g, G.sphere, m, 0, 1.5, 0, 0.55, 0.9, 0.42);
-    sphere(g, mat(0xa89049, 0.5, 0.35), 0, 2.55, 0.15, 0.4);
-    for (let s of [-1, 1]) {
-      let wing = mesh(
-        g,
-        G.sphere,
-        mat(0xd8bd66, 0.65, 0.4),
-        s * 0.65,
-        1.65,
-        -0.18,
-        0.45,
-        0.95,
-        0.13,
-      );
-      wing.rotation.z = -s * 0.4;
-      for (let z of [-0.2, 0.3]) {
-        tube(g, [s * 0.3, 1.1, z], [s * 1.05, 0.6, z + 0.35], 0.1, m);
-        tube(g, [s * 1.05, 0.6, z + 0.35], [s * 1.2, 0.1, z + 0.75], 0.07, M.gold);
-      }
-      tube(g, [s * 0.4, 2.2, 0], [s * 0.95, 1.6, 0.6], 0.12, m);
-      sphere(g, em, s * 0.16, 2.6, 0.47, 0.1);
-    }
-    box(g, black, 0.8, 1.5, 0.85, 0.2, 0.23, 0.75);
-    glow(g, t.color, 0, 2.1, 0.3, 2, 0.4);
-  } else {
-    mesh(g, G.sphere, m, 0, 1.8, 0, 0.7, 1.2, 0.5);
-    mesh(g, G.cone, m, 0, 2.9, 0, 0.53, 0.65, 0.5);
-    for (let s of [-1, 1]) {
-      tube(g, [s * 0.45, 2.5, 0], [s * 1.3, 1.4, 0.3], 0.16, m);
-      tube(g, [s * 1.3, 1.4, 0.3], [s * 1.6, 0.18, 0.9], 0.12, m);
-      tube(g, [s * 1.6, 0.18, 0.9], [s * 0.8, 0.4, 1.15], 0.08, M.edge);
-      box(g, em, s * 0.53, 1.6, 0.46, 0.13, 0.7, 0.12);
-      if (e.type === 'elite') box(g, m, s * 0.85, 2.4, 0, 0.7, 0.6, 0.65);
-    }
-    box(g, em, 0, 1.9, 0.5, 0.23, 1, 0.12);
-    sphere(g, em, 0, 2.8, 0.38, 0.17);
-    if (e.type === 'boss') {
-      let crown = mesh(g, new THREE.TorusGeometry(1.3, 0.055, 8, 48), em, 0, 2.3, 0);
-      g.userData.crown = crown;
-      for (let s of [-1, 1]) tube(g, [s * 0.6, 2.6, 0], [s * 1.4, 3.8, -0.1], 0.12, m);
-    }
-    glow(g, t.color, 0, 2, 0.8, 2.6, 0.45);
-  }
-  let hpGroup = new THREE.Group();
-  hpGroup.position.set(0, 3.75, 0);
-  g.add(hpGroup);
-  box(hpGroup, mat(0x111827, 0, 0.8), 0, 0, 0, 1.8, 0.11, 0.02, false);
-  let hpFill = box(hpGroup, mat(t.color, 0, 0.6, t.color, 0.7), 0, 0, 0.02, 1.7, 0.07, 0.02, false);
-  g.userData.hpGroup = hpGroup;
-  g.userData.hpFill = hpFill;
-  g.scale.setScalar(scale);
-  let sh = new THREE.Mesh(
-    new THREE.CircleGeometry(t.r * 1.1, 24),
-    new THREE.MeshBasicMaterial({
-      color: 0x02050a,
-      transparent: true,
-      opacity: 0.35,
-      depthWrite: false,
-    }),
-  );
-  sh.rotation.x = -Math.PI / 2;
-  sh.position.y = 0.02;
-  g.add(sh);
-  batchStaticMeshes(g, [hpGroup, g.userData.crown].filter(Boolean));
-  actors.add(g);
-  return g;
-}
+// Animated enemy constructors are in enemy-models.js.
 function buildEnvironment(kind) {
   clearExcelVisuals();
   sceneKind = kind;
@@ -932,6 +832,7 @@ function notify(t) {
   noticeTime = 6;
 }
 function wipeCombat() {
+  resetCombatAnimation();
   refillZipsert();
   clearExcelVisuals();
   combatWarnings.length = 0;
@@ -1792,8 +1693,12 @@ function update(dt) {
       enemyShot(e);
       e.t = enemyAttackInterval(e);
     }
-    if (inv === 0 && dist < t.r + 0.65) hurtPlayer(enemyContactDamage(e));
-    e.model.position.set(e.x, Math.sin(time * 2 + e.phase) * 0.06, e.z);
+    if (inv === 0 && dist < t.r + 0.65) {
+      triggerEnemyMelee(e);
+      hurtPlayer(enemyContactDamage(e));
+    }
+    animateEnemy(e, dt);
+    e.model.position.set(e.x, 0, e.z);
     e.model.rotation.y = Math.atan2(dx, dz);
     if (e.model.userData.crown) e.model.userData.crown.rotation.z = time * 0.7;
     let hp = e.model.userData.hpGroup,
@@ -2012,22 +1917,9 @@ function updateVisuals(dt) {
     muzzle = Math.max(0, muzzle - dt);
   }
   hero.root.position.set(player.x, 0, player.z);
-  let moving =
-    live &&
-    (keys.KeyW ||
-      keys.KeyS ||
-      keys.KeyA ||
-      keys.KeyD ||
-      keys.ArrowUp ||
-      keys.ArrowDown ||
-      keys.ArrowLeft ||
-      keys.ArrowRight);
-  for (let i = 0; i < 2; i++)
-    hero.legs[i].rotation.x = moving ? Math.sin(walk) * (i === 0 ? 1 : -1) * 0.65 : 0;
-  hero.body.position.y = moving ? Math.abs(Math.sin(walk)) * 0.07 : 0;
-  hero.root.rotation.y = Math.atan2(aim.x - player.x, aim.z - player.z);
+  syncHeroAnimation(dt, live);
   hero.muzzleGlow.material.opacity = muzzle > 0 ? 0.9 : 0;
-  hero.root.visible = inv === 0 || Math.sin(time * 40) > -0.35;
+  hero.root.visible = dodgeVisual.life > 0 || inv === 0 || Math.sin(time * 40) > -0.35;
   syncHeroVitals();
   for (let i = 0; i < medModels.length; i++) {
     medModels[i].visible = medkits[i]?.ready;
@@ -2468,6 +2360,7 @@ function dodgeRoll() {
   dashSpeed = 31;
   dashTime = 0.18;
   inv = Math.max(inv, 0.35);
+  beginDodgeVisual();
   burst(player.x, player.z, 0x9cffff, 8);
   sound(230, 0.1, 'sine', 0.018);
 }
@@ -4244,6 +4137,7 @@ function addHostileShot(e, a, speed = 8, damage = enemyContactDamage(e)) {
   };
   b.model = projectile(b, true);
   hostile.push(b);
+  triggerEnemyShot(e);
 }
 function enemyShot(e) {
   if (betrayerShot(e)) return;
@@ -4427,77 +4321,6 @@ function updateCombatTelegraphs(dt) {
 // New model geometry: keeps draw calls low with the same material batching as v6.
 // Parent makeEnemy() should call this for husk/geth/banshee before the old generic branches.
 // makeNewEnemy DOES NOT add to actors/pool; parent owns that.
-function makeNewEnemy(e) {
-  if (!['husk', 'geth', 'banshee'].includes(e.type)) return null;
-  const g = new THREE.Group(),
-    t = TYPES[e.type],
-    em = mat(t.color, 0.4, 0.4, t.color, 1.15),
-    dark = M.dark,
-    metal = mat(e.type === 'husk' ? 0x3b6658 : e.type === 'geth' ? 0x526d7b : 0x665176, 0.5, 0.5);
-  if (e.type === 'husk') {
-    box(g, metal, 0, 1.25, 0, 0.55, 0.85, 0.4);
-    box(g, em, 0, 1.3, 0.24, 0.12, 0.65, 0.08);
-    let skull = sphere(g, mat(0x859a83, 0.2, 0.8), 0, 2.1, 0.14, 0.27);
-    skull.scale.y *= 1.15;
-    for (const s of [-1, 1]) {
-      tube(g, [s * 0.24, 1.6, 0], [s * 0.65, 0.9, 0.6], 0.12, metal);
-      tube(g, [s * 0.65, 0.9, 0.6], [s * 0.7, 0.6, 0.95], 0.07, em);
-      tube(g, [s * 0.17, 1, 0], [s * 0.3, 0.08, 0.2], 0.13, dark);
-      sphere(g, em, s * 0.1, 2.14, 0.38, 0.06);
-    }
-    for (let i = 0; i < 3; i++) box(g, em, 0, 1.1 + i * 0.18, -0.25, 0.2, 0.07, 0.12);
-  } else if (e.type === 'geth') {
-    box(g, metal, 0, 1.65, 0, 1.1, 1.2, 0.58);
-    box(g, dark, 0, 2.6, 0.06, 0.5, 0.52, 0.48);
-    sphere(g, em, 0, 2.66, 0.35, 0.17);
-    for (const s of [-1, 1]) {
-      box(g, metal, s * 0.74, 1.9, 0, 0.36, 0.7, 0.55);
-      tube(g, [s * 0.28, 1.2, 0], [s * 0.35, 0.12, 0.2], 0.18, dark);
-      box(g, em, s * 0.75, 1.95, 0.29, 0.16, 0.42, 0.05);
-    }
-    box(g, dark, 0.75, 1.4, 0.62, 0.28, 0.35, 1.3);
-    box(g, em, 0.75, 1.4, 1.3, 0.16, 0.15, 0.12);
-    box(g, metal, -0.85, 1.5, 0.4, 0.15, 1.1, 0.8);
-  } else {
-    const robe = mesh(g, G.cone, metal, 0, 1.1, 0, 0.75, 2.2, 0.65);
-    robe.rotation.z = 0.03;
-    box(g, metal, 0, 2.45, 0, 0.55, 0.85, 0.35);
-    sphere(g, mat(0xa69bb7, 0.2, 0.7), 0, 3.2, 0.1, 0.25);
-    for (const s of [-1, 1]) {
-      tube(g, [s * 0.3, 2.7, 0], [s * 1.0, 2.3, 0.15], 0.09, metal);
-      tube(g, [s * 1.0, 2.3, 0.15], [s * 1.45, 1.5, 0.35], 0.055, em);
-      tube(g, [s * 0.15, 3.3, 0], [s * 0.45, 3.8, -0.2], 0.035, em);
-      sphere(g, em, s * 0.1, 3.2, 0.32, 0.06);
-    }
-    const halo = mesh(g, new THREE.TorusGeometry(0.75, 0.035, 6, 24), em, 0, 2.5, -0.05);
-    g.userData.crown = halo;
-  }
-  const hpGroup = new THREE.Group();
-  hpGroup.position.set(0, e.type === 'banshee' ? 4.1 : e.type === 'geth' ? 3.4 : 2.8, 0);
-  g.add(hpGroup);
-  box(hpGroup, mat(0x111827, 0, 0.8), 0, 0, 0, 1.6, 0.1, 0.02, false);
-  const hpFill = box(hpGroup, em, 0, 0, 0.02, 1.5, 0.065, 0.02, false);
-  g.userData.hpGroup = hpGroup;
-  g.userData.hpFill = hpFill;
-  // Existing updater uses width 1.7; use that width for consistent depletion.
-  hpFill.scale.x = 1.7;
-  const shadow = mesh(
-    g,
-    new THREE.CircleGeometry(t.r, 12),
-    new THREE.MeshBasicMaterial({
-      color: 0x020710,
-      transparent: true,
-      opacity: 0.3,
-      depthWrite: false,
-    }),
-    0,
-    0.015,
-    0,
-  );
-  shadow.rotation.x = -Math.PI / 2;
-  batchStaticMeshes(g, [hpGroup, g.userData.crown].filter(Boolean));
-  return g;
-}
 // Extra map identity, all static except returned final reactor; no new lights.
 // Call before the parent's final batchStaticMeshes(environment,...), then exclude returned reactor.
 function decorateCampaignMap(id, parent, accent) {
@@ -5109,45 +4932,80 @@ function shopMenu() {
       mode = base;
       hud();
     };
-  const cards = UPGRADE_KEYS.map(
-    (key) =>
-      '<div class="tile"><b>' +
+  const cards = UPGRADE_KEYS.map((key) => {
+    const n = upgradeLevel(key),
+      cost = upgradeCost(key),
+      max = n >= UPGRADE_LIMIT,
+      poor = progress.credits < cost;
+    const label =
       UPGRADE_DEFS[key].name +
-      ' · ' +
-      upgradeLevel(key) +
-      '/5</b><span>' +
+      ', poziom ' +
+      n +
+      ' z ' +
+      UPGRADE_LIMIT +
+      (max
+        ? ', maksymalny poziom'
+        : ', kup za ' +
+          cost +
+          ' CR' +
+          (poor ? ', brakuje ' + (cost - progress.credits) + ' CR' : ''));
+    return (
+      '<button class="tile upgrade-tile ' +
+      (max ? 'is-max' : poor ? 'cannot-afford' : '') +
+      '" data-upgrade="' +
+      key +
+      '" ' +
+      (max || poor ? 'disabled' : '') +
+      ' aria-label="' +
+      label +
+      '"><b>' +
+      UPGRADE_DEFS[key].name +
+      (max ? '<em>MAX</em>' : '') +
+      '</b><span class="upgrade-segments" role="meter" aria-label="Poziom ulepszenia" aria-valuemin="0" aria-valuemax="' +
+      UPGRADE_LIMIT +
+      '" aria-valuenow="' +
+      n +
+      '">' +
+      Array.from(
+        { length: UPGRADE_LIMIT },
+        (_, i) => '<i class="' + (i < n ? 'filled' : '') + '" aria-hidden="true"></i>',
+      ).join('') +
+      '</span><span class="upgrade-stat">' +
       upgradeStat(key) +
-      '<br>' +
+      '</span><span class="upgrade-detail">' +
       UPGRADE_DEFS[key].detail +
-      '</span></div>',
-  ).join('');
+      '</span><span class="upgrade-price"><strong>' +
+      (max ? 'MAKSYMALNY POZIOM' : cost + ' CR') +
+      '</strong><small>' +
+      (max
+        ? 'Wszystkie segmenty zainstalowane'
+        : poor
+          ? 'Brakuje ' + (cost - progress.credits) + ' CR'
+          : 'Kliknij, aby ulepszyć') +
+      '</small></span></button>'
+    );
+  }).join('');
   openPanel(
     'Zbrojownia / laboratorium importu',
     'BUDŻET: ' + Math.floor(progress.credits) + ' CR',
-    '<p>Zakupy na statku. Zwiększenie pojemności dodaje tylko nową pojemność do obecnego życia lub tarczy. Tarcza pochłania trafienie pierwsza, poszycie chroni pozostałe życie.</p><div class="grid-info">' +
+    '<p>Kliknij kafelek, aby kupić następny segment. Zakupy na statku. Nowa pojemność zwiększa obecne życie lub tarczę tylko o zakupioną różnicę. Tarcza pochłania trafienie pierwsza, poszycie chroni życie.</p><div class="grid-info upgrade-grid">' +
       cards +
       '</div>',
     back,
   );
-  for (const key of UPGRADE_KEYS) {
-    const n = upgradeLevel(key),
-      cost = upgradeCost(key);
-    button(
-      UPGRADE_DEFS[key].name +
-        ' / poziom ' +
-        n +
-        '/5' +
-        (n === 5 ? ' / MAX' : ' / ' + cost + ' CR'),
-      () => {
-        if (buyUpgrade(key)) {
-          mode = base;
-          shopMenu();
-        }
-      },
-      '',
-      n >= UPGRADE_LIMIT || progress.credits < cost,
-    );
-  }
+  for (const tile of $('panel-body').querySelectorAll('[data-upgrade]'))
+    tile.onclick = () => {
+      const scroll = tile.closest('.card').scrollTop,
+        key = tile.dataset.upgrade;
+      if (buyUpgrade(key)) {
+        sound(420, 0.04, 'sine', 0.012);
+        mode = base;
+        shopMenu();
+        const next = $('panel-body').querySelector('[data-upgrade="' + key + '"]');
+        next.closest('.card').scrollTop = scroll;
+        if (!next.disabled) next.focus({ preventScroll: true });
+      }
+    };
   button('Karty do Gwintforce / sklep', () => {
     back();
     cardShopMenu();
@@ -5586,7 +5444,13 @@ function makeBetrayerModel(e) {
     box(h.body, M.dark, 0, 1.12, -0.27, 0.65, 0.7, 0.12);
   }
   // Static body meshes merge to a handful of material batches; no extra lights.
-  batchStaticMeshes(h.body);
+  finishEnemyAnimation(g, h.body, e, {
+    kind: 'humanoid',
+    legs: h.legs,
+    arms: h.arms,
+    gun: h.gun,
+    muzzle: h.muzzleGlow,
+  });
   const hpGroup = new THREE.Group();
   hpGroup.position.set(0, 3.62, 0);
   g.add(hpGroup);
@@ -5988,7 +5852,9 @@ function excelShieldTexture() {
 function makeExcelModel(e) {
   if (e.type !== 'excel') return null;
   const g = new THREE.Group(),
-    book = new THREE.Group();
+    book = new THREE.Group(),
+    legs = [],
+    arms = [];
   g.add(book);
   // Model-owned clones prevent a furious pooled workbook from tinting another arena/model.
   const green = mat(0x23734e, 0.5, 0.4).clone(),
@@ -6014,13 +5880,17 @@ function makeExcelModel(e) {
     xbar.rotation.z = angle;
   }
   for (const side of [-1, 1]) {
-    box(book, dark, side * 1.1, 0.35, 0.28, 1.2, 0.55, 1.8);
-    box(book, green, side * 1.1, 1.03, 0, 0.66, 1.1, 0.77);
-    box(book, bright, side * 1.1, 0.42, 1.2, 0.75, 0.12, 0.08, false);
-    tube(book, [side * 2.26, 4.4, 0], [side * 3.1, 3.25, 0.13], 0.23, steel);
-    tube(book, [side * 3.1, 3.25, 0.13], [side * 3.35, 2.45, 0.85], 0.2, green);
-    box(book, dark, side * 3.35, 2.22, 1.03, 0.8, 0.52, 0.76);
-    box(book, bright, side * 3.35, 2.25, 1.43, 0.42, 0.16, 0.07, false);
+    const leg = enemyJoint(book, side * 1.1, 1.5, 0),
+      arm = enemyJoint(book, side * 2.26, 4.4, 0);
+    jointPart(leg, box(book, dark, side * 1.1, 0.35, 0.28, 1.2, 0.55, 1.8));
+    jointPart(leg, box(book, green, side * 1.1, 1.03, 0, 0.66, 1.1, 0.77));
+    jointPart(leg, box(book, bright, side * 1.1, 0.42, 1.2, 0.75, 0.12, 0.08, false));
+    legs.push(leg);
+    jointPart(arm, tube(book, [side * 2.26, 4.4, 0], [side * 3.1, 3.25, 0.13], 0.23, steel));
+    jointPart(arm, tube(book, [side * 3.1, 3.25, 0.13], [side * 3.35, 2.45, 0.85], 0.2, green));
+    jointPart(arm, box(book, dark, side * 3.35, 2.22, 1.03, 0.8, 0.52, 0.76));
+    jointPart(arm, box(book, bright, side * 3.35, 2.25, 1.43, 0.42, 0.16, 0.07, false));
+    arms.push(arm);
   }
   const crown = mesh(g, new THREE.TorusGeometry(2.9, 0.055, 6, 40), bright, 0, 5.95, 0);
   crown.rotation.x = Math.PI / 2;
@@ -6146,7 +6016,8 @@ function makeExcelModel(e) {
     0,
   );
   shadow.rotation.x = -Math.PI / 2;
-  batchStaticMeshes(book);
+  const weapon = enemyWeapon(book, 0x92ffd8, 0, 3.5, 1.05, 2);
+  finishEnemyAnimation(g, book, e, { kind: 'excel', legs, arms, ...weapon });
   return g;
 }
 function createMarcSupportVisual() {
@@ -6755,7 +6626,8 @@ function updateExcelEnemy(e, dt) {
     dz = player.z - e.z,
     dist = Math.hypot(dx, dz);
   if (inv === 0 && dist < TYPES.excel.r + 0.65) hurtPlayer(34);
-  e.model.position.set(e.x, Math.sin(time * 1.3) * 0.07, e.z);
+  animateEnemy(e, dt);
+  e.model.position.set(e.x, 0, e.z);
   e.model.rotation.y = Math.atan2(dx, dz);
   const hp = e.model.userData.hpGroup,
     fill = e.model.userData.hpFill,
@@ -6920,6 +6792,7 @@ function addExcelDuplicateShot(e, angle, speed, damage, copyId) {
   };
   b.model = projectile(b, true);
   hostile.push(b);
+  triggerEnemyShot(e);
 }
 function resolveExcelDuplicateWarning(w) {
   if (!['excelDuplicateFan', 'excelDuplicateRing'].includes(w.kind)) return false;

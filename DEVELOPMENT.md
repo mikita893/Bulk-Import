@@ -1,6 +1,6 @@
 # Czytelne źródła Bulk Import
 
-Ta gałąź, `dev/readable-source`, zawiera tę samą grę v17 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
+Ta gałąź, `dev/readable-source`, zawiera tę samą grę v21 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
 
 ## Pierwsze uruchomienie
 
@@ -12,7 +12,7 @@ npm run build:client
 npm start
 ```
 
-Otwórz http://localhost:3000. Sam `Bulk-Import-v17.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
+Otwórz http://localhost:3000. Sam `Bulk-Import-v21.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
 
 ## Mapa modułów
 
@@ -39,7 +39,7 @@ Otwórz http://localhost:3000. Sam `Bulk-Import-v17.html` można też otworzyć 
 
 ### Przewodnik po kampanii
 
-Kampania pozostaje jednym plikiem źródłowym, ponieważ wcześniej była pojedynczym HTML. Teraz jest sformatowana, z nazwanymi funkcjami i komentarzami przy granicach mechanik. Nie trzeba rozdzielać jej na moduły, by zmieniać grę.
+Stan i reguły kampanii pozostają w `campaign/game.js`. Modele przeciwników i pozy wydzielono w v21 do `campaign/enemy-models.js` i `campaign/actor-animation.js`. Builder łączy te trzy pliki w jeden skrypt kampanii ze wspólnym zakresem; nie ładuj ich jako niezależnych modułów ES.
 
 - `fresh`, `snapshot`, `save`, `restore`, `validProgress`, `validSaveSnapshot`: stan, walidacja i import. `progress` zawiera trwały postęp; `player` i `run` bieżącą misję. Format solo nadal **10**, klucz `bulk-import-omega-3d-v10`; kooperacja nadal **1**.
 - `frame`, `update`, `updateVisuals`: zegar, symulacja i rendering. Nie wiąż szybkości gry z liczbą klatek. Pozostaw ograniczoną pracę po zacięciu i zatrzymanie w tle.
@@ -114,3 +114,12 @@ Testy `symbol-multiplayer.test.cjs` sprawdzają m.in. domyślne wyłączenie, pr
 - Zapis minigry: `bulk-import-sudoku-v1`, schema 1. Klucze kampanii i CSV Double są bez zmian. Cofanie nie przechodzi przez zamknięcie minigry, natomiast cyfry, notatki, czas i licznik podpowiedzi pozostają zapisane. Sudoku nie należy do JSON kampanii.
 
 Testy `sudoku.test.cjs` sprawdzają solver, 60 generowanych plansz, ruchy i odczyt. `sudoku-browser.cjs` rozwiązuje planszę rzeczywistymi klawiszami, sprawdza dotyk, niezmienność nadrzędnych modeli, przywrócenie CSV Double i zapis po przeładowaniu. Testy Pages i CSV Double online obejmują także nową nawigację i zakaz wejścia w aktywnym pokoju. Dokument wydania: [DESIGN-v20.md](DESIGN-v20.md).
+
+## v21: zbrojownia i animacje
+
+- `campaign/game.js`: `shopMenu` tworzy siedem natywnych przycisków z `data-upgrade` i segmentami `role=meter`. `buyUpgrade` nadal rozlicza cenę, limit oraz zakupioną różnicę pojemności. Zachowuj przewinięcie i fokus po przebudowaniu panelu. Style są ograniczone do `.upgrade-grid`.
+- `campaign/enemy-models.js`: modele z osobnymi stawami. `jointPart` zachowuje światowe położenie przenoszonych elementów. Nieruchome części są łączone według materiału; ruchomych podgrup nie wolno włączyć do statycznego batcha.
+- `campaign/actor-animation.js`: `finishEnemyAnimation` zakłada pozy w `model.userData.animation`; `resetEnemyAnimation` zeruje model pobrany z puli. `animateEnemy` używa rzeczywistego przesunięcia i stałego kroku symulacji. Strzał wyzwala błysk dopiero po przyjęciu pocisku przez silnik. Nie dodawaj danych modeli do zapisu.
+- `syncHeroAnimation` obraca całą sylwetkę przy uniku R. `heroPose` jest pivotem; `dodgeTrailMesh` ma stałe 12 miejsc (sześć używanych na szybkiej jakości). Pauza zamraża czas animacji, a `wipeCombat` zeruje ślad. Nie zmieniaj fizyki ani nietykalności w kodzie wizualizacji.
+
+`tests/campaign-presentation-browser.cjs` jest częścią `test:browser`: zakupy klawiaturą i dotykiem, limity, pojemność, chód/postój, strzały, zwarcie, pule, osłona i odczyt Excela, pauza, geometria GPU oraz rzeczywiste R. Szczegóły: [DESIGN-v21.md](DESIGN-v21.md). Format zapisu solo pozostaje 10; multiplayer CSV Double pozostaje wyłączony, a alwaysdata wstrzymane.

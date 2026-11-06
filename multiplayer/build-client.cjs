@@ -25,7 +25,11 @@ const campaign = versioned(
       '<!--THREE_LICENSE-->',
       () => '<' + '!-- ' + read('vendor/THREE-LICENSE.txt').trim() + ' -->',
     )
-    .replace('/*CAMPAIGN_APP*/', () => read('campaign/game.js')),
+    .replace('/*CAMPAIGN_APP*/', () =>
+      ['campaign/game.js', 'campaign/enemy-models.js', 'campaign/actor-animation.js']
+        .map(read)
+        .join('\n'),
+    ),
 );
 const app =
   "'use strict';\nwindow.BULK_RELEASE=" +
