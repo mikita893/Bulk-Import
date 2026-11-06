@@ -137,6 +137,38 @@ const release = require('../release.cjs');
     await game.waitForFunction(() => BulkUnified.souls.game.state === 'rest');
     await game.locator('[data-souls-action="rest"]').click();
     await page.screenshot({ path: '/tmp/bulk-pages-v' + release.major + '-souls-mobile.png' });
+    await game.evaluate(() => {
+      const s = BulkUnified.souls,
+        g = s.game;
+      g.state = 'playing';
+      g.area = 2;
+      g.progress.room = 2;
+      g.spawnRoom();
+      Object.assign(g.player, { x: 0, z: 0 });
+      const e = g.enemies[0];
+      Object.assign(e, { x: 0, z: -2, hp: 20, state: 'recover', timer: 3 });
+      g.target = e.id;
+      s.cover();
+    });
+    await page.keyboard.press('KeyJ');
+    await game.waitForFunction(() => BulkUnified.screen === 'city');
+    assert(await game.locator('#city-world').isVisible());
+    await game.locator('[data-city-action="start"]').click();
+    await page.keyboard.down('KeyW');
+    await game.waitForFunction(() => BulkUnified.city.game.player.z < 102);
+    await page.keyboard.up('KeyW');
+    await page.keyboard.press('KeyE');
+    assert.equal(await game.evaluate(() => BulkUnified.city.game.mode), 'car');
+    assert.equal(
+      await page.evaluate(
+        () => JSON.parse(localStorage.getItem('bulk-import-grand-theft-csv-v1')).version,
+      ),
+      1,
+    );
+    await page.screenshot({ path: '/tmp/bulk-pages-v' + release.major + '-city-mobile.png' });
+    await game.locator('#unified-back').click();
+    assert.equal(await game.evaluate(() => BulkUnified.screen), 'souls');
+    assert(await game.locator('[data-souls-action="city"]').isVisible());
     await game.locator('#unified-back').click();
     assert.equal(await game.evaluate(() => BulkUnified.screen), 'runner');
     assert(

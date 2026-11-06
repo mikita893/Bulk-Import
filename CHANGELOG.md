@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v26.0.0 — 2026-11-06
+
+Plik gry: [Bulk-Import-v26.html](Bulk-Import-v26.html).
+
+- Grand Theft CSV: Vice Import — nowa gra 3D automatycznie po wygraniu Apex Souls; starsze zwycięstwa też ją odblokowują.
+- Miasto, chodzenie, samochód, Bulk Boost, ruch uliczny, pościg audytorów i radio z żartami o imporcie.
+- Misja helikopterem: cztery zrzuty DELETE na dachy, drony z zapowiedzią ataku i powrót na lądowisko.
+- Checkpointy zrzutów, zapis, swobodna jazda po historii; starsze zapisy, jeden HTML i dotychczasowa konfiguracja hostingu zachowane.
+
 ## v25.0.0 — 2026-11-06
 
 Plik gry: [Bulk-Import-v25.html](Bulk-Import-v25.html).

@@ -10,7 +10,8 @@
     double = null,
     sudoku = null,
     runner = null,
-    souls = null;
+    souls = null,
+    city = null;
   const storage = Object.freeze({
     getItem: (key) => localStorage.getItem(key),
     setItem: (key, value) => localStorage.setItem(key, value),
@@ -53,32 +54,37 @@
     $('sudoku-host').hidden = next !== 'sudoku';
     $('runner-host').hidden = next !== 'runner';
     $('souls-host').hidden = next !== 'souls';
+    $('city-host').hidden = next !== 'city';
     $('unified-title').textContent =
-      next === 'campaign'
-        ? 'KAMPANIA SOLO · WSPÓLNA GALAKTYKA'
-        : next === 'souls'
-          ? 'APEX SOULS · KLĄTWA LEGACY'
-          : next === 'runner'
-            ? 'METRO IMPORT · UCIECZKA PRZED AUDYTEM'
-            : next === 'sudoku'
-              ? 'SUDOKU · WALIDACJA WIERSZY'
-              : next === 'double'
-                ? 'CSV DOUBLE · PTAKI I DUPLIKATY'
-                : next === 'cards'
-                  ? 'GWINTFORCE · WOJNA REKORDÓW'
-                  : 'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
+      next === 'city'
+        ? 'GRAND THEFT CSV · VICE IMPORT'
+        : next === 'campaign'
+          ? 'KAMPANIA SOLO · WSPÓLNA GALAKTYKA'
+          : next === 'souls'
+            ? 'APEX SOULS · KLĄTWA LEGACY'
+            : next === 'runner'
+              ? 'METRO IMPORT · UCIECZKA PRZED AUDYTEM'
+              : next === 'sudoku'
+                ? 'SUDOKU · WALIDACJA WIERSZY'
+                : next === 'double'
+                  ? 'CSV DOUBLE · PTAKI I DUPLIKATY'
+                  : next === 'cards'
+                    ? 'GWINTFORCE · WOJNA REKORDÓW'
+                    : 'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
     $('unified-back').textContent =
-      next === 'souls'
-        ? '← Wróć do Metro Import'
-        : next === 'runner'
-          ? '← Wróć do Sudoku'
-          : next === 'sudoku'
-            ? '← Wróć do CSV Double'
-            : next === 'double'
-              ? '← Wróć do Bird Game 3'
-              : ['bird', 'cards'].includes(next)
-                ? '← Wróć do terminala'
-                : '← Menu główne';
+      next === 'city'
+        ? '← Wróć do Apex Souls'
+        : next === 'souls'
+          ? '← Wróć do Metro Import'
+          : next === 'runner'
+            ? '← Wróć do Sudoku'
+            : next === 'sudoku'
+              ? '← Wróć do CSV Double'
+              : next === 'double'
+                ? '← Wróć do Bird Game 3'
+                : ['bird', 'cards'].includes(next)
+                  ? '← Wróć do terminala'
+                  : '← Menu główne';
   }
   function leaveNetwork() {
     return network?.suspend() !== false;
@@ -163,11 +169,31 @@
     souls = new BulkSoulsGame($('souls-host'), {
       storage,
       onExit: back,
+      onComplete: openCity,
+      soundEnabled: () => $('sound-toggle').textContent.includes('ON'),
+    });
+    return true;
+  }
+  function openCity() {
+    if (screen !== 'souls' || !souls?.canEnterCity() || double?.online.active) return false;
+    souls.suspendForMinigame();
+    setScreen('city');
+    city = new BulkCityGame($('city-host'), {
+      storage,
+      onExit: back,
       soundEnabled: () => $('sound-toggle').textContent.includes('ON'),
     });
     return true;
   }
   function back() {
+    if (screen === 'city') {
+      city?.destroy();
+      city = null;
+      setScreen('souls');
+      souls?.resumeFromMinigame();
+      return;
+    }
+
     if (screen === 'souls') {
       souls?.destroy();
       souls = null;
@@ -240,6 +266,7 @@
     openSudoku,
     openRunner,
     openSouls,
+    openCity,
     back,
     registerNetwork(api) {
       network = api;
@@ -264,6 +291,9 @@
     },
     get souls() {
       return souls;
+    },
+    get city() {
+      return city;
     },
   });
   networkReady(false);

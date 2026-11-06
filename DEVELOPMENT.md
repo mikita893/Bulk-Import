@@ -1,6 +1,6 @@
 # Czytelne źródła Bulk Import
 
-Ta gałąź, `dev/readable-source`, zawiera tę samą grę v25 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
+Ta gałąź, `dev/readable-source`, zawiera tę samą grę v26 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
 
 ## Pierwsze uruchomienie
 
@@ -12,7 +12,7 @@ npm run build:client
 npm start
 ```
 
-Otwórz http://localhost:3000. Sam `Bulk-Import-v25.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
+Otwórz http://localhost:3000. Sam `Bulk-Import-v26.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
 
 ## Mapa modułów
 
@@ -170,3 +170,18 @@ Testy: `souls.test.cjs` obejmuje zasady walki, checkpointy, zgony/runy i pełne 
 `LEGACY_DISTANCE_GOAL = 30000` służy jedynie zgodności starych zapisów i punktów wznowienia. `readRecord` odblokowuje Apex Souls, gdy stary/nowy rekord wynosi co najmniej 25 000 pkt lub zachodzi zapisane ukończenie dawnej trasy. Klucz i schema 1 bez zmian. `canEnterSouls` nie wymaga dystansu 30 000 m. HUD, ekran mety, brama oraz wstęp Apex Souls pokazują punkty.
 
 Testy modelu obejmują próg 24 999 pkt, ostatni CSV, dystans jako składnik wyniku, rekordy v23/v24 i pełne legalne biegi poniżej czterech minut. Testy Chromium/Pages kończą trasę przez rzeczywiste zebranie CSV przy około 100 m i sprawdzają automatyczne wejście. Szczegóły: [DESIGN-v25.md](DESIGN-v25.md).
+
+## v26: Grand Theft CSV i helikopter
+
+Wejście jest wyłącznie z ukończonego Apex Souls (`progress.wins > 0`). `BulkSoulsGame` ma `onComplete`, `canEnterCity`, `suspendForMinigame` i `resumeFromMinigame`. Nowe zwycięstwo uruchamia jednorazowy timer. Wyjście, nowa podróż i zawieszenie anulują go. Zawieszenie zatrzymuje RAF, dźwięki, wejście i resize; po powrocie odtwarzamy ten sam model bez kolejnego automatycznego wejścia. `multiplayer/unified.js` zarządza `openCity` i powrotem do Souls. Nie twórz skrótu w menu/terminalu.
+
+- `city-sim.js`: czysty model bez DOM/Three.js. `progress.stage` oznacza 0 — kurier, 1 — helikopter, 2 — ukończenie. `phase` rozdziela odbiór, dostawę, zrzuty, powrót i jazdę swobodną. `mode` to pieszo, auto lub helikopter. `actor()` wskazuje właściwy obiekt fizyczny. `tick` dzieli czas na kroki 1/120 s, maks. 0,25 s na wywołanie. Jednostki fizyki: metry i sekundy; HUD mnoży prędkość przez 3,6.
+- `BUILDINGS`, `TARGETS`, `PAD`, `PICKUP` są wspólne dla kolizji, renderingu i mapy. Dachy docelowe mają jawne wysokości używane w modelu budynków. Zmiana układu musi zachować dojazd drogami oraz bezpieczny wzlot z lądowiska. Zapis ma cztery flagi zrzutów; przy zmianie liczby celów dodaj świadomą migrację.
+- `Game.action`: E sprawdza odległość i bezpieczne wysiadanie; F obsługuje zrzut lub klakson. Ładunek jest skończonym obiektem `drop`, a nagrodę/checkpoint nadajemy po dotarciu na dach, tylko raz na cel. Pozostałe cele pozostają aktywne. Zakończenie wymaga czterech zrzutów i rzeczywistego lądowania w bazie.
+- Samochód ma przyspieszenie, cofanie, hamulec, kierownicę zależną od prędkości oraz ograniczony nitro/boost. Ruch uliczny jest deterministyczny; audytorzy poruszają się po siatce skrzyżowań. Helikopter ma tłumione prędkości poziome i pionową, limit wysokości oraz kolizje bryły z budynkami. Drony najpierw zapisują nieruchomy czerwony cel, dopiero po 1,4 s sprawdzają trafienie. Gracz może odlecieć lub zmienić wysokość.
+- `city-render.js`: wspólne geometrie, instancjonowany świat, palmy i pojazdy NPC, animowana postać, wirniki i kamera. Bufory mają limity 14 aut NPC/policji, 56 kół, trzech dronów i 40 cząstek. Brak geometrii tworzonej w pętli. Three.js może po raz pierwszy wysłać gotową geometrię na GPU dopiero przy jej użyciu; testy sprawdzają niezmienność tożsamości geometrii i limity puli, aby nie mylić tego z alokowaniem nowej sceny.
+- `city-game.js/css`: HUD, mapa 2D, klawiatura i przyciski z przechwyceniem wskaźnika. Zwolnienie, anulowanie, pauza, wyjście i blur czyszczą sterowanie. Ruch helikoptera jest względem północy/stałej kamery, samochód używa gazu i kierownicy względem własnego przodu. Audio silnika, wirnika i autorskiego radia ma ograniczoną częstotliwość i korzysta z `BulkEffects`; główne wyciszenie obowiązuje wszędzie. Nigdy nie dodawaj usług audio/assetów pobieranych podczas gry.
+
+Zapis `bulk-import-grand-theft-csv-v1` (schema 1) zawiera etap, cztery zrzuty, kredyty, wygrane, kraksy i czas lotu. `retry`/wczytanie resetują pojazdy i zegar, zachowując zakończone zrzuty. Jazda swobodna po historii nie uruchamia limitu czasu. Nowa historia zachowuje liczniki wygranych/kraks i rekord, resetując cele oraz kredyty. Stare formaty kampanii i minigier bez zmian.
+
+`tests/city.test.cjs` przechodzi obie misje legalnymi wejściami, bez teleportowania czy uzupełniania życia, i sprawdza kolizje, boost, drony, zegary, zapis, próby i swobodną jazdę. `runner-browser.cjs` rozszerza pełne zagnieżdżenie o rzeczywistą jazdę/lot/dotyk, cztery zrzuty, fizyczną kraksę i retry, lądowanie, zwycięstwo, ponowne odczytanie zapisu, zamrożenie rodziców i GPU. `pages-browser.cjs` dodatkowo testuje nową grę w statycznej ramce z prawdziwym localStorage. Szczegóły: [DESIGN-v26.md](DESIGN-v26.md).

@@ -40,6 +40,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     });
     await page.setContent(fs.readFileSync(release.filename, 'utf8'));
     await page.waitForFunction(() => window.BulkUnified);
+    assert.equal(await page.evaluate(() => BulkUnified.openCity()), false);
     assert.equal(await page.evaluate(() => BulkUnified.openRunner()), false);
     assert.equal(await page.locator('#play-runner,#nav-runner').count(), 0);
     await page.locator('#play-campaign').click();
@@ -193,16 +194,26 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await page.mouse.move(bounds.x + bounds.width * 0.55 - 100, bounds.y + bounds.height * 0.5);
     await page.mouse.up();
     await page.waitForFunction(() => BulkUnified.runner.game.lane === 0);
+    // Three.js uploads prebuilt geometry lazily; the scene's geometry identities must stay fixed.
     const budget = await page.evaluate(() => {
       const r = BulkUnified.runner;
       r.game.inv = 999;
-      const memory = r.view.renderer.info.memory.geometries;
+      const geometries = new Set();
+      r.view.scene.traverse((o) => {
+        if (o.geometry) geometries.add(o.geometry);
+      });
+      const owned = r.view.geometries.size;
       for (let i = 0; i < 120; i++) {
         r.game.tick(1 / 60);
         r.view.render(r.game, i / 60);
       }
-      if (r.view.renderer.info.memory.geometries !== memory)
-        throw Error('Runner allocates GPU geometry during play');
+      r.view.scene.traverse((o) => {
+        if (o.geometry && !geometries.has(o.geometry))
+          throw Error('Runner creates geometry during play');
+      });
+      if (r.view.geometries.size !== owned) throw Error('Runner geometry pool grew');
+      const memory = r.view.renderer.info.memory.geometries;
+      if (memory > geometries.size) throw Error('Runner GPU geometry exceeds its fixed pool');
       return { calls: r.view.renderer.info.render.calls, items: r.game.items.length, memory };
     });
     assert(budget.calls < 100);
@@ -379,6 +390,136 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await page.keyboard.press('KeyJ');
     await page.waitForFunction(() => BulkUnified.souls.game.state === 'victory');
     assert(await page.locator('[data-souls-action="new"]').isVisible());
+    await page.waitForFunction(() => BulkUnified.screen === 'city');
+    assert(await page.locator('#city-world').isVisible());
+    assert(await page.evaluate(() => BulkUnified.souls.suspended));
+    const frozenSouls = await page.evaluate(() => JSON.stringify(BulkUnified.souls.game));
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-city-ready.png' });
+    await page.locator('[data-city-action="start"]').click();
+    await page.keyboard.down('KeyW');
+    await page.waitForFunction(() => BulkUnified.city.game.player.z < 102);
+    await page.keyboard.up('KeyW');
+    await page.keyboard.press('KeyE');
+    assert.equal(await page.evaluate(() => BulkUnified.city.game.mode), 'car');
+    await page.keyboard.down('KeyW');
+    await page.waitForFunction(() => BulkUnified.city.game.car.z < 97);
+    await page.keyboard.up('KeyW');
+    await page.keyboard.press('KeyP');
+    const cityPaused = await page.evaluate(() => JSON.stringify(BulkUnified.city.game));
+    await sleep(200);
+    await page.keyboard.press('KeyF');
+    assert.equal(await page.evaluate(() => JSON.stringify(BulkUnified.city.game)), cityPaused);
+    await page.locator('.city-cover [data-city-action="pause"]').click();
+    await page.evaluate(() => {
+      const g = BulkUnified.city.game;
+      Object.assign(g.car, { x: 0, z: -88, angle: Math.PI, speed: 12 });
+    });
+    await page.keyboard.down('KeyW');
+    await page.waitForFunction(() => BulkUnified.city.game.phase === 'delivery');
+    await page.keyboard.up('KeyW');
+    assert.equal(await page.evaluate(() => BulkUnified.city.game.heat), 2);
+    await page.evaluate(() => {
+      Object.assign(BulkUnified.city.game.car, { x: 0, z: 77, speed: 0 });
+    });
+    await page.waitForFunction(() => BulkUnified.city.game.state === 'briefing');
+    assert.equal(await page.evaluate(() => BulkUnified.city.game.progress.stage), 1);
+    await page.locator('[data-city-action="start"]').click();
+    await page.keyboard.press('KeyE');
+    assert.equal(await page.evaluate(() => BulkUnified.city.game.mode), 'heli');
+    await page.keyboard.down('Space');
+    await page.waitForFunction(() => BulkUnified.city.game.heli.y > 8);
+    await page.keyboard.up('Space');
+    await page.keyboard.down('KeyW');
+    await page.waitForFunction(() => BulkUnified.city.game.heli.z < 78);
+    await page.keyboard.up('KeyW');
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-city-flight.png' });
+    await page.setViewportSize({ width: 430, height: 932 });
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
+    const up = await page.locator('#city-up').boundingBox(),
+      height = await page.evaluate(() => BulkUnified.city.game.heli.y);
+    await page.mouse.move(up.x + up.width / 2, up.y + up.height / 2);
+    await page.mouse.down();
+    await page.waitForFunction((y) => BulkUnified.city.game.heli.y > y + 0.8, height);
+    await page.mouse.up();
+    await page.waitForFunction(
+      () => !BulkUnified.city.keys.Space && BulkUnified.city.pointers.size === 0,
+    );
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-city-mobile.png' });
+    for (let i = 0; i < 4; i++) {
+      await page.evaluate((i) => {
+        const g = BulkUnified.city.game,
+          t = BulkCity.TARGETS[i];
+        Object.assign(g.heli, { x: t.x, z: t.z, y: t.h + 8, vx: 0, vz: 0, vy: 0 });
+      }, i);
+      await page.locator('#city-drop').tap();
+      await page.waitForFunction(() => !!BulkUnified.city.game.drop);
+      await page.waitForFunction((i) => BulkUnified.city.game.progress.delivered[i], i);
+      if (i === 0) {
+        await page.evaluate(() => {
+          const g = BulkUnified.city.game,
+            t = BulkCity.TARGETS[0];
+          g.inv = 0;
+          Object.assign(g.heli, { x: t.x, z: t.z, y: t.h + 1.7, vy: -12, hp: 1 });
+        });
+        await page.waitForFunction(() => BulkUnified.city.game.state === 'failed');
+        await page.locator('[data-city-action="retry"]').tap();
+        assert(
+          await page.evaluate(
+            () =>
+              BulkUnified.city.game.progress.delivered[0] &&
+              BulkUnified.city.game.progress.stage === 1,
+          ),
+        );
+        await page.locator('[data-city-action="interact"]').tap();
+        assert.equal(await page.evaluate(() => BulkUnified.city.game.mode), 'heli');
+      }
+    }
+    await page.waitForFunction(() => BulkUnified.city.game.phase === 'return');
+    await page.evaluate(() => {
+      const g = BulkUnified.city.game;
+      Object.assign(g.heli, { x: BulkCity.PAD.x, z: BulkCity.PAD.z, y: 3, vx: 0, vz: 0, vy: 0 });
+    });
+    await page.keyboard.down('KeyX');
+    await page.waitForFunction(() => BulkUnified.city.game.state === 'victory');
+    await page.keyboard.up('KeyX');
+    assert.equal(await page.evaluate(() => BulkUnified.city.game.progress.cash), 7000);
+    assert.equal(await page.evaluate(() => BulkUnified.city.game.progress.deaths), 1);
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-city-victory.png' });
+    await page.locator('[data-city-action="free"]').tap();
+    assert.equal(await page.evaluate(() => BulkUnified.city.game.phase), 'free');
+    await page.setViewportSize({ width: 1440, height: 1050 });
+    const cityBudget = await page.evaluate(() => {
+      const s = BulkUnified.city;
+      s.game.pause();
+      s.view.render(s.game, 0.016);
+      const memory = s.view.renderer.info.memory.geometries;
+      for (let i = 0; i < 60; i++) s.view.render(s.game, 0);
+      return {
+        memory,
+        after: s.view.renderer.info.memory.geometries,
+        calls: s.view.renderer.info.render.calls,
+      };
+    });
+    assert.equal(cityBudget.memory, cityBudget.after);
+    assert(cityBudget.calls < 180);
+    assert.equal(await page.evaluate(() => JSON.stringify(BulkUnified.souls.game)), frozenSouls);
+    await page.evaluate(() => (window._formerCity = BulkUnified.city));
+    await page.locator('#unified-back').click();
+    assert(
+      await page.evaluate(
+        () => _formerCity.dead && BulkUnified.city === null && !BulkUnified.souls.suspended,
+      ),
+    );
+    assert.equal(await page.locator('#city-host canvas').count(), 0);
+    await sleep(1600);
+    assert.equal(await page.evaluate(() => BulkUnified.screen), 'souls');
+    await page.locator('[data-souls-action="city"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.city.game.state), 'victory');
+    await page.locator('#unified-back').click();
+    console.log(
+      'PASS automatic Souls victory → Grand Theft CSV, physical walking/vehicle entry, real driving/flight/touch, courier/pursuit, 4 rooftop drops, collision failure/checkpoint retry, landing/victory/free ride, save/return, frozen parents, GPU budget and offline.',
+      JSON.stringify(cityBudget),
+    );
     await page.evaluate(() => (window._formerSouls = BulkUnified.souls));
     await page.locator('#unified-back').click();
     assert(await page.evaluate(() => _formerSouls.dead && BulkUnified.souls === null));

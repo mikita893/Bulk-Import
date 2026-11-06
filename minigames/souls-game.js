@@ -1,9 +1,12 @@
 'use strict';
 class BulkSoulsGame {
-  constructor(host, { storage, onExit, soundEnabled = () => true } = {}) {
+  constructor(host, { storage, onExit, onComplete, soundEnabled = () => true } = {}) {
     this.host = host;
     this.storage = storage;
     this.onExit = onExit;
+    this.onComplete = onComplete;
+    this.suspended = false;
+    this.completionTimer = null;
     this.dead = false;
     this.keys = {};
     this.viewState = { yaw: 0 };
@@ -26,7 +29,9 @@ class BulkSoulsGame {
     } catch (e) {
       this.renderError = true;
       this.$('souls-cover').innerHTML =
-        '<div><h2>Potrzebny WebGL</h2><p>Włącz akcelerację sprzętową.</p><button data-souls-action="exit">Wróć do Metro</button></div>';
+        '<div><h2>Potrzebny WebGL</h2><p>Włącz akcelerację sprzętową.</p>' +
+        this.cityButton() +
+        '<button data-souls-action="exit">Wróć do Metro</button></div>';
     }
     this.onClick = (e) => {
       const b = e.target.closest('[data-souls-action]');
@@ -34,6 +39,8 @@ class BulkSoulsGame {
     };
     this.onKey = (e) => {
       if (
+        this.dead ||
+        this.suspended ||
         e.ctrlKey ||
         e.metaKey ||
         e.altKey ||
@@ -75,7 +82,9 @@ class BulkSoulsGame {
     this.onHidden = () => {
       if (document.hidden) this.pause();
     };
-    this.onResize = () => this.view?.resize();
+    this.onResize = () => {
+      if (!this.suspended) this.view?.resize();
+    };
     this.onPointerDown = (e) => {
       const hold = e.target.closest('[data-souls-hold]');
       if (hold) {
@@ -158,7 +167,11 @@ class BulkSoulsGame {
     };
   }
   action(kind) {
-    if (this.dead) return;
+    if (this.dead || this.suspended) return;
+    if (kind === 'city') {
+      if (this.canEnterCity()) this.onComplete?.();
+      return;
+    }
     if (kind === 'exit') {
       this.onExit?.();
       return;
@@ -173,6 +186,7 @@ class BulkSoulsGame {
       return;
     }
     if (kind === 'new') {
+      clearTimeout(this.completionTimer);
       const old = this.game.progress;
       this.game = new BulkSouls.Game({
         ...BulkSouls.defaultProgress(),
@@ -253,7 +267,7 @@ class BulkSoulsGame {
     }
   }
   pause() {
-    if (this.dead) return;
+    if (this.dead || this.suspended) return;
     this.keys = {};
     this.mouse.drag = false;
     this.game.pause();
@@ -281,7 +295,9 @@ class BulkSoulsGame {
       box.innerHTML =
         '<div><div class="souls-eyebrow">25 000 PUNKTÓW ZA TOBĄ / KLĄTWA DOPIERO SIĘ ZACZYNA</div><h2>APEX <em>SOULS</em></h2><h3>Klątwa Legacy</h3><p>Trzy lokacje, miecz, tarcza i przeciwnicy, którzy telegrafują ataki. Zarządzaj wytrzymałością. Unik ma krótkie okno nietykalności. Ogniska odnawiają flakony i pozwalają kupować poziomy.</p><p>Po śmierci zostawiasz runy na ziemi. Lord Legacy czeka w katedrze — i nadal używa makr z 2007 roku.</p><button class="primary" data-souls-action="start">⚔ ' +
         (g.area > 0 ? 'KONTYNUUJ WYPRAWĘ' : 'ROZPOCZNIJ WYPRAWĘ') +
-        '</button><button data-souls-action="exit">Wróć do Metro Import</button><small>J / LPM: cios · K: mocny cios · spacja: unik · F: blok · R: flakon · Q: namierz · E: ognisko/brama · P: pauza</small></div>';
+        '</button>' +
+        this.cityButton() +
+        '<button data-souls-action="exit">Wróć do Metro Import</button><small>J / LPM: cios · K: mocny cios · spacja: unik · F: blok · R: flakon · Q: namierz · E: ognisko/brama · P: pauza</small></div>';
       return;
     }
     if (state === 'rest') {
@@ -296,7 +312,9 @@ class BulkSoulsGame {
         (g.progress.level >= 8 || g.progress.runes < g.levelCost ? 'disabled' : '') +
         '>Zwiększ poziom · ' +
         (g.progress.level >= 8 ? 'MAX' : g.levelCost + ' run ID') +
-        '</button><button data-souls-action="leaveRest">Odejdź od ogniska</button><button data-souls-action="exit">Wróć do Metro</button></div>';
+        '</button><button data-souls-action="leaveRest">Odejdź od ogniska</button>' +
+        this.cityButton() +
+        '<button data-souls-action="exit">Wróć do Metro</button></div>';
       return;
     }
     const dead = state === 'dead',
@@ -318,7 +336,9 @@ class BulkSoulsGame {
           : 'Odpoczynek<br><em>od przekleństw.</em>') +
       '</h2><p>' +
       g.message +
-      '</p><p>Poziom: ' +
+      '</p>' +
+      this.cityButton() +
+      '<p>Poziom: ' +
       g.progress.level +
       ' · zgony: ' +
       g.progress.deaths +
@@ -329,6 +349,33 @@ class BulkSoulsGame {
       '">' +
       (dead ? '↻ POWRÓT DO OGNISKA' : won ? '⚔ NOWA PODRÓŻ' : '▶ WZNÓW') +
       '</button><button data-souls-action="exit">Wróć do Metro Import</button></div>';
+  }
+  canEnterCity() {
+    return this.game.progress.wins > 0;
+  }
+  cityButton() {
+    return this.canEnterCity()
+      ? '<button class="primary" data-souls-action="city">🚁 GRAND THEFT CSV · VICE IMPORT</button>'
+      : '';
+  }
+  suspendForMinigame() {
+    if (this.dead || this.suspended) return;
+    this.persist();
+    this.suspended = true;
+    cancelAnimationFrame(this.raf);
+    clearTimeout(this.completionTimer);
+    this.keys = {};
+    this.mouse.drag = false;
+    this.effects.stop();
+  }
+  resumeFromMinigame() {
+    if (this.dead || !this.suspended) return;
+    this.suspended = false;
+    this.last = performance.now();
+    this.view?.resize();
+    this.cover();
+    this.hud();
+    this.raf = requestAnimationFrame(this.frame);
   }
   hud() {
     const g = this.game,
@@ -360,7 +407,7 @@ class BulkSoulsGame {
     }
   }
   frame(now) {
-    if (this.dead) return;
+    if (this.dead || this.suspended) return;
     this.raf = requestAnimationFrame(this.frame);
     const dt = Math.min(0.1, Math.max(0, (now - this.last) / 1000));
     this.last = now;
@@ -384,6 +431,12 @@ class BulkSoulsGame {
         area: 'powerup',
       };
       for (const e of this.game.events) if (sounds[e.type]) this.effects.play(sounds[e.type]);
+      if (this.game.events.some((e) => e.type === 'victory')) {
+        clearTimeout(this.completionTimer);
+        this.completionTimer = setTimeout(() => {
+          if (!this.dead && !this.suspended && this.game.state === 'victory') this.onComplete?.();
+        }, 1400);
+      }
       if (
         this.game.events.some((e) =>
           ['enemyDead', 'death', 'victory', 'reclaim', 'area'].includes(e.type),
@@ -411,6 +464,7 @@ class BulkSoulsGame {
     this.persist();
     this.dead = true;
     cancelAnimationFrame(this.raf);
+    clearTimeout(this.completionTimer);
     this.host.removeEventListener('click', this.onClick);
     this.host.removeEventListener('pointerdown', this.onPointerDown);
     this.host.removeEventListener('pointerup', this.onPointerUp);

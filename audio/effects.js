@@ -71,6 +71,24 @@
       } else if (name === 'greatsword') {
         this.node('noise', 0, 0.05, 0.2);
         this.node('triangle', 140, 0.07, 0.23, 0, 35);
+      } else if (name === 'door') {
+        this.node('noise', 0, 0.025, 0.08);
+        this.node('triangle', 150, 0.045, 0.1, 0, 50);
+      } else if (name === 'rotor') {
+        this.node('sawtooth', 85, 0.022, 0.35, 0, 65);
+        this.node('noise', 0, 0.012, 0.22);
+      } else if (name === 'payload') {
+        this.node('triangle', 780, 0.025, 0.2, 0, 140);
+        this.node('noise', 0, 0.025, 0.15);
+      } else if (name === 'horn') {
+        this.node('sawtooth', 220, 0.018, 0.25);
+        this.node('sawtooth', 277, 0.015, 0.25);
+      } else if (name === 'siren') {
+        this.node('triangle', 600, 0.018, 0.32, 0, 1050);
+        this.node('triangle', 1050, 0.018, 0.32, 0.32, 600);
+      } else if (name === 'alert') {
+        this.node('square', 880, 0.012, 0.07);
+        this.node('sine', 1320, 0.018, 0.09, 0.13);
       } else if (name === 'enemyShot') {
         this.node('sawtooth', 360, 0.02, 0.09, 0, 90);
         this.node('noise', 0, 0.015, 0.06);
