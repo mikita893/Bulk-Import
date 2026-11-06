@@ -45,6 +45,8 @@ const app =
     'minigames/symbol-sim.js',
     'minigames/symbol-network.js',
     'minigames/symbol-game.js',
+    'minigames/sudoku-sim.js',
+    'minigames/sudoku-game.js',
     'multiplayer/unified.js',
     'multiplayer/render.js',
     'multiplayer/client.js',
@@ -59,6 +61,7 @@ const output = versioned(read('multiplayer/client-shell.html'))
       'minigames/bird-game-3.css',
       'minigames/cards-game.css',
       'minigames/symbol-game.css',
+      'minigames/sudoku-game.css',
     ]
       .map(read)
       .join('\n'),
@@ -83,6 +86,6 @@ console.log(
     release.filename +
     ' (' +
     Buffer.byteLength(output) +
-    ' bytes): standalone campaign + multiplayer + Bird Game 3 + Gwintforce + CSV Double',
+    ' bytes): standalone campaign + multiplayer + Bird Game 3 + Gwintforce + CSV Double + Sudoku',
 );
 console.log('GitHub Pages: ' + require('../deploy/pages/build.cjs').buildPages());

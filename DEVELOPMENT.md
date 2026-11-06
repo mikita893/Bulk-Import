@@ -104,3 +104,13 @@ Funkcja ma pozostać wyłączona: `BULK_DOUBLE_MULTIPLAYER` nie jest ustawione w
 - `minigames/symbol-game.js`: wspólny widok solo/sieciowy. W online ukrycie karty przeglądarki nie pauzuje meczu. Tylko host może wstrzymać stół. `multiplayer/unified.js` nadal udostępnia CSV Double wyłącznie wewnątrz Bird Game 3.
 
 Testy `symbol-multiplayer.test.cjs` sprawdzają m.in. domyślne wyłączenie, prywatność, autorytet, kary, wyścigi, rozłączenia, limity i 100 pełnych meczów. `symbol-multiplayer-browser.cjs` rozgrywa cały mecz dwoma klientami z automatycznym wznowieniem, wynikami i powrotem do tej samej areny. `test:pages` i lokalny test CSV Double chronią brak socketów bez serwera. Pełne zasady i ograniczenia: [DESIGN-v19.md](DESIGN-v19.md). Formaty zapisów pozostają bez zmian.
+
+## v20: Sudoku w CSV Double
+
+`BulkUnified.openSudoku` wymaga ekranu CSV Double oraz braku aktywnego pokoju online. `BulkDoubleGame.suspendForMinigame` zatrzymuje lokalny model, zegar, timery, rendering i klawisze. Powrót odtwarza ten sam ekran i wymaga ręcznego wznowienia wcześniej trwającej gry. Podczas Sudoku nie zmieniaj kampanii ani Bird Game 3; oba pozostają w istniejącym zawieszeniu. Nie dodawaj dodatkowej drogi wejścia z terminala lub menu głównego.
+
+- `minigames/sudoku-sim.js`: czysty generator, solver MRV z maskami i limitem węzłów oraz model ruchów. Usunięcie wskazówki jest dozwolone tylko po ukończonym sprawdzeniu dokładnie jednego rozwiązania. `SudokuGame` obsługuje wpisy, notatki, konflikty, podpowiedzi i cofanie do 100 ruchów; `restoreSudoku` waliduje zapis i rozwiązuje jego dane startowe.
+- `minigames/sudoku-game.js`, `sudoku-game.css`: UI, wybór pól, klawiatura/dotyk i zegar co 250 ms. Pauza i utrata widoczności zatrzymują czas. Układ ma klasy `sdk-*`, aby nie dziedziczyć ukrywania bocznego panelu multiplayera na telefonie.
+- Zapis minigry: `bulk-import-sudoku-v1`, schema 1. Klucze kampanii i CSV Double są bez zmian. Cofanie nie przechodzi przez zamknięcie minigry, natomiast cyfry, notatki, czas i licznik podpowiedzi pozostają zapisane. Sudoku nie należy do JSON kampanii.
+
+Testy `sudoku.test.cjs` sprawdzają solver, 60 generowanych plansz, ruchy i odczyt. `sudoku-browser.cjs` rozwiązuje planszę rzeczywistymi klawiszami, sprawdza dotyk, niezmienność nadrzędnych modeli, przywrócenie CSV Double i zapis po przeładowaniu. Testy Pages i CSV Double online obejmują także nową nawigację i zakaz wejścia w aktywnym pokoju. Dokument wydania: [DESIGN-v20.md](DESIGN-v20.md).

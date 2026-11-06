@@ -95,7 +95,8 @@ input:disabled {
 }
 body[data-screen='campaign'],
 body[data-screen='bird'],
-body[data-screen='double'] {
+body[data-screen='double'],
+body[data-screen='sudoku'] {
   overflow: hidden;
 }
 @media (max-width: 700px) {

@@ -64,6 +64,8 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     await a.waitForFunction(() => BulkUnified.double.online.room.players.length === 2);
     await b.waitForFunction(() => BulkUnified.double.online.room?.players.length === 2);
     assert(await b.locator('[data-double-action="net-start"]').isDisabled());
+    assert(await b.locator('#double-sudoku').isDisabled());
+    assert.equal(await b.evaluate(() => BulkUnified.openSudoku()), false);
     await a.locator('#double-net-cooldown').selectOption('1500');
     await a.locator('[data-double-action="net-ready"]').click();
     await b.locator('[data-double-action="net-ready"]').click();

@@ -7,7 +7,8 @@
     campaign = null,
     bird = null,
     cards = null,
-    double = null;
+    double = null,
+    sudoku = null;
   const storage = Object.freeze({
     getItem: (key) => localStorage.getItem(key),
     setItem: (key, value) => localStorage.setItem(key, value),
@@ -47,20 +48,25 @@
     $('bird-host').hidden = next !== 'bird';
     $('cards-host').hidden = next !== 'cards';
     $('double-host').hidden = next !== 'double';
+    $('sudoku-host').hidden = next !== 'sudoku';
     $('unified-title').textContent =
       next === 'campaign'
         ? 'KAMPANIA SOLO · WSPÓLNA GALAKTYKA'
-        : next === 'double'
-          ? 'CSV DOUBLE · PTAKI I DUPLIKATY'
-          : next === 'cards'
-            ? 'GWINTFORCE · WOJNA REKORDÓW'
-            : 'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
+        : next === 'sudoku'
+          ? 'SUDOKU · WALIDACJA WIERSZY'
+          : next === 'double'
+            ? 'CSV DOUBLE · PTAKI I DUPLIKATY'
+            : next === 'cards'
+              ? 'GWINTFORCE · WOJNA REKORDÓW'
+              : 'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
     $('unified-back').textContent =
-      next === 'double'
-        ? '← Wróć do Bird Game 3'
-        : ['bird', 'cards'].includes(next)
-          ? '← Wróć do terminala'
-          : '← Menu główne';
+      next === 'sudoku'
+        ? '← Wróć do CSV Double'
+        : next === 'double'
+          ? '← Wróć do Bird Game 3'
+          : ['bird', 'cards'].includes(next)
+            ? '← Wróć do terminala'
+            : '← Menu główne';
   }
   function leaveNetwork() {
     return network?.suspend() !== false;
@@ -109,11 +115,31 @@
       storage,
       soundEnabled: () => $('sound-toggle').textContent.includes('ON'),
       onExit: back,
+      openSudoku,
       network: local ? { enabled: false } : network?.doubleInfo?.(),
     });
     return true;
   }
+  function openSudoku() {
+    if (screen !== 'double' || !double || double.online.active) return false;
+    double.suspendForMinigame();
+    setScreen('sudoku');
+    sudoku = new BulkSudokuGame($('sudoku-host'), {
+      storage,
+      soundEnabled: () => $('sound-toggle').textContent.includes('ON'),
+      onExit: back,
+    });
+    return true;
+  }
   function back() {
+    if (screen === 'sudoku') {
+      sudoku?.destroy();
+      sudoku = null;
+      setScreen('double');
+      double?.resumeFromMinigame();
+      return;
+    }
+
     if (screen === 'double') {
       double?.destroy();
       double = null;
@@ -159,6 +185,7 @@
     openBird,
     openCards,
     openDouble,
+    openSudoku,
     back,
     registerNetwork(api) {
       network = api;
@@ -174,6 +201,9 @@
     },
     get double() {
       return double;
+    },
+    get sudoku() {
+      return sudoku;
     },
   });
   networkReady(false);
