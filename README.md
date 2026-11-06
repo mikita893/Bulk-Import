@@ -1,12 +1,12 @@
-# Bulk Import: Wspólna Galaktyka — v21
+# Bulk Import: Wspólna Galaktyka — v22
 
 Historia zmian: [CHANGELOG.md](CHANGELOG.md) — aktualizowana przy każdym nowym wydaniu, począwszy od v16.
 
-**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v21.html](Bulk-Import-v21.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów**, **CSV Double** i **Sudoku**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
+**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v22.html](Bulk-Import-v22.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów**, **CSV Double** i **Sudoku**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
 
 ## Pobierz HTML i graj lokalnie
 
-Pobierz **Bulk-Import-v21.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce, CSV Double i Sudoku są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
+Pobierz **Bulk-Import-v22.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce, CSV Double i Sudoku są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
 
 Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo działa offline; Bird Game 3 i Gwintforce uruchomisz w terminalu na statku; CSV Double otworzysz wewnątrz Bird Game 3, a Sudoku wewnątrz CSV Double. Kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
 
@@ -27,7 +27,9 @@ npm start
 
 Otwórz `http://localhost:3000`. Serwer udostępnia ten sam HTML; po udanym połączeniu dostępne są również kooperacja i VS. HTTP i WebSocket `/ws` korzystają z jednego portu, ustawianego przez `PORT`. Gospodarz tworzy pokój i przekazuje znajomym link lub kod.
 
-- **Nowości v21:** klikalne kafelki zbrojowni z pięcioma segmentami ulepszenia, ceną i stanem MAX; animowany chód, ataki i odrzut broni przeciwników oraz obrót postaci ze świetlnym śladem podczas uniku R. Szczegóły: [DESIGN-v21.md](DESIGN-v21.md).
+- **Nowości v22 — polski dubbing:** 182 nagrania dialogów i odpowiedzi załogi, Zwiastuna, Excela, hologramu Marca i wybranych komunikatów. Przycisk **DUBBING** na górnym pasku kampanii otwiera głośność, wyłącznik i odsłuch obsady. Kwestie można pomijać i powtarzać; tekst pozostaje widoczny. Nagrania są osadzone w HTML i działają offline, bez syntezy w przeglądarce ani serwera TTS. Szczegóły: [DESIGN-v22.md](DESIGN-v22.md).
+
+- **Zmiany v21:** klikalne kafelki zbrojowni z pięcioma segmentami ulepszenia, ceną i stanem MAX; animowany chód, ataki i odrzut broni przeciwników oraz obrót postaci ze świetlnym śladem podczas uniku R. Szczegóły: [DESIGN-v21.md](DESIGN-v21.md).
 
 - **Kampania solo 3D:** statek, proteańska załoga, rozmowy, relacje i romanse, zdrady, ulepszenia, apteczki, kolejne mapy, Zwiastun oraz obie formy finałowego Excela. Dotychczasowe mechaniki i zapisy pozostają zachowane.
 - **Kooperacja, do 3 osób:** osobna kampania sześciu misji, wspólne kredyty i wyposażenie, ratowanie powalonych graczy oraz finał z pomocą hologramu Marca.

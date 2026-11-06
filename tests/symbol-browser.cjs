@@ -20,7 +20,7 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const context=await browser.newContext({viewport:{width:1440,height:1050},hasTouch:true});let page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   const html=fs.readFileSync(path.join(__dirname,'..',release.filename),'utf8'),filename=path.join(temp,release.filename);fs.writeFileSync(filename,html);
   try{await page.goto(pathToFileURL(filename).href);}catch(error){if(!error.message.includes('ERR_BLOCKED_BY_ADMINISTRATOR'))throw error;await page.close();page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.setContent(html);console.log('Managed browser: testing the complete standalone HTML without a network origin.');}
-  const requests=[];page.on('request',r=>requests.push(r.url()));page.on('websocket',ws=>requests.push(ws.url()));
+  const requests=[];page.on('request',r=>{if(!/^(blob|data):/.test(r.url()))requests.push(r.url());});page.on('websocket',ws=>requests.push(ws.url()));
   await page.waitForFunction(()=>window.BulkUnified);assert.equal(await page.locator('[id="play-double"],[id="nav-double"]').count(),0);
   const frame=await enterBird(page);await page.locator('#bird-start').click();await sleep(120);const beforeBird=await page.evaluate(()=>JSON.stringify(BulkUnified.bird.game));
   await openDouble(page);assert(await page.locator('[data-double-action="net-create"]').isDisabled());assert.equal(await page.evaluate(()=>BulkUnified.double.online.socket),null);const frozen=await page.evaluate(()=>JSON.stringify(BulkUnified.bird.game));const campaign=await frame.evaluate(()=>JSON.stringify({player,time}));

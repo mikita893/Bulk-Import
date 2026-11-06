@@ -1,0 +1,1463 @@
+{
+  "schema": 1,
+  "profileVersion": "piper-polish-v1",
+  "engine": "sherpa-onnx 1.12.26 / Piper Polish int8",
+  "clips": [
+    {
+      "id": "vael-e5c071578271534e",
+      "speaker": "vael",
+      "text": "Nasza cywilizacja zapisała wszystko. Tylko nikt nie sprawdził, czy kopię da się odczytać. Co zrobisz z tym archiwum?",
+      "file": "clips/vael-e5c071578271534e.mp3",
+      "duration": 7.758,
+      "sha256": "340f26665021149c13325cb38168e1ccd68d17f48134a3e7a47eb53a09310c74"
+    },
+    {
+      "id": "vael-20d716bee7a8f25d",
+      "speaker": "vael",
+      "text": "Dziękuję. Dla ciebie to nie jest tylko kolejny załącznik.",
+      "file": "clips/vael-20d716bee7a8f25d.mp3",
+      "duration": 3.527,
+      "sha256": "ec25d9562f8f531dc87976e16e64c3fc5f8425a79c5298f80fd8ac9cc95af164"
+    },
+    {
+      "id": "vael-26e5684a05746a6f",
+      "speaker": "vael",
+      "text": "Rozumiem ostrożność. Byleśmy nie zapomnieli o ludziach za rekordami.",
+      "file": "clips/vael-26e5684a05746a6f.mp3",
+      "duration": 4.206,
+      "sha256": "2a0c0f896ad9dddd57041e95e4e5dd2f77c293ff042d12ffabe7244ad243906b"
+    },
+    {
+      "id": "vael-e8b5263aae3e0337",
+      "speaker": "vael",
+      "text": "To nie brudne rekordy. To całe życie mojego narodu.",
+      "file": "clips/vael-e8b5263aae3e0337.mp3",
+      "duration": 3.448,
+      "sha256": "317bacd1775b2df6389937cd1222f70785139b087416a08715c5e23928d7cb7c"
+    },
+    {
+      "id": "vael-99a21d1d5b3a327c",
+      "speaker": "vael",
+      "text": "Czasem czuję się jak rekord bez rodzica. Wszystko działa, ale nigdzie nie należę.",
+      "file": "clips/vael-99a21d1d5b3a327c.mp3",
+      "duration": 5.46,
+      "sha256": "28b7111b5ec47e8fb33f4c4bf5901f2b845bee714187dc5fe5c035d5b7d86444"
+    },
+    {
+      "id": "vael-c10a639883f6af33",
+      "speaker": "vael",
+      "text": "Miło usłyszeć, że nie jestem tylko lookupem do przeszłości.",
+      "file": "clips/vael-c10a639883f6af33.mp3",
+      "duration": 3.84,
+      "sha256": "12da8d54f83eb17e0e1be8c984eff263f7116108e116543287c6d6e454946a2b"
+    },
+    {
+      "id": "vael-820b3eb2f1c411bf",
+      "speaker": "vael",
+      "text": "Wspólna praca to dobry początek. Dziękuję.",
+      "file": "clips/vael-820b3eb2f1c411bf.mp3",
+      "duration": 3.082,
+      "sha256": "c7c36e21313288a4843aef0d0d343d60bec2c33bc38422c2df53bbb9fe767a1f"
+    },
+    {
+      "id": "vael-cb22e452fea49470",
+      "speaker": "vael",
+      "text": "Zrozumiałem. W takim razie będę wyłącznie specjalistą.",
+      "file": "clips/vael-cb22e452fea49470.mp3",
+      "duration": 3.788,
+      "sha256": "6cb1da5a351dfc3cdee4869b882246044727fec360d8679b1359a3816d5d9ff5"
+    },
+    {
+      "id": "vael-356d9d523e7e6e18",
+      "speaker": "vael",
+      "text": "Znalazłem dwie sprzeczne wersje tego samego wspomnienia. Usunąć tę mniej wygodną?",
+      "file": "clips/vael-356d9d523e7e6e18.mp3",
+      "duration": 5.277,
+      "sha256": "34c59adb5359ef63443b5132bab7cb4ec211ee19f684b6627fac5aea6f00a89f"
+    },
+    {
+      "id": "vael-dec31952aac5e3ed",
+      "speaker": "vael",
+      "text": "Właśnie tak chciałbym ocalać historię. Bez fałszowania.",
+      "file": "clips/vael-dec31952aac5e3ed.mp3",
+      "duration": 4.127,
+      "sha256": "3428aeb247272b9d016d8a40b5225fdba99716685d503352c6a0a3d2922b27ae"
+    },
+    {
+      "id": "vael-825e4bef4c45db52",
+      "speaker": "vael",
+      "text": "Rozsądny kompromis. Ważne, że druga nie zniknie.",
+      "file": "clips/vael-825e4bef4c45db52.mp3",
+      "duration": 3.762,
+      "sha256": "d1f1f452cdb4a4c52a1157708538008e02ec09ae6013652a71547a6732ecab4b"
+    },
+    {
+      "id": "vael-cc0e1b286d77bdb0",
+      "speaker": "vael",
+      "text": "Nie będę wykonywał hard delete na prawdzie.",
+      "file": "clips/vael-cc0e1b286d77bdb0.mp3",
+      "duration": 2.978,
+      "sha256": "0f923f8c70e8c4097edb05b30348d88456a87b141e7c66e2e21ee8b43dcefaee"
+    },
+    {
+      "id": "vael-ac941ecca1f3c042",
+      "speaker": "vael",
+      "text": "Przygotowałem napój według starej receptury. Smakuje jak błąd importu, ale z nutą nostalgii.",
+      "file": "clips/vael-ac941ecca1f3c042.mp3",
+      "duration": 6.191,
+      "sha256": "8e4e6d54d450cfb042d88d13b26ece31031d2682f21722f60ded6d23187823c0"
+    },
+    {
+      "id": "vael-5a05de6fdcea96f6",
+      "speaker": "vael",
+      "text": "Uśmiechnąłem się. To rzadkie zjawisko, zapisz je w logu.",
+      "file": "clips/vael-5a05de6fdcea96f6.mp3",
+      "duration": 3.944,
+      "sha256": "b2e3527c80e104055f7f51587a618d6e56440eb1d58360f8ee11c84f937f4cbd"
+    },
+    {
+      "id": "vael-1c739ddb27a26650",
+      "speaker": "vael",
+      "text": "Przynajmniej uczciwie deklarujesz batch size.",
+      "file": "clips/vael-1c739ddb27a26650.mp3",
+      "duration": 2.926,
+      "sha256": "1699b33ec72b57b17e6d53d94b58e8cc97b9b36cefc90eaf30cc48eb82422e31"
+    },
+    {
+      "id": "vael-3500eccf57fbe42a",
+      "speaker": "vael",
+      "text": "To miało być zaproszenie. Odpowiedź była niepotrzebnie okrutna.",
+      "file": "clips/vael-3500eccf57fbe42a.mp3",
+      "duration": 4.127,
+      "sha256": "1c90479f7f049690e0e73bbf2b1bb44a0096dad4e9f74c8d3d62b4a90f36f84c"
+    },
+    {
+      "id": "vael-0d47059d1bd207e2",
+      "speaker": "vael",
+      "text": "Po walce wszyscy liczą eliminacje. Ja liczę miejsca przy stole, które mogły pozostać puste.",
+      "file": "clips/vael-0d47059d1bd207e2.mp3",
+      "duration": 6.008,
+      "sha256": "cb39745cebac1be955203f273709cdc53ee853cb7d4e5f852098aef355f9a9b9"
+    },
+    {
+      "id": "vael-2283ecd7bf0aa23b",
+      "speaker": "vael",
+      "text": "Dobrze wiedzieć, że dowódca widzi coś więcej niż zielone KPI.",
+      "file": "clips/vael-2283ecd7bf0aa23b.mp3",
+      "duration": 4.362,
+      "sha256": "954f820a0ea4b4712dbb7c16a0e57f2dafd98c1d0536a413d514f52c13119d75"
+    },
+    {
+      "id": "vael-dd346172484e3e8f",
+      "speaker": "vael",
+      "text": "Procedury pomagają. Pamiętajmy jeszcze o tych, którzy je wykonują.",
+      "file": "clips/vael-dd346172484e3e8f.mp3",
+      "duration": 4.336,
+      "sha256": "29398ed747f4cae3aefa6e85600f7a556232c5429543b083532784f93db869c3"
+    },
+    {
+      "id": "vael-50b56d09e4b9a964",
+      "speaker": "vael",
+      "text": "Nie chcę być kolejnym wpisem w twoim dashboardzie.",
+      "file": "clips/vael-50b56d09e4b9a964.mp3",
+      "duration": 3.135,
+      "sha256": "095d77bd3352bc63568e3573e23c1c93a65493a91cea4e96cea64a4a60c8da4a"
+    },
+    {
+      "id": "vael-16a8f3e2250abb4c",
+      "speaker": "vael",
+      "text": "Mógłbym udostępnić ci osobiste wspomnienie. Nie jest wojskowe. Nie jest użyteczne. Jest moje.",
+      "file": "clips/vael-16a8f3e2250abb4c.mp3",
+      "duration": 6.452,
+      "sha256": "01a0826190effdcc5692542fa8f1df479d4cbc0f11f4136a0843aadfc3ef13cc"
+    },
+    {
+      "id": "vael-11b7df30e214c24a",
+      "speaker": "vael",
+      "text": "Tak. Właśnie komuś takiemu chciałem je pokazać.",
+      "file": "clips/vael-11b7df30e214c24a.mp3",
+      "duration": 3.318,
+      "sha256": "b93a091e70d16f218eae7b856d9231a9e73c74c649fe485116e367d8290c6129"
+    },
+    {
+      "id": "vael-084c2302c5b5be43",
+      "speaker": "vael",
+      "text": "Dziękuję za zostawienie mi kontroli nad własnym zapisem.",
+      "file": "clips/vael-084c2302c5b5be43.mp3",
+      "duration": 3.631,
+      "sha256": "d4ef5bf4ef6c57352a8537d2f869a7fc28c1bdff64cc300113e49cf7be8bd558"
+    },
+    {
+      "id": "vael-94865821f6b36daa",
+      "speaker": "vael",
+      "text": "Wycofuję zgodę. To nie był materiał do prezentacji.",
+      "file": "clips/vael-94865821f6b36daa.mp3",
+      "duration": 3.448,
+      "sha256": "9364bc998f84180d1c517bed49ccdc58d48b3bf2e4c61b77fe62a39bf474a8a6"
+    },
+    {
+      "id": "vael-8d2522b08f2c00f0",
+      "speaker": "vael",
+      "text": "Żniwiarz stwierdził, że bez certyfikatu Salesforce nie mogę komentować jego arkusza.",
+      "file": "clips/vael-8d2522b08f2c00f0.mp3",
+      "duration": 5.277,
+      "sha256": "7d856728a7f8bb43365ce518bd0b0a7fd287b492cdfee69921498d422f57e061"
+    },
+    {
+      "id": "vael-49532d1c1b1bdbe7",
+      "speaker": "vael",
+      "text": "To najlepsza walidacja mojego CV od wielu tysięcy lat.",
+      "file": "clips/vael-49532d1c1b1bdbe7.mp3",
+      "duration": 3.605,
+      "sha256": "d341cb775dfa98f30bd3b0eea623ce5a9835e4189b5256790a9148510529f266"
+    },
+    {
+      "id": "vael-e8cf6ca0f3d7ca70",
+      "speaker": "vael",
+      "text": "Miło, że pytasz o moją ochotę, zamiast robić taska za mnie.",
+      "file": "clips/vael-e8cf6ca0f3d7ca70.mp3",
+      "duration": 4.258,
+      "sha256": "666ed2d764c698e58ec249a0c951b04dfe967dc84a21228e62c35e80169c9672"
+    },
+    {
+      "id": "vael-642f897380648d3d",
+      "speaker": "vael",
+      "text": "Historia jest stara. Brak szacunku pozostaje zadziwiająco świeży.",
+      "file": "clips/vael-642f897380648d3d.mp3",
+      "duration": 4.441,
+      "sha256": "6bdd8cc8a6c1597ef424e30e3c12f8b6bfcff8a3d80e8a116005eff660e62a8a"
+    },
+    {
+      "id": "vael-0c5b6db522be7e3d",
+      "speaker": "vael",
+      "text": "Nie chcę dziś opowiadać o wojnie. Czy to problem?",
+      "file": "clips/vael-0c5b6db522be7e3d.mp3",
+      "duration": 3.082,
+      "sha256": "148bff00a1662ebc466bab0cefc82ba037bf0fbddb3fa197bcdf6ba48b4b7546"
+    },
+    {
+      "id": "vael-825348c2e968a86d",
+      "speaker": "vael",
+      "text": "Taka odpowiedź daje więcej bezpieczeństwa niż cały pancerz.",
+      "file": "clips/vael-825348c2e968a86d.mp3",
+      "duration": 3.918,
+      "sha256": "5f92a383cb60be483029d69d187ab56de9d6d5091211bbfe3c2bdf06073dc525"
+    },
+    {
+      "id": "vael-11f3a9cba94d34e5",
+      "speaker": "vael",
+      "text": "Dziękuję. Sam zdecyduję, kiedy otworzyć ten plik.",
+      "file": "clips/vael-11f3a9cba94d34e5.mp3",
+      "duration": 3.683,
+      "sha256": "a62ab9e95cd8c5278b4b762bc08e2a72137fa26b878d050d2e80ee99313c4892"
+    },
+    {
+      "id": "vael-ae14b079bd9c2448",
+      "speaker": "vael",
+      "text": "Moje wspomnienia nie są obiektem, do którego dostajesz automatyczne uprawnienia.",
+      "file": "clips/vael-ae14b079bd9c2448.mp3",
+      "duration": 4.833,
+      "sha256": "6e82976bbd15dd8f0d6ee73ff0fbb3ed6d3fea8b4525c393a816cce93ce7f486"
+    },
+    {
+      "id": "vael-e57e93f1cc3b65b6",
+      "speaker": "vael",
+      "text": "Z mostka widać mgławicę, która przypomina mi dom. Chciałbyś ją zobaczyć?",
+      "file": "clips/vael-e57e93f1cc3b65b6.mp3",
+      "duration": 4.78,
+      "sha256": "26df03bd78b2a97b08b07abac39a41198bdd536387f9cec09176f1afaee7a091"
+    },
+    {
+      "id": "vael-273716618f0c246f",
+      "speaker": "vael",
+      "text": "Zarezerwuję nam widok. Żadnych alertów poza gwiazdami.",
+      "file": "clips/vael-273716618f0c246f.mp3",
+      "duration": 3.605,
+      "sha256": "79ba6b1168774a82852562e9cb654e47fb161a7bcb144e8e94a66f1a283e302e"
+    },
+    {
+      "id": "vael-ef2190ded51d5aba",
+      "speaker": "vael",
+      "text": "W porządku. Daj znać, gdy zamkniesz wszystkie zakładki.",
+      "file": "clips/vael-ef2190ded51d5aba.mp3",
+      "duration": 3.944,
+      "sha256": "2d8dc18a33f67dc3dbfd9a9330e25daee50ae701103c6612233845d9b25744d8"
+    },
+    {
+      "id": "vael-56337998525d37a0",
+      "speaker": "vael",
+      "text": "Nie prosiłem o prezentację. Zapraszałem ciebie.",
+      "file": "clips/vael-56337998525d37a0.mp3",
+      "duration": 3.422,
+      "sha256": "eec4b599020aff277b0061992a7666fcde5447ecba2acd6985abf05bccf5b89e"
+    },
+    {
+      "id": "vael-44f98edb0fe0e3af",
+      "speaker": "vael",
+      "text": "Pomyliłem dwa symbole. Dowództwo dostało „kocham separator” zamiast „zamykam retranslator”.",
+      "file": "clips/vael-44f98edb0fe0e3af.mp3",
+      "duration": 5.904,
+      "sha256": "22b73b941e6c99f35d7d86fa35126d5048fa85ce81e451a5a08657921de43811"
+    },
+    {
+      "id": "vael-6ca34d97c9fceace",
+      "speaker": "vael",
+      "text": "Dziękuję, że nie utożsamiasz jednego błędu z całą moją osobą.",
+      "file": "clips/vael-6ca34d97c9fceace.mp3",
+      "duration": 4.31,
+      "sha256": "8e01d8f4ca5bb13b79678c11c05cd6458c566fe304faa06dcd80867c54a7aa29"
+    },
+    {
+      "id": "vael-e22b1024ead6e7f3",
+      "speaker": "vael",
+      "text": "Zrobię to. Procedura będzie mniej romantyczna niż pierwszy komunikat.",
+      "file": "clips/vael-e22b1024ead6e7f3.mp3",
+      "duration": 4.362,
+      "sha256": "72a165933cec739e6f578c90a89ceace6ace857bbe1c4ca91b577b276624f4e3"
+    },
+    {
+      "id": "vael-c9397ba83479e232",
+      "speaker": "vael",
+      "text": "Liczyłem na twoją dyskrecję. Nie na publiczny dashboard wstydu.",
+      "file": "clips/vael-c9397ba83479e232.mp3",
+      "duration": 4.206,
+      "sha256": "cd14f1dcd3e116d8981dd2e481d09f85a55ad519e28105252fd162bc060c530d"
+    },
+    {
+      "id": "vael-b369110c1b3a41a6",
+      "speaker": "vael",
+      "text": "Gdy moje zdanie różni się od twojego, oczekujesz lojalności czy ciszy?",
+      "file": "clips/vael-b369110c1b3a41a6.mp3",
+      "duration": 4.284,
+      "sha256": "e4204a7649efb8965b5e1f7af2dd005d5f0d43457b934c36514bde7e50722218"
+    },
+    {
+      "id": "vael-434f7aef9ed73e29",
+      "speaker": "vael",
+      "text": "W takim razie będę mówił szczerze. Nawet gdy to trudne.",
+      "file": "clips/vael-434f7aef9ed73e29.mp3",
+      "duration": 3.84,
+      "sha256": "552d8a6bcbea0978c8d6f6e180679ab7f382e78319a1fd0e535fcb3239cdeeff"
+    },
+    {
+      "id": "vael-d15e90dc2a5fac44",
+      "speaker": "vael",
+      "text": "To uczciwa ścieżka eskalacji.",
+      "file": "clips/vael-d15e90dc2a5fac44.mp3",
+      "duration": 2.482,
+      "sha256": "6fd9e482954647b24391aad5c42e7230743d46eef44f0ff8d589bd6855050f84"
+    },
+    {
+      "id": "vael-bddf660a78f587c6",
+      "speaker": "vael",
+      "text": "Mogę wykonać rozkaz. Zaufania nie wymusisz.",
+      "file": "clips/vael-bddf660a78f587c6.mp3",
+      "duration": 3.422,
+      "sha256": "135b18bb41838f27f7442a6ea9cad2d168fab094667d7ca19319f1ece76e13d0"
+    },
+    {
+      "id": "vael-65959d2144b7ec70",
+      "speaker": "vael",
+      "text": "Zbieracze zostawili listę jeńców. Niektóre rekordy są niepełne. Dowództwo sugeruje je pominąć.",
+      "file": "clips/vael-65959d2144b7ec70.mp3",
+      "duration": 6.374,
+      "sha256": "e4cc807f3ed1ecf761914fae1db9d088f65f0413226b700d26acb92b4f7d3a09"
+    },
+    {
+      "id": "vael-461226f2430e1037",
+      "speaker": "vael",
+      "text": "Dlatego chcę zostać na tym statku.",
+      "file": "clips/vael-461226f2430e1037.mp3",
+      "duration": 2.534,
+      "sha256": "a1649cf2ff2331fd535a1571dd69e5573e03bc76324c24b8f25a940ad435bb88"
+    },
+    {
+      "id": "vael-95392610418c61b2",
+      "speaker": "vael",
+      "text": "Pomogę. Każda poprawiona linia może oznaczać czyjś powrót.",
+      "file": "clips/vael-95392610418c61b2.mp3",
+      "duration": 4.075,
+      "sha256": "fb078b14620be0d317b385d646e0af4a04b78470f379879559952f7bdb4bfee4"
+    },
+    {
+      "id": "vael-88ba440e497819ad",
+      "speaker": "vael",
+      "text": "Dla ciebie brakujące pole oznacza brakującą wartość. Dla mnie oznacza osobę.",
+      "file": "clips/vael-88ba440e497819ad.mp3",
+      "duration": 5.094,
+      "sha256": "6662c0d44d1b38d02aede458d290646c5cb992ed4dd018442d8a96e8f27cc84b"
+    },
+    {
+      "id": "vael-4c85d2687b723298",
+      "speaker": "vael",
+      "text": "Na proteańskich statkach bywały dni bez alarmu. Trudno mi sobie przypomnieć, co się wtedy robiło.",
+      "file": "clips/vael-4c85d2687b723298.mp3",
+      "duration": 5.982,
+      "sha256": "616475a61b04e08f3fd1410496728736fb19e14daf4c6c65c610611fc4ca1898"
+    },
+    {
+      "id": "vael-c56de36a98451501",
+      "speaker": "vael",
+      "text": "Popieram. Wpisuję to do konstytucji nowej tradycji.",
+      "file": "clips/vael-c56de36a98451501.mp3",
+      "duration": 3.709,
+      "sha256": "4994bf6b8aaca997f0e67f03872edc02cc8ce6f4e0d1ea694114d387fa251a33"
+    },
+    {
+      "id": "vael-2566bc5b53162a3f",
+      "speaker": "vael",
+      "text": "To brzmi dobrze. I nie wymaga mapowania kolumn.",
+      "file": "clips/vael-2566bc5b53162a3f.mp3",
+      "duration": 3.291,
+      "sha256": "b238371832be12ddfd6451d8ac8452536d9f889a1b863d85690aeca36586c026"
+    },
+    {
+      "id": "vael-fbd08745e04ac08b",
+      "speaker": "vael",
+      "text": "Zmęczona załoga też ma governor limits.",
+      "file": "clips/vael-fbd08745e04ac08b.mp3",
+      "duration": 2.769,
+      "sha256": "776d1f8e31632870bce5542e6e6b24f614efd1a7cfdfe0810c626a0942c22e48"
+    },
+    {
+      "id": "vael-f8c03f58552a7d1c",
+      "speaker": "vael",
+      "text": "Boję się, że jeśli zacznę żyć tutaj, zdradzę tych, których straciłem.",
+      "file": "clips/vael-f8c03f58552a7d1c.mp3",
+      "duration": 4.859,
+      "sha256": "02bff76f2ae315583581a96ffb1d80b28a95bf6dab7c00dd103dc3d74f4e6594"
+    },
+    {
+      "id": "vael-160c365505f5433c",
+      "speaker": "vael",
+      "text": "Może właśnie tego pozwolenia potrzebowałem.",
+      "file": "clips/vael-160c365505f5433c.mp3",
+      "duration": 2.952,
+      "sha256": "5955a5161ef24098a39615225490127fe6c18cafb3ef02c847684d89e365daa0"
+    },
+    {
+      "id": "vael-a94023c3554a1ee0",
+      "speaker": "vael",
+      "text": "To bardziej uczciwe niż fałszywa pewność.",
+      "file": "clips/vael-a94023c3554a1ee0.mp3",
+      "duration": 2.795,
+      "sha256": "309bad731b553b2fc5d4b5ad89e3507b83d10c62daf44751b1cec11da2ce39cd"
+    },
+    {
+      "id": "vael-f9c8b64f5432f83a",
+      "speaker": "vael",
+      "text": "Gdyby to było takie proste, nie prosiłbym o rozmowę.",
+      "file": "clips/vael-f9c8b64f5432f83a.mp3",
+      "duration": 3.527,
+      "sha256": "ab38b4b0957a1bc90ddba2b20628d574fc348b9eac36fd8faf99a4b2aeb6c54b"
+    },
+    {
+      "id": "vael-f4e2987173f78113",
+      "speaker": "vael",
+      "text": "Syra poprawiła moje obliczenia. Czuję wdzięczność i odrobinę wstydu.",
+      "file": "clips/vael-f4e2987173f78113.mp3",
+      "duration": 4.467,
+      "sha256": "5abfb61ee8f43df24bd056da775c7d1112759ec57c019244b6da7d2b1361921a"
+    },
+    {
+      "id": "vael-397ca0058152c2af",
+      "speaker": "vael",
+      "text": "Dobrze. Nie będę próbował debugować poczucia własnej wartości.",
+      "file": "clips/vael-397ca0058152c2af.mp3",
+      "duration": 4.389,
+      "sha256": "9f84768eb40282fa0a48add00dd91ec53921669f2002a485635a32ceb4714a45"
+    },
+    {
+      "id": "vael-606eb8280c3e8b18",
+      "speaker": "vael",
+      "text": "Tak zrobię. Test będzie miał na imię „nie bądź zbyt dumny”.",
+      "file": "clips/vael-606eb8280c3e8b18.mp3",
+      "duration": 3.762,
+      "sha256": "82cfad0292befa3eeaca4d5712c35531d882265750d4282aac55f4a6dc2c2dea"
+    },
+    {
+      "id": "vael-66d10eaccd5f8123",
+      "speaker": "vael",
+      "text": "Widzę, że w twoim schemacie brakuje miejsca na człowieczeństwo.",
+      "file": "clips/vael-66d10eaccd5f8123.mp3",
+      "duration": 3.944,
+      "sha256": "e2368d271c29f600f5d18bcedeb0f8f3c1d2242845aa80106fd717a6028cdcbb"
+    },
+    {
+      "id": "vael-568e0608a965641a",
+      "speaker": "vael",
+      "text": "Kiedy to się skończy, co zamierzasz zachować: raporty czy ludzi?",
+      "file": "clips/vael-568e0608a965641a.mp3",
+      "duration": 4.153,
+      "sha256": "83f1fc2bcc22c5921722c8212a3640f8e3234b59e0ca2477bc19fa1f1e36489e"
+    },
+    {
+      "id": "vael-f7ddcfb7999886e6",
+      "speaker": "vael",
+      "text": "To jest przyszłość, w której chciałbym uczestniczyć.",
+      "file": "clips/vael-f7ddcfb7999886e6.mp3",
+      "duration": 3.422,
+      "sha256": "11e73e111e2a363fd88b35cbfd871a7a0337e47d228fc3f6d480dfc3403a751a"
+    },
+    {
+      "id": "vael-ebd1a6256cbda95c",
+      "speaker": "vael",
+      "text": "Zgadzam się. Właściwy rekord ma serce i historię.",
+      "file": "clips/vael-ebd1a6256cbda95c.mp3",
+      "duration": 3.971,
+      "sha256": "cbea441fa92ebb9b21e3dc31f35c168ffe6190c18744836174c50026f16ecab9"
+    },
+    {
+      "id": "vael-3aac39bf462c9850",
+      "speaker": "vael",
+      "text": "Nie chcę być oceniany według kolejnego pola „przydatność”.",
+      "file": "clips/vael-3aac39bf462c9850.mp3",
+      "duration": 3.553,
+      "sha256": "1cbfd73d1312bf0407895b76b0ad40c129c45b62ddc930db7082dba255a297f9"
+    },
+    {
+      "id": "vael-12b52bcdd5b767fe",
+      "speaker": "vael",
+      "text": "Jesteśmy razem, ale ostatnie słowa mnie zraniły. Potrzebuję odbudowy zaufania.",
+      "file": "clips/vael-12b52bcdd5b767fe.mp3",
+      "duration": 5.12,
+      "sha256": "574874ad3de04e7892569637aeb0bbb878c55cd2851aafe2fd116a5d93b40689"
+    },
+    {
+      "id": "vael-0c0e33c79322fee2",
+      "speaker": "vael",
+      "text": "Dobrze cię widzieć. Pośród tych wszystkich rekordów chcę mieć czas właśnie dla ciebie.",
+      "file": "clips/vael-0c0e33c79322fee2.mp3",
+      "duration": 5.198,
+      "sha256": "e60e7beb8886f8f130bc18032cfa88ae5fa33ed0bbcd107d0de09a0947c7d6ac"
+    },
+    {
+      "id": "vael-8543ce791946022d",
+      "speaker": "vael",
+      "text": "Mogę porozmawiać, ale nie udawajmy, że wszystko jest w porządku.",
+      "file": "clips/vael-8543ce791946022d.mp3",
+      "duration": 4.075,
+      "sha256": "87348de1ed02cf7f344a9a391f14802200a3a34933620a0b57621a1e9c631358"
+    },
+    {
+      "id": "vael-a8e440cdf8ba8222",
+      "speaker": "vael",
+      "text": "Posłucham. Proszę, tym razem uszanuj moje zdanie.",
+      "file": "clips/vael-a8e440cdf8ba8222.mp3",
+      "duration": 3.736,
+      "sha256": "929869a2f535a026b2c99be0d01cb1b012b88fc416b078abd818b359e43563ec"
+    },
+    {
+      "id": "vael-8b2219b10e307b5e",
+      "speaker": "vael",
+      "text": "Lubię nasze rozmowy. Przy tobie łatwiej pomyśleć o czymś więcej niż kolejnej misji.",
+      "file": "clips/vael-8b2219b10e307b5e.mp3",
+      "duration": 5.172,
+      "sha256": "ca2ead3336aae45229c3b8ae62f0e7bab4014be13e8cbda13809fa75e23a6531"
+    },
+    {
+      "id": "vael-e5a5b1cf9300387c",
+      "speaker": "vael",
+      "text": "Mamy chwilę między żniwami. O czym chcesz porozmawiać?",
+      "file": "clips/vael-e5a5b1cf9300387c.mp3",
+      "duration": 3.579,
+      "sha256": "ebc0cff7c63fcc94ccdd5f3dcbed5dc6f531edd85d81c349145db02892fb2c96"
+    },
+    {
+      "id": "vael-44c1f8f6836fd31b",
+      "speaker": "vael",
+      "text": "Dziękuję. Szczere przeprosiny nie kasują pamięci, ale otwierają nowy rozdział.",
+      "file": "clips/vael-44c1f8f6836fd31b.mp3",
+      "duration": 5.016,
+      "sha256": "07b8f8dcf5fd776349da13635ce2f5a2b7bc957f22570722d39e3b95753755d9"
+    },
+    {
+      "id": "vael-d311df7f01d9e14d",
+      "speaker": "vael",
+      "text": "Tak. Chcę budować z tobą przyszłość, nie tylko archiwum.",
+      "file": "clips/vael-d311df7f01d9e14d.mp3",
+      "duration": 3.788,
+      "sha256": "9b23f980d369ed8046d0ce1add0b12334771ba6abb247da8e18eb2f35eed3347"
+    },
+    {
+      "id": "vael-5f66a35b4f0300d1",
+      "speaker": "vael",
+      "text": "Przyjaźń też jest ważna. Dziękuję za jasne intencje.",
+      "file": "clips/vael-5f66a35b4f0300d1.mp3",
+      "duration": 3.709,
+      "sha256": "532c01f7e39118c4a9fdbad6c25fe33073b87d7a4cb82dfd92edf373b67f6137"
+    },
+    {
+      "id": "vael-4bfeab084c2e1ee1",
+      "speaker": "vael",
+      "text": "To trudne, ale doceniam szczerość. Dajmy sobie przestrzeń i szacunek.",
+      "file": "clips/vael-4bfeab084c2e1ee1.mp3",
+      "duration": 4.493,
+      "sha256": "f672132d94aa630f930c29dd748242e4ef466e6df8693d34bbfbdee5400831e9"
+    },
+    {
+      "id": "vael-fbd08eeaee56d10e",
+      "speaker": "vael",
+      "text": "Nasz związek się kończy. Potrzebuję dystansu.",
+      "file": "clips/vael-fbd08eeaee56d10e.mp3",
+      "duration": 3.109,
+      "sha256": "6ee5315ff466d38141ba298f4779810e7e58261080edd4d162835f65b48bffa9"
+    },
+    {
+      "id": "syra-b53f3d0218d97a71",
+      "speaker": "syra",
+      "text": "Żniwiarze znowu próbowali zasilić rdzeń makrem. Mogę poprawić zabezpieczenia, ale potrzebuję czasu.",
+      "file": "clips/syra-b53f3d0218d97a71.mp3",
+      "duration": 6.322,
+      "sha256": "d880cbf280cd3bdf84f8ee8ed373a6d82401a769012caa763d6fdeceb9f92984"
+    },
+    {
+      "id": "syra-141f740104e2743e",
+      "speaker": "syra",
+      "text": "Dobrze. Zrobię to porządnie, zamiast heroicznie gasić kolejną produkcję.",
+      "file": "clips/syra-141f740104e2743e.mp3",
+      "duration": 4.728,
+      "sha256": "3686e90f99c4e4fd56c82bf70bc0a0c2e6b7a7b868992e5bf2bf8fb816264f74"
+    },
+    {
+      "id": "syra-e28e6add3f9573b3",
+      "speaker": "syra",
+      "text": "Jasne. Lubię plan, o ile ktoś potem naprawdę go respektuje.",
+      "file": "clips/syra-e28e6add3f9573b3.mp3",
+      "duration": 4.258,
+      "sha256": "428f89ef5dfe2c091fd0ebde77cf6768b47fa1f72f9814684d8e56c7a0f83f54"
+    },
+    {
+      "id": "syra-bc4c194b357934c2",
+      "speaker": "syra",
+      "text": "Nie zaryzykuję załogi, żeby dashboard świecił się na zielono.",
+      "file": "clips/syra-bc4c194b357934c2.mp3",
+      "duration": 3.892,
+      "sha256": "acea3f342d91d3a8152a28109e4274002a36af45d1635549c18a8389d2e46ee5"
+    },
+    {
+      "id": "syra-5b5110bce6e81054",
+      "speaker": "syra",
+      "text": "Siedziałam przy migracji do trzeciej. Nie potrzebuję bohatera. Potrzebuję kogoś, kto przyniesie jedzenie.",
+      "file": "clips/syra-5b5110bce6e81054.mp3",
+      "duration": 6.296,
+      "sha256": "6af44f843479bbb6ba6215abbe1805a435e835bd0083b4feed748b97befa5808"
+    },
+    {
+      "id": "syra-8654f73ac4df79d1",
+      "speaker": "syra",
+      "text": "To brzmi dużo lepiej niż kolejny motywacyjny mail.",
+      "file": "clips/syra-8654f73ac4df79d1.mp3",
+      "duration": 3.109,
+      "sha256": "f98346257805cf552d12521a724d3e483d805caf6cebf3be202bfb2d8f2d2511"
+    },
+    {
+      "id": "syra-7fca46e2bc7fa1a3",
+      "speaker": "syra",
+      "text": "Dobry pomysł. Przyda się też coś do jedzenia między partiami.",
+      "file": "clips/syra-7fca46e2bc7fa1a3.mp3",
+      "duration": 3.631,
+      "sha256": "09f22f054d1c50714fa825fc617bc0bbe72466fa7654482cd77ac919f715e817"
+    },
+    {
+      "id": "syra-59309844d6284e61",
+      "speaker": "syra",
+      "text": "Nie robię problemu. Mówię ci, gdzie jest limit systemu.",
+      "file": "clips/syra-59309844d6284e61.mp3",
+      "duration": 3.474,
+      "sha256": "0e42336d988ccd1d2391e42b985fe121ecd6ab821cea69d627a9dc0659421d93"
+    },
+    {
+      "id": "syra-231d214dd63af783",
+      "speaker": "syra",
+      "text": "Zablokowałam twoje żądanie dostępu. Nie miało uzasadnienia. Gniewasz się?",
+      "file": "clips/syra-231d214dd63af783.mp3",
+      "duration": 4.937,
+      "sha256": "bfe7fc3401c68c26e8d0111edd885a38ed88cea8d511dc2f58707a6ba08fcc31"
+    },
+    {
+      "id": "syra-8422eb1aa413c256",
+      "speaker": "syra",
+      "text": "Właśnie na taką odpowiedź liczyłam.",
+      "file": "clips/syra-8422eb1aa413c256.mp3",
+      "duration": 2.456,
+      "sha256": "5f30080aa526fb3679c513aebdbef1ad4f39847946a5e32ad6fc3134bd297fb3"
+    },
+    {
+      "id": "syra-1ceeca3fdeb2a7c0",
+      "speaker": "syra",
+      "text": "Idealnie. Nawet galaktykę da się ratować bez konta shared_admin.",
+      "file": "clips/syra-1ceeca3fdeb2a7c0.mp3",
+      "duration": 4.415,
+      "sha256": "1deb5486018bdbc94a57c77f135f264e252e5402702dc0fdbc5e86aa5e4fe39e"
+    },
+    {
+      "id": "syra-9db925ebdb628b11",
+      "speaker": "syra",
+      "text": "Ranga nie jest permission setem. I nie powinna nim być.",
+      "file": "clips/syra-9db925ebdb628b11.mp3",
+      "duration": 3.5,
+      "sha256": "a9472d8348fcd7e4c3e70b5490372d5da874efb7127352ea103ac91d930b97ad"
+    },
+    {
+      "id": "syra-4d126a2f2516b5ef",
+      "speaker": "syra",
+      "text": "Mam pomysł: kolacja, żadnych terminali. Wytrzymasz kwadrans bez sprawdzania logów?",
+      "file": "clips/syra-4d126a2f2516b5ef.mp3",
+      "duration": 5.355,
+      "sha256": "bc3a937099ebc31fbfa82e72b95dd7bf1be3854f927872944871c83e37ff71b7"
+    },
+    {
+      "id": "syra-4e4fafccc1ff2fbc",
+      "speaker": "syra",
+      "text": "Ostrożnie, komandorze. Jeszcze uznam cię za dobrze skonfigurowanego.",
+      "file": "clips/syra-4e4fafccc1ff2fbc.mp3",
+      "duration": 4.284,
+      "sha256": "80255d1de18fe9ff2ae6a34e03c4cde9044cff1d5621b0e0fd49bcac5f78d739"
+    },
+    {
+      "id": "syra-21cc09ab6abc3ef7",
+      "speaker": "syra",
+      "text": "Dozwolony wyjątek. Byle nie wrócił jako załącznik.",
+      "file": "clips/syra-21cc09ab6abc3ef7.mp3",
+      "duration": 3.605,
+      "sha256": "b2a05253be45d06cbe9a9ccdb7cad3057ea6ba36324b649c6f5da3e640b25023"
+    },
+    {
+      "id": "syra-0d279f8f37899846",
+      "speaker": "syra",
+      "text": "Agenda brzmiała: spędzić czas z tobą. Szkoda.",
+      "file": "clips/syra-0d279f8f37899846.mp3",
+      "duration": 3.187,
+      "sha256": "59835e0249ecead1c064fbecda7f0ebd1312fb10d5998733a1d9283d183bea6c"
+    },
+    {
+      "id": "syra-6599c16e5e720188",
+      "speaker": "syra",
+      "text": "Ktoś przypisał dowództwu moje usprawnienie retranslatora. Powinnam to odpuścić?",
+      "file": "clips/syra-6599c16e5e720188.mp3",
+      "duration": 5.146,
+      "sha256": "5a7e0d671aec44f31c855d9ac6b91cbf93e3d50a8bb34e1b45223b78acb1b7e3"
+    },
+    {
+      "id": "syra-c21afcd5f0e53d94",
+      "speaker": "syra",
+      "text": "Dziękuję. Nie chcę być niewidzialnym polem obliczeniowym.",
+      "file": "clips/syra-c21afcd5f0e53d94.mp3",
+      "duration": 3.5,
+      "sha256": "5864c07026fcc209066489fe5b38639e98816ef3d6d646ba5a14bc5e12270a65"
+    },
+    {
+      "id": "syra-1d6ee0ad6d6a58f4",
+      "speaker": "syra",
+      "text": "Konkretnie i uczciwie. Tak lubię.",
+      "file": "clips/syra-1d6ee0ad6d6a58f4.mp3",
+      "duration": 2.482,
+      "sha256": "6227c0f0e43f07ada68fbd4e69d01d9bb756761c8d1ff7d67a38ee7dec932301"
+    },
+    {
+      "id": "syra-8b58a84786911445",
+      "speaker": "syra",
+      "text": "Zwykle mówią to ci, których nazwiska już są na slajdzie.",
+      "file": "clips/syra-8b58a84786911445.mp3",
+      "duration": 3.631,
+      "sha256": "150015d8bb9404dbac7a82250ca4457c99e684d94315da61d8429cdb5a21a269"
+    },
+    {
+      "id": "syra-4ec58837025937e0",
+      "speaker": "syra",
+      "text": "Zaprojektowałam szybszy akcelerator. Może działać świetnie, ale najpierw potrzebuję sandboxa.",
+      "file": "clips/syra-4ec58837025937e0.mp3",
+      "duration": 5.695,
+      "sha256": "0e7b4aa78fcf911f7edb18f0a2712d5d935e6ffb760fa215ee924494e47b9da5"
+    },
+    {
+      "id": "syra-ec7960b662cad901",
+      "speaker": "syra",
+      "text": "Świetnie. Dziś zrobimy coś szybkiego i odpowiedzialnego. Rzadkie połączenie.",
+      "file": "clips/syra-ec7960b662cad901.mp3",
+      "duration": 4.78,
+      "sha256": "b4dc94bd720c46ee043d321db53bf1bbe283e54f674fd6ad0e9d085ae5c3ba6a"
+    },
+    {
+      "id": "syra-93accac856db3f49",
+      "speaker": "syra",
+      "text": "Jasne. Wolę pytania od ślepego entuzjazmu.",
+      "file": "clips/syra-93accac856db3f49.mp3",
+      "duration": 3.056,
+      "sha256": "176b86f8b8e24c8f57d93593171d463f193f56f960573152ace65ac38a9af558"
+    },
+    {
+      "id": "syra-3450a576366424ba",
+      "speaker": "syra",
+      "text": "„Najwyżej” to nie strategia. To ostatnie słowo przed alarmem.",
+      "file": "clips/syra-3450a576366424ba.mp3",
+      "duration": 3.683,
+      "sha256": "64003f1eb3721e68cbcb4e65f96bc292a3fe56f21270ba5ae35f311a7449855e"
+    },
+    {
+      "id": "syra-142f5a8646ef1ad6",
+      "speaker": "syra",
+      "text": "Dzisiaj wszystko mnie drażni. Nawet poprawnie nazwane pliki CSV.",
+      "file": "clips/syra-142f5a8646ef1ad6.mp3",
+      "duration": 4.284,
+      "sha256": "6fa7ce266de97f8304a5d4c14591a1da891185b1d47c823d08fcf49c4300341d"
+    },
+    {
+      "id": "syra-aa70ec38731fdab7",
+      "speaker": "syra",
+      "text": "Dziękuję za wybór. Dzisiaj trochę spokoju, później kawa razem.",
+      "file": "clips/syra-aa70ec38731fdab7.mp3",
+      "duration": 4.049,
+      "sha256": "3692833d3b4003e7748d655a0fe7f056c8e445c5fd967d26243f6df8225e6761"
+    },
+    {
+      "id": "syra-7ca28ddf1b321b0f",
+      "speaker": "syra",
+      "text": "To byłoby naprawdę pomocne. Szczególnie ticket „nie działa nic”.",
+      "file": "clips/syra-7ca28ddf1b321b0f.mp3",
+      "duration": 3.944,
+      "sha256": "99b4b3137e5259c5786f425c010f3850c7ce82ab8b64ec97219c557faee0b8bd"
+    },
+    {
+      "id": "syra-6d10ab951a197961",
+      "speaker": "syra",
+      "text": "Teraz drażni mnie też ta odpowiedź.",
+      "file": "clips/syra-6d10ab951a197961.mp3",
+      "duration": 2.351,
+      "sha256": "bbdccbfcbc4550bfbb833edb0ded7a262346a29d8277c0e3dd1a64d8c6c57fd4"
+    },
+    {
+      "id": "syra-649ee1de42910942",
+      "speaker": "syra",
+      "text": "Vael stwierdził, że jestem zbyt bezpośrednia. Może powinnam mieć bardziej przyjazny interfejs?",
+      "file": "clips/syra-649ee1de42910942.mp3",
+      "duration": 5.93,
+      "sha256": "4dfb519ae568340e8f7328bafdce2407be601a92ab5119c3934c41a6ee07a96b"
+    },
+    {
+      "id": "syra-25502672298727bc",
+      "speaker": "syra",
+      "text": "To chyba najładniejsze zdanie, jakie usłyszałam o interfejsach.",
+      "file": "clips/syra-25502672298727bc.mp3",
+      "duration": 3.997,
+      "sha256": "bf6ba4e1dbecb3424a79d52a55c105e7b76d6964e19d49826bb7781207d57a8a"
+    },
+    {
+      "id": "syra-c6bbf78d3184f924",
+      "speaker": "syra",
+      "text": "Uczciwe. Czytelność nie musi oznaczać uległości.",
+      "file": "clips/syra-c6bbf78d3184f924.mp3",
+      "duration": 3.291,
+      "sha256": "346c476ca7d0efc2e5f0e54b80c2458da2002756f8f3dafcc2357d997b6a554a"
+    },
+    {
+      "id": "syra-9a14b8f2e75210ee",
+      "speaker": "syra",
+      "text": "A ja wolę dowódcę, który słucha. Widzisz? Oboje mamy preferencje.",
+      "file": "clips/syra-9a14b8f2e75210ee.mp3",
+      "duration": 4.493,
+      "sha256": "3df8321d13a48bf7a8ca77e4cd0d57efddfff36f52485964feeb67c2d8503f47"
+    },
+    {
+      "id": "syra-579951f79fbe4395",
+      "speaker": "syra",
+      "text": "Kiedy ktoś psuje deployment, wszyscy mówią „sorry”. Mało kto potem naprawia przyczynę.",
+      "file": "clips/syra-579951f79fbe4395.mp3",
+      "duration": 5.46,
+      "sha256": "73de95ed9c6605bdef47302ff04b49d011f90a072403cda4f4565099ec9ce190"
+    },
+    {
+      "id": "syra-5f37ce51a37a805b",
+      "speaker": "syra",
+      "text": "Właśnie. Przeprosiny bez poprawki to tylko komentarz w logu.",
+      "file": "clips/syra-5f37ce51a37a805b.mp3",
+      "duration": 3.814,
+      "sha256": "c0537e76dff262db8031ebea40fc6d46c30258fbbb6b587ed6b371cc830c8020"
+    },
+    {
+      "id": "syra-fcf4240989c0c44c",
+      "speaker": "syra",
+      "text": "Jestem za. Prawdziwy post-mortem, nie teatr.",
+      "file": "clips/syra-fcf4240989c0c44c.mp3",
+      "duration": 2.978,
+      "sha256": "beb24e043d9fbd5f5d4bcb143d61a674e3f210f35dc2db3460874a0e77dfa02c"
+    },
+    {
+      "id": "syra-f195fc3774618a3f",
+      "speaker": "syra",
+      "text": "Bez refleksji to nie doświadczenie. To cykliczny błąd.",
+      "file": "clips/syra-f195fc3774618a3f.mp3",
+      "duration": 3.422,
+      "sha256": "696ef8cd91ae069b61b7111dd5577c4c9f3888aaa296d79dfcaede50d0b2a9a7"
+    },
+    {
+      "id": "syra-579a377e0ff74f15",
+      "speaker": "syra",
+      "text": "Chciałabym urządzić swoją kabinę. Czy każda rzecz na statku musi być najpierw zatwierdzona w trzech workflowach?",
+      "file": "clips/syra-579a377e0ff74f15.mp3",
+      "duration": 6.531,
+      "sha256": "bfb3e21f3d6e3f1c226f8975c48547dc5bca8f6f91ff9b4750ee8b61c99f7967"
+    },
+    {
+      "id": "syra-a2563ba6fbb7b672",
+      "speaker": "syra",
+      "text": "Potrzebuję kogoś do przeniesienia stołu. W sam raz zadanie dla komandora.",
+      "file": "clips/syra-a2563ba6fbb7b672.mp3",
+      "duration": 4.31,
+      "sha256": "c6c6a3de6b8326fb89d022e7242809c4290214bf9988d9478391d103c29e9c54"
+    },
+    {
+      "id": "syra-784051ea94e9c014",
+      "speaker": "syra",
+      "text": "To rozsądne. Obiecuję nie montować rdzenia w szafie.",
+      "file": "clips/syra-784051ea94e9c014.mp3",
+      "duration": 3.187,
+      "sha256": "237673e799b049e188d4c9563772cea56792355132a956df966e064ac481e95e"
+    },
+    {
+      "id": "syra-c5852d82361843fa",
+      "speaker": "syra",
+      "text": "W takim razie to nie dom. To bardzo duży formularz.",
+      "file": "clips/syra-c5852d82361843fa.mp3",
+      "duration": 3.161,
+      "sha256": "fdb1c36435223cb2954f64925e9592d3e79860fbe68582c9b956ab7cf907aacd"
+    },
+    {
+      "id": "syra-f406fff07616dc7a",
+      "speaker": "syra",
+      "text": "Powiedziałeś ostatnio, że jestem „wydajna”. Mam nadzieję, że znasz też inne przymiotniki.",
+      "file": "clips/syra-f406fff07616dc7a.mp3",
+      "duration": 5.486,
+      "sha256": "00446e376a08fcb9d7d84299b2f676ef18d959d69f25523bed4a4cba75da2f89"
+    },
+    {
+      "id": "syra-ed095a5e9d42b5a5",
+      "speaker": "syra",
+      "text": "Znacznie lepiej. Ten rekord warto zapisać.",
+      "file": "clips/syra-ed095a5e9d42b5a5.mp3",
+      "duration": 2.873,
+      "sha256": "43059063d5d82193ae7ac499367a588a2792e6f7c91379642f8374d63d420c03"
+    },
+    {
+      "id": "syra-3e5f061368050c04",
+      "speaker": "syra",
+      "text": "Dziękuję, że umiesz to poprawić bez defensywnego wyjątku.",
+      "file": "clips/syra-3e5f061368050c04.mp3",
+      "duration": 3.918,
+      "sha256": "b1842986242c0fb3a222b69bbfa70f9c41b3ac01e8c88a7c6c33ba6cc973e2ab"
+    },
+    {
+      "id": "syra-a0f2717b1e4842fc",
+      "speaker": "syra",
+      "text": "Właśnie dlatego zwróciłam uwagę, a nie otworzyłam zgłoszenie.",
+      "file": "clips/syra-a0f2717b1e4842fc.mp3",
+      "duration": 4.389,
+      "sha256": "b3fda6e78f2b40d63fbd6b52d8b641c87327ccb1c796c6427b20292c6c2cb6fc"
+    },
+    {
+      "id": "syra-c637e48921448085",
+      "speaker": "syra",
+      "text": "Nie boję się przyznać, że Omega mnie przeraża. Bardziej boję się, że wszyscy udają, że nie czują nic.",
+      "file": "clips/syra-c637e48921448085.mp3",
+      "duration": 6.217,
+      "sha256": "bebcec48dd9443fca4e40f235943f6fa3609dbfbf9934094890f2615e6c8ff87"
+    },
+    {
+      "id": "syra-c00b7f75babbea62",
+      "speaker": "syra",
+      "text": "Dobrze. Szczerość jest lepszą osłoną niż przechwałki.",
+      "file": "clips/syra-c00b7f75babbea62.mp3",
+      "duration": 3.683,
+      "sha256": "0ed528cc5dcac331cf139c6266b42fa2a7189de6c8b61bd6a2f6bffa10ccb2ad"
+    },
+    {
+      "id": "syra-e3b13ebb44048c95",
+      "speaker": "syra",
+      "text": "Tak. Z planem strach staje się bardziej konkretny i mniej samotny.",
+      "file": "clips/syra-e3b13ebb44048c95.mp3",
+      "duration": 4.284,
+      "sha256": "14a5618cba4be3e0007dacad38e0a92e777d50f7697fef725cd4e4df1a2bc4fd"
+    },
+    {
+      "id": "syra-32d3389a98ffca68",
+      "speaker": "syra",
+      "text": "Udawanie odwagi nie jest odwagą.",
+      "file": "clips/syra-32d3389a98ffca68.mp3",
+      "duration": 2.325,
+      "sha256": "1606c09506f8af5f5cf26323ed2152ec8d4bd08a822aebf0b0d8db99efcf3ed6"
+    },
+    {
+      "id": "syra-baf0306d09986402",
+      "speaker": "syra",
+      "text": "Po misji usłyszałam „dowódca uratował statek”. A ilu ludzi pracowało przy osłonach?",
+      "file": "clips/syra-baf0306d09986402.mp3",
+      "duration": 5.198,
+      "sha256": "241425f4fedcf45220e89a1b0d7479c5cd4d5b9dcd34245f2c9d8cf08a3397e8"
+    },
+    {
+      "id": "syra-7a276b5b9ab46e31",
+      "speaker": "syra",
+      "text": "Wtedy naprawdę możemy mówić o wspólnym sukcesie.",
+      "file": "clips/syra-7a276b5b9ab46e31.mp3",
+      "duration": 3.291,
+      "sha256": "d4e55bcbb04fd16aa48e5c778015a2be8665f281b9a549fb1f9c1594a9c3ec43"
+    },
+    {
+      "id": "syra-1ddcdad0720fc250",
+      "speaker": "syra",
+      "text": "To dobry początek. Nie zapomnij też powiedzieć im tego osobiście.",
+      "file": "clips/syra-1ddcdad0720fc250.mp3",
+      "duration": 3.944,
+      "sha256": "268c1ca9f4193aa8d7abeb14d6f53017c3a0706af31f45afc20da98d6cf64bbc"
+    },
+    {
+      "id": "syra-ef25ab2f668ce76d",
+      "speaker": "syra",
+      "text": "Twarz nie utrzyma reaktora. Dobrze, że reszta ciała nie bierze tego osobiście.",
+      "file": "clips/syra-ef25ab2f668ce76d.mp3",
+      "duration": 4.65,
+      "sha256": "5c08bf734b255bc808ae3bfe40a4b48ef536fd61fd782c1dc71d8ef8580c851f"
+    },
+    {
+      "id": "syra-3d79e3f49461404f",
+      "speaker": "syra",
+      "text": "Za każdym razem obiecuję sobie „jeszcze tylko jeden import”. Potem jest świt.",
+      "file": "clips/syra-3d79e3f49461404f.mp3",
+      "duration": 4.702,
+      "sha256": "2bf2f215b3e38c79b806f9dfb1fef6443be374da668074a249826d002892f714"
+    },
+    {
+      "id": "syra-afb4d7aa550dd92d",
+      "speaker": "syra",
+      "text": "Dobrze. Z tobą łatwiej wyłączyć tryb wiecznego dyżuru.",
+      "file": "clips/syra-afb4d7aa550dd92d.mp3",
+      "duration": 3.474,
+      "sha256": "93820e955afb9fc8e490ad7276e9f8c19d0a9ba466d140f45b0f3f560eb37eae"
+    },
+    {
+      "id": "syra-e644304d0bfb50cb",
+      "speaker": "syra",
+      "text": "Spróbuję. Byle timer też nie miał piętnastu wyjątków.",
+      "file": "clips/syra-e644304d0bfb50cb.mp3",
+      "duration": 3.5,
+      "sha256": "7188ae23b30b1122c6534861afd60ea90d2a75239d8d46235067776bbbff4091"
+    },
+    {
+      "id": "syra-c719c29a94ab2312",
+      "speaker": "syra",
+      "text": "Nie potrzebuję pochwały za przeciążenie. Potrzebuję odpoczynku.",
+      "file": "clips/syra-c719c29a94ab2312.mp3",
+      "duration": 3.84,
+      "sha256": "9f4b741d5fe589f4ece8561ddeeb2ddc87db5c84856bf95e585f920ec159a226"
+    },
+    {
+      "id": "syra-61778f5ff81a87cb",
+      "speaker": "syra",
+      "text": "Znam ciebie z odpraw i ciebie z tych rozmów. Która wersja jest prawdziwa?",
+      "file": "clips/syra-61778f5ff81a87cb.mp3",
+      "duration": 4.284,
+      "sha256": "b01ad7dc9aaabc2715964857d7735967e1fd01bf015e674b931cebba9e92c5e0"
+    },
+    {
+      "id": "syra-5a152e98d0b68b9e",
+      "speaker": "syra",
+      "text": "To mi odpowiada. Nie musimy występować w roli idealnego dashboardu.",
+      "file": "clips/syra-5a152e98d0b68b9e.mp3",
+      "duration": 4.415,
+      "sha256": "b06126911e3b07a2b23ea80cf86294a558c9c2e3905a7668dc492da779ff2fe3"
+    },
+    {
+      "id": "syra-45817df6d841c721",
+      "speaker": "syra",
+      "text": "Rozumiem. Ważne, żeby rola nie zjadła człowieka.",
+      "file": "clips/syra-45817df6d841c721.mp3",
+      "duration": 3.422,
+      "sha256": "94dfd33404d9e779d6a8bdf5f8d9298a3c25a207601e1db01030d9e26da56247"
+    },
+    {
+      "id": "syra-3ff2dd61c0fb3c50",
+      "speaker": "syra",
+      "text": "Dla rozkazów może nie. Dla relacji ma znaczenie ogromne.",
+      "file": "clips/syra-3ff2dd61c0fb3c50.mp3",
+      "duration": 3.605,
+      "sha256": "9c0773b30dc4be9b371af08316eb998aaeb0f59031b2b36ad2143d86ac3e2bbc"
+    },
+    {
+      "id": "syra-4b2bda106d1389e5",
+      "speaker": "syra",
+      "text": "Gdy galaktyka przestanie płonąć, mam zamiar polecieć gdzieś, gdzie nikt nie zna słowa „migration”.",
+      "file": "clips/syra-4b2bda106d1389e5.mp3",
+      "duration": 6.139,
+      "sha256": "3003bdcb63ec816dcb03372c8e9a4d276e2db44b2b52047d9035c46bfa0a42c9"
+    },
+    {
+      "id": "syra-e55fa769c23bb595",
+      "speaker": "syra",
+      "text": "Chciałabym. I dziękuję za ostatnią część tego zdania.",
+      "file": "clips/syra-e55fa769c23bb595.mp3",
+      "duration": 3.37,
+      "sha256": "8fdfa31c1556c68d0d3752247994bbdef3fca381f2eabafda3d67b4fa712a358"
+    },
+    {
+      "id": "syra-34cdb36af5e16a3f",
+      "speaker": "syra",
+      "text": "To byłoby miłe. Urlop bez zdalnego gaszenia pożarów.",
+      "file": "clips/syra-34cdb36af5e16a3f.mp3",
+      "duration": 3.422,
+      "sha256": "5a0d9b03c6bf828ab110b5dfc61814ecc396967eeae8940b9c8a9d9383ff0f7c"
+    },
+    {
+      "id": "syra-8c81519fca26c77d",
+      "speaker": "syra",
+      "text": "Wiedziałam, że da się zepsuć marzenie jednym workflowem.",
+      "file": "clips/syra-8c81519fca26c77d.mp3",
+      "duration": 3.605,
+      "sha256": "699c029a1d34451fa2e4cc2a045b106a75da4aa8121d90b6521aa546c7673da6"
+    },
+    {
+      "id": "syra-ad832f8c874e12b9",
+      "speaker": "syra",
+      "text": "Jesteśmy razem, ale ostatnie słowa mnie zraniły. Potrzebuję odbudowy zaufania.",
+      "file": "clips/syra-ad832f8c874e12b9.mp3",
+      "duration": 4.937,
+      "sha256": "28f4aa33e0c44c9c58d2773df68703963fa760c35e5d2d0ae2f046243a00ba48"
+    },
+    {
+      "id": "syra-6f9ee8e37de218ba",
+      "speaker": "syra",
+      "text": "Dobrze cię widzieć. Pośród tych wszystkich rekordów chcę mieć czas właśnie dla ciebie.",
+      "file": "clips/syra-6f9ee8e37de218ba.mp3",
+      "duration": 5.094,
+      "sha256": "d5f850f3e1770500eaa84e459f8642189129846a48b9ffdc0b60a98aa2a921cc"
+    },
+    {
+      "id": "syra-37f52ee7be5a491a",
+      "speaker": "syra",
+      "text": "Mogę porozmawiać, ale nie udawajmy, że wszystko jest w porządku.",
+      "file": "clips/syra-37f52ee7be5a491a.mp3",
+      "duration": 4.075,
+      "sha256": "97b80406c6181fec35d5badbbbd8f66132f9cc155a63c01abb8a5195d1262bf8"
+    },
+    {
+      "id": "syra-2b2397c8a433a9ca",
+      "speaker": "syra",
+      "text": "Posłucham. Proszę, tym razem uszanuj moje zdanie.",
+      "file": "clips/syra-2b2397c8a433a9ca.mp3",
+      "duration": 3.265,
+      "sha256": "536e606be0fde5e499f5da403eca2cbfb9a226b18d2096850e244ccbb8b9e9d8"
+    },
+    {
+      "id": "syra-9f66722b79b35cad",
+      "speaker": "syra",
+      "text": "Lubię nasze rozmowy. Przy tobie łatwiej pomyśleć o czymś więcej niż kolejnej misji.",
+      "file": "clips/syra-9f66722b79b35cad.mp3",
+      "duration": 5.016,
+      "sha256": "2c7caad5410a21fb9ef58341f1135f1d8b371de52bc49b0d804a8dc9f92e5d72"
+    },
+    {
+      "id": "syra-eda3db583762a2ab",
+      "speaker": "syra",
+      "text": "Mamy chwilę między żniwami. O czym chcesz porozmawiać?",
+      "file": "clips/syra-eda3db583762a2ab.mp3",
+      "duration": 3.422,
+      "sha256": "1c7343b7a64f933ca78d67642d691ae694adeafa8ac5a762dda2b8ec283828e1"
+    },
+    {
+      "id": "syra-a0843587607432cd",
+      "speaker": "syra",
+      "text": "Przyjmuję. Najważniejsze będzie to, jak potraktujesz mnie w kolejnej rozmowie.",
+      "file": "clips/syra-a0843587607432cd.mp3",
+      "duration": 4.65,
+      "sha256": "7d76fdb8fc1acbbaac5a1c02dee710d0b37b10ff433f1cb01e23710fc2cfcb4c"
+    },
+    {
+      "id": "syra-1266439c3755f89c",
+      "speaker": "syra",
+      "text": "Tak. Relacja utworzona za obopólną zgodą. Bez wymuszonych uprawnień.",
+      "file": "clips/syra-1266439c3755f89c.mp3",
+      "duration": 4.911,
+      "sha256": "ed8efe0961e5982bacd3b01fd03841696808feda0b63d2ac3e331bb60dbbaf87"
+    },
+    {
+      "id": "syra-2d59434b9a2a5763",
+      "speaker": "syra",
+      "text": "Przyjaźń też jest ważna. Dziękuję za jasne intencje.",
+      "file": "clips/syra-2d59434b9a2a5763.mp3",
+      "duration": 3.5,
+      "sha256": "6a9e4a03d46268268af98c4677f4d93c218392199bbd8467a01b20e361058584"
+    },
+    {
+      "id": "syra-223fef824ab52ace",
+      "speaker": "syra",
+      "text": "To trudne, ale doceniam szczerość. Dajmy sobie przestrzeń i szacunek.",
+      "file": "clips/syra-223fef824ab52ace.mp3",
+      "duration": 4.493,
+      "sha256": "a4654dad6ea1efc92e41f09c31707613cd3a8fa0baaa3046379ceb1733cac124"
+    },
+    {
+      "id": "syra-a93026efcf1e7115",
+      "speaker": "syra",
+      "text": "Nasz związek się kończy. Potrzebuję dystansu.",
+      "file": "clips/syra-a93026efcf1e7115.mp3",
+      "duration": 3.161,
+      "sha256": "9db7f5f1abf7afcb674bb4d86183ac12f2f6cfc6dba220a7d46e26d0f3fdfbc9"
+    },
+    {
+      "id": "ship-8f09b55cf8b85bd3",
+      "speaker": "ship",
+      "text": "Witaj na pokładzie, komandorze. Żniwiarze znów sprzedają Excela. Terminal misji czeka przy głównym hologramie.",
+      "file": "clips/ship-8f09b55cf8b85bd3.mp3",
+      "duration": 6.87,
+      "sha256": "d1f8513ada593c7087f1ec15791b34917b22c69db2fdf482778942960a3b522b"
+    },
+    {
+      "id": "ship-3865181ec600782f",
+      "speaker": "ship",
+      "text": "Rozpoczynamy operację. Załoga zostaje na statku. Ty zajmij się deduplikacją galaktyki.",
+      "file": "clips/ship-3865181ec600782f.mp3",
+      "duration": 5.773,
+      "sha256": "c71a54bf99a1e70112336e0b3dd8e436a8353963ffbf090860fa2f1af901deb4"
+    },
+    {
+      "id": "ship-bc90a5cd0a0698d3",
+      "speaker": "ship",
+      "text": "Czerwony retranslator Omega aktywny. Cel: jądro galaktyki. Załączniki od Żniwiarzy pozostaw w kwarantannie.",
+      "file": "clips/ship-bc90a5cd0a0698d3.mp3",
+      "duration": 7.131,
+      "sha256": "6fcbcac3f0a511e5991cf5d5d802def6a55c6bca3b8338c25f32c33ee0ad9801"
+    },
+    {
+      "id": "reaper-0afcd6dcaac9a779",
+      "speaker": "reaper",
+      "text": "Tysiąc dwieście punktów życia. Trzy fazy. Zero rollbacków!",
+      "file": "clips/reaper-0afcd6dcaac9a779.mp3",
+      "duration": 4.127,
+      "sha256": "e43ccf1526b9e8bad23e9f759d8dc6026b010923a73034820e9fa37b1f6c3ca4"
+    },
+    {
+      "id": "reaper-da546c7335b87b96",
+      "speaker": "reaper",
+      "text": "Twoja licencja na spokój wygasła. Przejmuję kontrolę!",
+      "file": "clips/reaper-da546c7335b87b96.mp3",
+      "duration": 3.84,
+      "sha256": "331231ff7c0869c28fca5ec613d0bddd5478b06fea5480214a769334712e3ffe"
+    },
+    {
+      "id": "reaper-b63109b9aae606a0",
+      "speaker": "reaper",
+      "text": "Przejmuję wszystkie permission sety!",
+      "file": "clips/reaper-b63109b9aae606a0.mp3",
+      "duration": 2.482,
+      "sha256": "341f6e7318b0edc548f25946d085a275a7d4a8d19c3089d574740f5517e04368"
+    },
+    {
+      "id": "reaper-bb8b20b0f8cf09b9",
+      "speaker": "reaper",
+      "text": "Limit API? Ja jestem limitem!",
+      "file": "clips/reaper-bb8b20b0f8cf09b9.mp3",
+      "duration": 3.187,
+      "sha256": "7ca8e434281e245672ddef4f11fe35ed9dc3d78ca2f093f476d2fc74b457272d"
+    },
+    {
+      "id": "ship-583692aafbbdaf3b",
+      "speaker": "ship",
+      "text": "Zwiastun ładuje nowę. Żółty krąg! Przygotuj unik!",
+      "file": "clips/ship-583692aafbbdaf3b.mp3",
+      "duration": 3.788,
+      "sha256": "f51cb11e713105a3cb9a80d7abf095a08046bf0c5a942937b978644e37b3efb7"
+    },
+    {
+      "id": "ship-c93465ee46535581",
+      "speaker": "ship",
+      "text": "Indoktrynacja odparta. Dostęp odmówiony. Nawet inwazja potrzebuje permission seta.",
+      "file": "clips/ship-c93465ee46535581.mp3",
+      "duration": 5.825,
+      "sha256": "5a1a1f114188f1798b8a9cd90a9c84be001e3430275afc615a96af4218315a17"
+    },
+    {
+      "id": "ship-477177b32dc117ad",
+      "speaker": "ship",
+      "text": "Turbo CSV! Szybszy ogień. Excel: program nie odpowiada.",
+      "file": "clips/ship-477177b32dc117ad.mp3",
+      "duration": 4.284,
+      "sha256": "7e789f089911a23f4ef90c8640208dbcae8e7cdc14905630a9289b729a2b19e4"
+    },
+    {
+      "id": "excel-d3e98f9862b5b55a",
+      "speaker": "excel",
+      "text": "Zapisz jako: ostatnia nadzieja, final, wersja trzecia. Czy na pewno chcesz zamknąć galaktykę bez zapisywania?",
+      "file": "clips/excel-d3e98f9862b5b55a.mp3",
+      "duration": 6.687,
+      "sha256": "cef3a6b5faceb8429c2c5219fee2c1734168d3110b2da4d18a422e346a7533d8"
+    },
+    {
+      "id": "excel-25710f69d098fc9d",
+      "speaker": "excel",
+      "text": "Teraz to ja jestem duplikatem!",
+      "file": "clips/excel-25710f69d098fc9d.mp3",
+      "duration": 2.142,
+      "sha256": "2accb69a4707eaafb8af24bfccfe54e500076538e435ba0d902a20a39ac46577"
+    },
+    {
+      "id": "excel-4a5fc050b936b4ab",
+      "speaker": "excel",
+      "text": "Scalam komórki. I wasze nadzieje!",
+      "file": "clips/excel-4a5fc050b936b4ab.mp3",
+      "duration": 2.429,
+      "sha256": "a0a7ed76b31f99f3db4876643bd18d17423e0739d07b5296c59ffd92f72b2204"
+    },
+    {
+      "id": "excel-d2fb874c65dbbc01",
+      "speaker": "excel",
+      "text": "Nie odpowiadam. Ale nadal strzelam!",
+      "file": "clips/excel-d2fb874c65dbbc01.mp3",
+      "duration": 2.743,
+      "sha256": "c3a50dea980ce9d9ec23778a4520565506095553569343cd204a3b4c90c3ba30"
+    },
+    {
+      "id": "excel-9fcb6ad010a5265b",
+      "speaker": "excel",
+      "text": "Błąd argumentu! Cały wiersz do usunięcia!",
+      "file": "clips/excel-9fcb6ad010a5265b.mp3",
+      "duration": 3.135,
+      "sha256": "5f538fe659bf2f94cd46efd7d5c844d2d8f414e8086b2750663ec07c00d1e3cc"
+    },
+    {
+      "id": "excel-ebb292dfa02bbf44",
+      "speaker": "excel",
+      "text": "Scal komórki!",
+      "file": "clips/excel-ebb292dfa02bbf44.mp3",
+      "duration": 1.123,
+      "sha256": "7cda3cb0ebf5fe2542ada8a0b89380802a66affbbaef77899b8cbdde35ef2619"
+    },
+    {
+      "id": "excel-261863972efcbf09",
+      "speaker": "excel",
+      "text": "Tabela przestawna! Teraz przestawię ciebie!",
+      "file": "clips/excel-261863972efcbf09.mp3",
+      "duration": 3.082,
+      "sha256": "ce0bf88b6ec3985954de5a5bb8572d86d4801087159df129bc1b9561337be0f7"
+    },
+    {
+      "id": "excel-beb6f0391af8e8c9",
+      "speaker": "excel",
+      "text": "Autouzupełnianie ołowiem!",
+      "file": "clips/excel-beb6f0391af8e8c9.mp3",
+      "duration": 1.829,
+      "sha256": "d484cf7013c6b0ec34e3eae98aae5dee8e667611ab4aedfeaa902807384dbd74"
+    },
+    {
+      "id": "excel-97e14ae2db761137",
+      "speaker": "excel",
+      "text": "Ty usuwasz duplikaty? Ja je produkuję!",
+      "file": "clips/excel-97e14ae2db761137.mp3",
+      "duration": 2.769,
+      "sha256": "f7b0398f5dd4e6f99451d4d9aea0577dbd8b2aec7c3d6cd5e42037d0105f83d4"
+    },
+    {
+      "id": "excel-fb609534c7040a4e",
+      "speaker": "excel",
+      "text": "Duplikuję kłopoty. Nie dane!",
+      "file": "clips/excel-fb609534c7040a4e.mp3",
+      "duration": 2.194,
+      "sha256": "dd301ba98aafe6459badee61569a70fe409f400644bbbd99501be94e5a09beac"
+    },
+    {
+      "id": "excel-e65b01d1f15ec4b0",
+      "speaker": "excel",
+      "text": "Kontrol C. Kontrol V. Kontrol Z? Za późno!",
+      "file": "clips/excel-e65b01d1f15ec4b0.mp3",
+      "duration": 3.605,
+      "sha256": "8a1da0f9f0ee733960bbff9bdbb794a55dab666507dbb09bdf76cd7d23035f5c"
+    },
+    {
+      "id": "excel-0373785532cf1db5",
+      "speaker": "excel",
+      "text": "Kopiuj, wklej twojego końca!",
+      "file": "clips/excel-0373785532cf1db5.mp3",
+      "duration": 2.194,
+      "sha256": "3cf04ba7a5540b5bb8698b5b1ed661a798fe8bcc59130bcac76fbca7a5b56e86"
+    },
+    {
+      "id": "excel-e16acaedccc910cc",
+      "speaker": "excel",
+      "text": "Duplikat wartości! Rekordów przybywa, nadziei ubywa!",
+      "file": "clips/excel-e16acaedccc910cc.mp3",
+      "duration": 3.944,
+      "sha256": "488aef91bdbf3000346bfce2a1544cf68aa04d2872cc13cebbc0bd5b5c7d4e28"
+    },
+    {
+      "id": "excel-b91d308c297fda26",
+      "speaker": "excel",
+      "text": "Scal wszystko!",
+      "file": "clips/excel-b91d308c297fda26.mp3",
+      "duration": 1.306,
+      "sha256": "26f39ab0f70a422896bf5e7d1fdb4e6f16bbfacf90a2f8eb58e226509abd7570"
+    },
+    {
+      "id": "excel-0e26619bfe920455",
+      "speaker": "excel",
+      "text": "Nie ma duplikatów. Są rekordy premium!",
+      "file": "clips/excel-0e26619bfe920455.mp3",
+      "duration": 2.586,
+      "sha256": "f1737ceebc093203656450598f348e53f99b2e2146f6b2d3ddb9d6d293d5240c"
+    },
+    {
+      "id": "marc-9350e1069a7f01ef",
+      "speaker": "marc",
+      "text": "Ohana znaczy: nikt nie zostaje sam w CSV. Podejdź i naciśnij E!",
+      "file": "clips/marc-9350e1069a7f01ef.mp3",
+      "duration": 4.754,
+      "sha256": "a19c1d4009b8750f21b5baba6cf4ec5886d983b0857fe1e0d99538b3e14619bb"
+    },
+    {
+      "id": "marc-495ff3261f317038",
+      "speaker": "marc",
+      "text": "Hasło ochrony arkusza? Trailblazer, jeden dwa trzy! Podejdź i naciśnij E!",
+      "file": "clips/marc-495ff3261f317038.mp3",
+      "duration": 5.512,
+      "sha256": "78f161582c7a6fca2dfd5b8436a26f515b15c72ab1ec67231329ad92b13c7ebb"
+    },
+    {
+      "id": "marc-de161503c4c871c6",
+      "speaker": "marc",
+      "text": "Nie kupuj Excela. Ten deployment jest na mój koszt! E przy hologramie.",
+      "file": "clips/marc-de161503c4c871c6.mp3",
+      "duration": 4.676,
+      "sha256": "ba2ea319e14e5eb207dd3abb4835caac678f6637935bad926260c687037be06f"
+    },
+    {
+      "id": "marc-350d915a088d02c4",
+      "speaker": "marc",
+      "text": "Twój permission set właśnie dostał uprawnienie: pokonaj arkusz! Naciśnij E!",
+      "file": "clips/marc-350d915a088d02c4.mp3",
+      "duration": 4.885,
+      "sha256": "965c094c7580f9047bded754fd79cb7264cf8a5ca4ae489ac7ddc6c6c9222a06"
+    },
+    {
+      "id": "marc-cfe3210c96389a1d",
+      "speaker": "marc",
+      "text": "Ochrona zdjęta! Ten permission set nie wymaga dopłaty. Strzelaj!",
+      "file": "clips/marc-cfe3210c96389a1d.mp3",
+      "duration": 4.728,
+      "sha256": "9f332a5c2292cc3af452ca56ef69b005e817685293779ed31d7681b0f169797f"
+    },
+    {
+      "id": "marc-be7ba7a30f6fe8f0",
+      "speaker": "marc",
+      "text": "Zgubiłem połączenie z Dreamforce. Zaraz wracam!",
+      "file": "clips/marc-be7ba7a30f6fe8f0.mp3",
+      "duration": 3.082,
+      "sha256": "189e0b5475bd7afad8788b0473a80f07f1d1806dc6cbb2c166e97f2183aad6dd"
+    },
+    {
+      "id": "ship-9524051a86fcddf9",
+      "speaker": "ship",
+      "text": "Arkusz chroniony. Szukaj niebieskiego hologramu Marca i naciśnij E!",
+      "file": "clips/ship-9524051a86fcddf9.mp3",
+      "duration": 4.519,
+      "sha256": "c162ea4d6e2e5ae9e408a787c20a5d7e2fc28852e2fa1a26e779722fd16000bf"
+    }
+  ]
+}

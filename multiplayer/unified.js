@@ -57,7 +57,7 @@
    bird?.destroy();bird=null;$('bird-host').replaceChildren();
    if(campaign){setScreen('campaign');campaign.contentWindow.BulkCampaign?.resume();campaign.contentWindow.focus();return;}
   }
-  if(campaign){campaign.contentWindow.BulkCampaign?.suspend();campaign.remove();campaign=null;}
+  if(campaign){campaign.contentWindow.BulkCampaign?.suspend();campaign.contentWindow.BulkCampaign?.dispose();campaign.remove();campaign=null;}
   setScreen('main');network?.resume();$('play-campaign').focus();
  }
  $('play-campaign').onclick=$('nav-campaign').onclick=openCampaign;

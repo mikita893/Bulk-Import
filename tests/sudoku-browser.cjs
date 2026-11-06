@@ -39,7 +39,7 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
       if(!error.message.includes('ERR_BLOCKED_BY_ADMINISTRATOR'))throw error;
       await page.close();page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.setContent(html);
     }
-    const traffic=[];page.on('request',r=>traffic.push(r.url()));page.on('websocket',ws=>traffic.push(ws.url()));
+    const traffic=[];page.on('request',r=>{if(!/^(blob|data):/.test(r.url()))traffic.push(r.url());});page.on('websocket',ws=>traffic.push(ws.url()));
     const campaign=await enterDouble(page);await page.locator('#double-training').check();await page.locator('[data-double-action="start"]').click();await page.waitForFunction(()=>BulkUnified.double.model.state==='PLAYING');
     await openSudoku(page);assert.equal(await page.evaluate(()=>BulkUnified.double.model.state),'PAUSED');
     const frozen=await page.evaluate(()=>({double:JSON.stringify(BulkUnified.double.model),bird:JSON.stringify(BulkUnified.bird.game)}));

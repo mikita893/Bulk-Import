@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v22.0.0 — 2026-11-06
+
+Plik gry: [Bulk-Import-v22.html](Bulk-Import-v22.html).
+
+- Dodano 182 polskie nagrania TTS: dialogi i odpowiedzi Vaela oraz Syry, Zwiastun, Excel, hologram Marca i wybrane komunikaty statku.
+- Dodano ustawienia dubbingu, osobną głośność, odsłuch obsady, pomijanie i powtarzanie kwestii oraz tekst odtwarzanych komunikatów.
+- Nagrania są osadzone w jednym HTML i działają offline. Jeden kanał głosu, ograniczona kolejka, priorytet pomocy Marca i mały cache zapobiegają nakładaniu kwestii i zbędnemu dekodowaniu.
+- Zachowano zapisy, balans i minigry. Zaktualizowano stronę solo i czytelne źródła; multiplayer nadal wyłączony, a alwaysdata wstrzymane.
+
 ## v21.0.0 — 2026-11-06
 
 Plik gry: [Bulk-Import-v21.html](Bulk-Import-v21.html).

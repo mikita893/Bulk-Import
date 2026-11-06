@@ -135,7 +135,7 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
    nativeFile=false;await offline.close();offline=await context.newPage();watch(offline);await offline.setContent(html);
    console.log('Managed Chromium blocks file://; standalone HTML is exercised in about:blank without any network or sibling files.');
   }
-  const traffic=[];offline.on('request',r=>traffic.push(r.url()));offline.on('websocket',ws=>traffic.push(ws.url()));
+  const traffic=[];offline.on('request',r=>{if(!/^(blob|data):/.test(r.url()))traffic.push(r.url());});offline.on('websocket',ws=>traffic.push(ws.url()));
   await offline.waitForFunction(()=>BulkUnified.local);
   for(const id of ['create-coop','create-versus','join-room','join-code','connect-server'])assert(await offline.locator('#'+id).isDisabled());
   assert.equal(await offline.evaluate(()=>__bulkMultiplayer.renderer),null,'No idle WebGL renderer in offline menu');
