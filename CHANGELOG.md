@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v27.0.0 — 2026-11-06
+
+Plik gry: [Bulk-Import-v27.html](Bulk-Import-v27.html).
+
+- Importic: Kolonia Legacy — nowa minigra RPG 3D z portalu i pauzy Vice Import.
+- Trzy frakcje, dialogi z portretami i przychylnością, zadania w obozie, lesie, ruinach i kopalni.
+- Ruda, handel, doświadczenie, punkty nauki, ulepszenia, miecze, blok, odskok, magia i finałowy nadzorca.
+- Osobny zapis, dziennik, sterowanie telefonem i bezpieczny powrót do miasta; wcześniejsze zapisy i jeden HTML zachowane.
+
 ## v26.0.0 — 2026-11-06
 
 Plik gry: [Bulk-Import-v26.html](Bulk-Import-v26.html).

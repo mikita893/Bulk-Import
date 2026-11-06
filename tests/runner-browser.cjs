@@ -40,6 +40,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     });
     await page.setContent(fs.readFileSync(release.filename, 'utf8'));
     await page.waitForFunction(() => window.BulkUnified);
+    assert.equal(await page.evaluate(() => BulkUnified.openColony()), false);
     assert.equal(await page.evaluate(() => BulkUnified.openCity()), false);
     assert.equal(await page.evaluate(() => BulkUnified.openRunner()), false);
     assert.equal(await page.locator('#play-runner,#nav-runner').count(), 0);
@@ -488,6 +489,234 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await page.locator('[data-city-action="free"]').tap();
     assert.equal(await page.evaluate(() => BulkUnified.city.game.phase), 'free');
     await page.setViewportSize({ width: 1440, height: 1050 });
+    await page.keyboard.down('KeyS');
+    await page.waitForFunction(() => BulkUnified.city.game.player.z > 108.5);
+    await page.keyboard.up('KeyS');
+    await page.keyboard.press('KeyE');
+    await page.waitForFunction(() => BulkUnified.screen === 'colony');
+    assert(
+      await page.evaluate(
+        () => BulkUnified.city.suspended && BulkUnified.city.game.state === 'paused',
+      ),
+    );
+    const frozenCity = await page.evaluate(() => JSON.stringify(BulkUnified.city.game));
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-colony-ready.png' });
+    await page.locator('[data-col-action="start"]').click();
+    await page.keyboard.down('KeyW');
+    await page.waitForFunction(() => BulkUnified.colony.game.player.z < 40);
+    await page.keyboard.up('KeyW');
+    await page.keyboard.press('KeyE');
+    await page.waitForFunction(() => BulkUnified.colony.game.state === 'dialogue');
+    const face = await page.locator('.col-portrait').innerHTML();
+    await page.locator('[data-col-choice="rude"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.colony.game.progress.reputation), -2);
+    assert.notEqual(await page.locator('.col-portrait').innerHTML(), face);
+    await page.locator('[data-col-choice="accept"]').click();
+    assert(await page.evaluate(() => BulkUnified.colony.game.progress.started));
+    await page.keyboard.press('KeyI');
+    assert.equal(await page.locator('.col-journal li').count(), 5);
+    const journalFreeze = await page.evaluate(() => JSON.stringify(BulkUnified.colony.game));
+    await sleep(200);
+    await page.keyboard.press('KeyW');
+    assert.equal(await page.evaluate(() => JSON.stringify(BulkUnified.colony.game)), journalFreeze);
+    await page.locator('[data-col-action="closePanel"]').click();
+    await page.keyboard.press('KeyC');
+    assert(await page.locator('.col-character').isVisible());
+    await page.locator('[data-col-action="closePanel"]').click();
+    await page.evaluate(() => {
+      const g = BulkUnified.colony.game,
+        o = BulkColony.ORE[0];
+      Object.assign(g.player, { x: o.x, z: o.z });
+    });
+    await page.keyboard.press('KeyE');
+    await page.waitForFunction(() => BulkUnified.colony.game.progress.mined[0]);
+    await page.waitForFunction(() => !BulkUnified.colony.game.player.action);
+    await page.evaluate(() => {
+      const g = BulkUnified.colony.game;
+      Object.assign(g.player, { inv: 0, stagger: 0, stamina: g.maxStamina });
+      const e = g.enemies.find((e) => e.id === 'bird0');
+      Object.assign(e, { x: g.player.x, z: g.player.z - 2, state: 'idle', timer: 10 });
+      g.enemies = [e];
+    });
+    await page.keyboard.press('KeyT');
+    await page.keyboard.press('KeyJ');
+    await page.waitForFunction(() => BulkUnified.colony.game.enemies[0].hp === 20);
+    await page.waitForFunction(() => !BulkUnified.colony.game.player.action);
+    await page.keyboard.press('KeyK');
+    await page.waitForFunction(() => BulkUnified.colony.game.enemies[0].hp === 0);
+    await page.waitForFunction(() => !BulkUnified.colony.game.player.action);
+    for (const i of [1, 2]) {
+      await page.evaluate((i) => {
+        const g = BulkUnified.colony.game,
+          o = BulkColony.ORE[i];
+        Object.assign(g.player, { x: o.x, z: o.z });
+      }, i);
+      await page.keyboard.press('KeyE');
+      await page.waitForFunction((i) => BulkUnified.colony.game.progress.mined[i], i);
+      await page.waitForFunction(() => !BulkUnified.colony.game.player.action);
+    }
+    await page.evaluate(() => Object.assign(BulkUnified.colony.game.player, { x: 0, z: 39 }));
+    await page.keyboard.press('KeyE');
+    await page.locator('[data-col-choice="deliver"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.colony.game.progress.quest), 1);
+    await page.waitForFunction(() => !BulkUnified.colony.view.gate.visible);
+    await page.evaluate(() =>
+      Object.assign(BulkUnified.colony.game.player, BulkColony.NPCS.leader),
+    );
+    await page.keyboard.press('KeyE');
+    await page.locator('[data-col-choice="greet"]').click();
+    assert.equal(await page.locator('[data-col-choice^="join_"]').count(), 3);
+    await page.locator('[data-col-choice="join_mage"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.colony.game.progress.faction), 'mage');
+    await page.evaluate(() => Object.assign(BulkUnified.colony.game.player, BulkColony.NPCS.smith));
+    await page.keyboard.press('KeyE');
+    await page.locator('[data-col-choice="greet"]').click();
+    await page.locator('[data-col-choice="sword"]').click();
+    assert(await page.locator('[data-col-choice="sword"]').isDisabled());
+    assert.equal(await page.evaluate(() => BulkUnified.colony.game.progress.weapon), 1);
+    await page.locator('[data-col-choice="armor"]').click();
+    await page.locator('[data-col-choice="leave"]').click();
+    await page.evaluate(() =>
+      Object.assign(BulkUnified.colony.game.player, BulkColony.NPCS.mentor),
+    );
+    await page.keyboard.press('KeyE');
+    await page.locator('[data-col-choice="greet"]').click();
+    await page.locator('[data-col-choice="strength"]').click();
+    await page.locator('[data-col-choice="vitality"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.colony.game.progress.lp), 0);
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-colony-teacher.png' });
+    await page.locator('[data-col-choice="leave"]').click();
+    await page.evaluate(() => {
+      const g = BulkUnified.colony.game;
+      Object.assign(g.player, { x: 0, z: -20, angle: Math.PI, inv: 0 });
+      g.enemies = [g.makeEnemy(['wolf0', 'wolf', 0, -23]), g.makeEnemy(['wolf1', 'wolf', 7, -53])];
+      g.enemies[0].timer = 10;
+    });
+    await page.keyboard.press('KeyT');
+    await page.keyboard.press('KeyQ');
+    await page.waitForFunction(() => BulkUnified.colony.game.enemies[0].hp < 58);
+    assert(await page.evaluate(() => BulkUnified.colony.game.player.mana < 80));
+    await page.waitForFunction(() => !BulkUnified.colony.game.player.action);
+    await page.keyboard.press('KeyJ');
+    await page.waitForFunction(() => BulkUnified.colony.game.progress.killed.includes('wolf0'));
+    await page.waitForFunction(() => !BulkUnified.colony.game.player.action);
+    await page.evaluate(() => {
+      const g = BulkUnified.colony.game,
+        e = g.enemies[1];
+      Object.assign(e, { x: g.player.x, z: g.player.z - 2, hp: 20, timer: 10, state: 'idle' });
+    });
+    await page.keyboard.press('KeyT');
+    await page.keyboard.press('KeyK');
+    await page.waitForFunction(() => BulkUnified.colony.game.progress.killed.includes('wolf1'));
+    await page.waitForFunction(() => !BulkUnified.colony.game.player.action);
+    await page.evaluate(() => Object.assign(BulkUnified.colony.game.player, BulkColony.CHEST));
+    await page.keyboard.press('KeyE');
+    assert.equal(await page.evaluate(() => BulkUnified.colony.game.progress.quest), 3);
+    await page.evaluate(() =>
+      Object.assign(BulkUnified.colony.game.player, BulkColony.NPCS.leader),
+    );
+    await page.keyboard.press('KeyE');
+    await page.locator('[data-col-choice="report"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.colony.game.progress.quest), 4);
+    await page.evaluate(() => {
+      const g = BulkUnified.colony.game,
+        b = g.enemies.find((e) => e.type === 'boss');
+      Object.assign(g.player, { x: b.x, z: b.z + 2, hp: 1, inv: 0 });
+      Object.assign(b, { state: 'windup', timer: 0.01, attackAngle: 0, range: 3.3, kind: 'slash' });
+    });
+    await page.waitForFunction(() => BulkUnified.colony.game.state === 'dead');
+    await page.locator('[data-col-action="retry"]').click();
+    assert(
+      await page.evaluate(
+        () =>
+          BulkUnified.colony.game.progress.weapon === 1 &&
+          BulkUnified.colony.game.progress.quest === 4 &&
+          BulkUnified.colony.game.progress.mined[0],
+      ),
+    );
+    await page.setViewportSize({ width: 430, height: 932 });
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
+    await page.locator('[data-col-action="journal"]').tap();
+    assert(await page.locator('.col-journal').isVisible());
+    await page.locator('[data-col-action="closePanel"]').tap();
+    await page.evaluate(() => {
+      const g = BulkUnified.colony.game,
+        b = g.enemies.find((e) => e.type === 'boss');
+      Object.assign(g.player, { x: b.x, z: b.z + 2 });
+      Object.assign(b, { hp: 150, state: 'recover', timer: 3 });
+    });
+    await page.waitForFunction(
+      () => BulkUnified.colony.game.enemies.find((e) => e.type === 'boss').phase === 2,
+    );
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-colony-mobile.png' });
+    await page.keyboard.press('KeyT');
+    for (
+      let i = 0;
+      i < 8 && (await page.evaluate(() => BulkUnified.colony.game.state !== 'victory'));
+      i++
+    ) {
+      await page.waitForFunction(() => {
+        const g = BulkUnified.colony.game;
+        return (
+          g.state === 'victory' ||
+          (!g.player.action && g.player.stagger === 0 && g.player.stamina >= 28)
+        );
+      });
+      if (await page.evaluate(() => BulkUnified.colony.game.state === 'victory')) break;
+      await page.locator('[data-col-action="heavy"]').tap();
+      await page.waitForFunction(
+        () =>
+          BulkUnified.colony.game.player.action?.kind === 'heavy' ||
+          BulkUnified.colony.game.state === 'victory',
+      );
+      await page.waitForFunction(
+        () => !BulkUnified.colony.game.player.action || BulkUnified.colony.game.state === 'victory',
+      );
+    }
+    await page.waitForFunction(() => BulkUnified.colony.game.state === 'victory');
+    assert.equal(await page.evaluate(() => BulkUnified.colony.game.progress.wins), 1);
+    assert(await page.evaluate(() => BulkColony.valid(BulkUnified.colony.game.snapshot())));
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-colony-victory.png' });
+    await page.locator('[data-col-action="explore"]').tap();
+    await page.setViewportSize({ width: 1440, height: 1050 });
+    const colonyBudget = await page.evaluate(() => {
+      const c = BulkUnified.colony;
+      c.game.pause();
+      c.view.render(c.game, 0, c.viewState);
+      const owned = c.view.geometries.size,
+        memory = c.view.renderer.info.memory.geometries;
+      for (let i = 0; i < 60; i++) c.view.render(c.game, 0, c.viewState);
+      return {
+        owned,
+        afterOwned: c.view.geometries.size,
+        memory,
+        after: c.view.renderer.info.memory.geometries,
+        calls: c.view.renderer.info.render.calls,
+      };
+    });
+    assert.equal(colonyBudget.owned, colonyBudget.afterOwned);
+    assert.equal(colonyBudget.memory, colonyBudget.after);
+    assert(colonyBudget.calls < 230);
+    assert.equal(await page.evaluate(() => JSON.stringify(BulkUnified.city.game)), frozenCity);
+    await page.evaluate(() => (window._formerColony = BulkUnified.colony));
+    await page.locator('#unified-back').click();
+    assert(
+      await page.evaluate(
+        () =>
+          _formerColony.dead &&
+          BulkUnified.colony === null &&
+          !BulkUnified.city.suspended &&
+          BulkUnified.city.game.state === 'paused',
+      ),
+    );
+    assert.equal(await page.locator('#colony-host canvas').count(), 0);
+    await page.locator('[data-city-action="colony"]').click();
+    assert.equal(await page.evaluate(() => BulkUnified.colony.game.state), 'victory');
+    await page.locator('#unified-back').click();
+    console.log(
+      'PASS physical Vice Import portal → Importic, live dialogue/portrait/reputation, journal/pause, mining, melee/magic, factions/trade/training, ruins/boss/death/retry/victory, touch, saves, fixed GPU pool and frozen city restoration.',
+      JSON.stringify(colonyBudget),
+    );
     const cityBudget = await page.evaluate(() => {
       const s = BulkUnified.city;
       s.game.pause();

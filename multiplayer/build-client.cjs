@@ -75,6 +75,9 @@ const app =
     'minigames/city-sim.js',
     'minigames/city-render.js',
     'minigames/city-game.js',
+    'minigames/colony-sim.js',
+    'minigames/colony-render.js',
+    'minigames/colony-game.js',
     'multiplayer/unified.js',
     'multiplayer/render.js',
     'multiplayer/client.js',
@@ -95,6 +98,7 @@ const output = versioned(read('multiplayer/client-shell.html'))
         'minigames/runner-game.css',
         'minigames/souls-game.css',
         'minigames/city-game.css',
+        'minigames/colony-game.css',
       ]
         .map(read)
         .join('\n') + cardArtStyle,
@@ -119,6 +123,6 @@ console.log(
     release.filename +
     ' (' +
     Buffer.byteLength(output) +
-    ' bytes): standalone campaign + multiplayer + Bird Game 3 + Gwintforce + CSV Double + Sudoku + Metro Import 3D + Apex Souls + Grand Theft CSV',
+    ' bytes): standalone campaign + multiplayer + Bird Game 3 + Gwintforce + CSV Double + Sudoku + Metro Import 3D + Apex Souls + Grand Theft CSV + Importic',
 );
 console.log('GitHub Pages: ' + require('../deploy/pages/build.cjs').buildPages());

@@ -166,6 +166,26 @@ const release = require('../release.cjs');
       1,
     );
     await page.screenshot({ path: '/tmp/bulk-pages-v' + release.major + '-city-mobile.png' });
+    await page.keyboard.press('KeyP');
+    const frozenCity = await game.evaluate(() => JSON.stringify(BulkUnified.city.game));
+    await game.locator('[data-city-action="colony"]').click();
+    await game.waitForFunction(() => BulkUnified.screen === 'colony');
+    await game.locator('[data-col-action="start"]').click();
+    await page.keyboard.down('KeyW');
+    await game.waitForFunction(() => BulkUnified.colony.game.player.z < 40);
+    await page.keyboard.up('KeyW');
+    await page.keyboard.press('KeyE');
+    assert(await game.locator('.col-portrait svg').isVisible());
+    await game.locator('[data-col-choice="accept"]').click();
+    assert(
+      await page.evaluate(
+        () => JSON.parse(localStorage.getItem('bulk-import-colony-legacy-v1')).started,
+      ),
+    );
+    await page.screenshot({ path: '/tmp/bulk-pages-v' + release.major + '-colony-mobile.png' });
+    await game.locator('#unified-back').click();
+    assert.equal(await game.evaluate(() => BulkUnified.screen), 'city');
+    assert.equal(await game.evaluate(() => JSON.stringify(BulkUnified.city.game)), frozenCity);
     await game.locator('#unified-back').click();
     assert.equal(await game.evaluate(() => BulkUnified.screen), 'souls');
     assert(await game.locator('[data-souls-action="city"]').isVisible());
@@ -224,6 +244,11 @@ const release = require('../release.cjs');
     const restored = await (await game.locator('#campaign-frame').elementHandle()).contentFrame();
     await restored.getByRole('button', { name: '▶ KONTYNUUJ KAMPANIĘ', exact: true }).click();
     await restored.waitForFunction(() => active && mode === 'hub');
+    assert(
+      await page.evaluate(
+        () => JSON.parse(localStorage.getItem('bulk-import-colony-legacy-v1')).started,
+      ),
+    );
     assert.equal(await restored.evaluate(() => progress.credits), saved.progress.credits);
     assert.deepEqual(await restored.evaluate(() => progress.completed), saved.progress.completed);
     assert.equal(sockets.length, 0, 'Static play never attempts WebSockets');

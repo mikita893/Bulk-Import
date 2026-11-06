@@ -260,6 +260,23 @@ class BulkCityRenderer {
     const ring = this.mesh(this.pickup, this.g.ring, this.m.yellow, 0, 0.15, 0, 5, 5, 1);
     ring.rotation.x = -Math.PI / 2;
     this.box(this.pickup, this.m.yellow, 0, 2, 0, 1.6, 2, 1.6);
+    this.portal = new THREE.Group();
+    this.portal.position.set(BulkCity.PORTAL.x, 0, BulkCity.PORTAL.z);
+    this.scene.add(this.portal);
+    const portalMat = this.basic(0xbca8e5, 0.6);
+    this.portalRing = this.mesh(this.portal, this.g.ring, portalMat, 0, 2.6, 0, 2.2, 2.2, 1);
+    for (const x of [-2.4, 2.4]) this.box(this.portal, this.m.dark, x, 2.4, 0, 0.45, 4.8, 0.5);
+    this.mesh(
+      this.portal,
+      this.g.plane,
+      this.text('IMPORTIC / E', '#f2dab2', '#3b4052'),
+      0,
+      5.5,
+      0,
+      8,
+      1.6,
+      1,
+    );
     this.markers = BulkCity.TARGETS.map((t, i) => {
       const group = new THREE.Group();
       group.position.set(t.x, t.h + 0.4, t.z);
@@ -466,6 +483,8 @@ class BulkCityRenderer {
     this.finish(this.npcRoof, cars.length);
     this.finish(this.npcWheels, cars.length * 4);
     this.finish(this.npcLights, cars.length * 2);
+    this.portalRing.rotation.z = Math.sin(game.time) * 0.1;
+    this.portalRing.material.opacity = 0.5 + Math.sin(game.time * 2) * 0.12;
     this.pickup.visible = game.phase === 'pickup';
     this.pickup.rotation.y = game.time;
     this.markers.forEach((m, i) => {

@@ -6,6 +6,7 @@
 })(typeof window !== 'undefined' ? window : globalThis, function () {
   const PAD = { x: 0, z: 80 },
     PICKUP = { x: 0, z: -96 },
+    PORTAL = { x: -5, z: 112 },
     LIMIT = 124;
   const TARGETS = [
     { x: -60, z: -60, h: 20, name: 'Wieża Duplikatów' },
@@ -560,6 +561,7 @@
     Game,
     PAD,
     PICKUP,
+    PORTAL,
     TARGETS,
     BUILDINGS,
     RADIO,

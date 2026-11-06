@@ -1,0 +1,620 @@
+'use strict';
+class BulkColonyGame {
+  constructor(host, { storage, onExit, soundEnabled = () => true } = {}) {
+    this.host = host;
+    this.storage = storage;
+    this.onExit = onExit;
+    this.dead = false;
+    this.keys = {};
+    this.pointers = new Map();
+    this.viewState = { yaw: 0 };
+    this.mouse = { active: false, drag: false };
+    this.last = performance.now();
+    this.uiAt = 0;
+    this.renderAt = 0;
+    this.savedAt = 0;
+    this.ambientAt = 0;
+    this.panel = null;
+    this.lastState = null;
+    let progress = BulkColony.fresh();
+    try {
+      progress = BulkColony.read(storage.getItem('bulk-import-colony-legacy-v1'));
+    } catch (e) {}
+    this.game = new BulkColony.Game(progress);
+    this.effects = new BulkEffects.Effects({ enabled: soundEnabled });
+    host.innerHTML =
+      '<div class="col-page"><canvas id="col-world" aria-label="Importic: trójwymiarowa kolonia, las, ruiny i kopalnia"></canvas><div class="col-vignette"></div><div class="col-brand"><small>BULK IMPORT / OPOWIEŚĆ ZZA BARIERY</small><h1>IMPORTIC</h1><p>Kolonia Legacy</p></div><div class="col-vitals"><div><span>ŻYCIE</span><b id="col-hp-value"></b></div><div class="col-track"><i id="col-hp"></i></div><div><span>WYTRZYMAŁOŚĆ</span><b id="col-stamina-value"></b></div><div class="col-track stamina"><i id="col-stamina"></i></div><div><span>SKUPIENIE</span><b id="col-mana-value"></b></div><div class="col-track mana"><i id="col-mana"></i></div><p id="col-level"></p></div><div class="col-top-actions"><b id="col-ore"></b><span id="col-faction"></span><div><button data-col-action="journal">Dziennik I</button><button data-col-action="character">Postać C</button><button data-col-action="pause">Ⅱ</button></div></div><div class="col-quest"><small>AKTUALNE ZADANIE</small><p id="col-objective"></p><div class="col-progress"><i id="col-progress"></i></div></div><div id="col-boss" class="col-boss" hidden><span>Nadzorca Wielkiego Importu</span><div class="col-track"><i id="col-boss-hp"></i></div></div><div class="col-map-wrap"><canvas id="col-map" width="220" height="220" aria-label="Mapa kolonii: obóz, ruda i cel zadania"></canvas><small>KOLONIA / PÓŁNOC ↑</small></div><div class="col-touch"><div class="col-pad"><button data-col-hold="KeyW">↑</button><button data-col-hold="KeyA">←</button><button data-col-hold="KeyS">↓</button><button data-col-hold="KeyD">→</button></div><div class="col-touch-actions"><button data-col-action="light">Miecz J</button><button data-col-action="heavy">Mocny K</button><button data-col-action="dodge">Odskok</button><button data-col-hold="KeyF">Blok F</button><button data-col-action="heal">Mikstura R</button><button data-col-action="ability">Zdolność Q</button><button data-col-action="interact">Interakcja E</button><button data-col-action="lock">Namierz T</button></div></div><div class="col-bottom"><b id="col-prompt"></b><p id="col-message" role="status"></p><small>WASD: ruch · J / LPM: cios · K: mocny · spacja: odskok · F: blok · R: mikstura · Q: zdolność · E: rozmowa / ruda · T: namierz · P: pauza · PPM: kamera</small></div><div class="col-cover" id="col-cover"></div></div>';
+    this.mapContext = this.$('col-map').getContext('2d');
+    try {
+      this.view = new BulkColonyRenderer(this.$('col-world'));
+    } catch (e) {
+      this.renderError = true;
+      this.$('col-cover').innerHTML =
+        '<div><h2>Potrzebny WebGL</h2><p>Włącz akcelerację sprzętową.</p><button data-col-action="exit">Wróć do Vice Import</button></div>';
+    }
+    this.ray = new THREE.Raycaster();
+    this.pointer = new THREE.Vector2();
+    this.plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    this.point = new THREE.Vector3();
+    this.onClick = (e) => {
+      const c = e.target.closest('[data-col-choice]');
+      if (c && host.contains(c)) {
+        this.choose(c.dataset.colChoice);
+        return;
+      }
+      const b = e.target.closest('[data-col-action]');
+      if (b && host.contains(b)) this.action(b.dataset.colAction);
+    };
+    this.onKey = (e) => {
+      if (
+        this.dead ||
+        e.ctrlKey ||
+        e.metaKey ||
+        e.altKey ||
+        ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)
+      )
+        return;
+      const map = {
+          KeyJ: 'light',
+          KeyK: 'heavy',
+          Space: 'dodge',
+          KeyE: 'interact',
+          KeyR: 'heal',
+          KeyQ: 'ability',
+          KeyT: 'lock',
+          KeyP: 'pause',
+          Escape: 'pause',
+          KeyI: 'journal',
+          KeyC: 'character',
+        },
+        holds = [
+          'KeyW',
+          'KeyA',
+          'KeyS',
+          'KeyD',
+          'KeyF',
+          'ArrowUp',
+          'ArrowDown',
+          'ArrowLeft',
+          'ArrowRight',
+          'ShiftLeft',
+          'ShiftRight',
+        ];
+      if (!map[e.code] && !holds.includes(e.code)) return;
+      e.preventDefault();
+      this.keys[e.code] = true;
+      if (map[e.code] && !e.repeat) this.action(map[e.code]);
+    };
+    this.onUp = (e) => {
+      this.keys[e.code] = false;
+    };
+    this.onBlur = () => this.pause();
+    this.onHidden = () => {
+      if (document.hidden) this.pause();
+    };
+    this.onResize = () => this.view?.resize();
+    this.onDown = (e) => {
+      const b = e.target.closest('[data-col-hold]');
+      if (b && this.game.state === 'playing') {
+        this.pointers.set(e.pointerId, b.dataset.colHold);
+        this.keys[b.dataset.colHold] = true;
+        b.setPointerCapture(e.pointerId);
+        e.preventDefault();
+        return;
+      }
+      if (e.target !== this.$('col-world') || this.game.state !== 'playing') return;
+      this.aim(e);
+      if (e.button === 2) {
+        this.mouse.drag = true;
+        e.target.setPointerCapture(e.pointerId);
+      } else if (e.button === 0) this.action('light');
+    };
+    this.onPointerUp = (e) => {
+      const key = this.pointers.get(e.pointerId);
+      if (key) {
+        this.pointers.delete(e.pointerId);
+        if (![...this.pointers.values()].includes(key)) this.keys[key] = false;
+      }
+      this.mouse.drag = false;
+    };
+    this.onMove = (e) => {
+      if (e.target !== this.$('col-world') || this.game.state !== 'playing') return;
+      if (this.mouse.drag) {
+        this.viewState.yaw -= e.movementX * 0.006;
+        this.mouse.active = false;
+      } else this.aim(e);
+    };
+    this.onContext = (e) => e.preventDefault();
+    host.addEventListener('click', this.onClick);
+    host.addEventListener('pointerdown', this.onDown);
+    host.addEventListener('pointerup', this.onPointerUp);
+    host.addEventListener('pointercancel', this.onPointerUp);
+    host.addEventListener('pointermove', this.onMove);
+    host.addEventListener('contextmenu', this.onContext);
+    window.addEventListener('keydown', this.onKey);
+    window.addEventListener('keyup', this.onUp);
+    window.addEventListener('blur', this.onBlur);
+    window.addEventListener('resize', this.onResize);
+    document.addEventListener('visibilitychange', this.onHidden);
+    this.cover();
+    this.hud();
+    this.frame = this.frame.bind(this);
+    this.raf = requestAnimationFrame(this.frame);
+  }
+  $(id) {
+    return this.host.querySelector('#' + id);
+  }
+  clear() {
+    this.keys = {};
+    this.pointers.clear();
+    this.mouse.drag = false;
+  }
+  aim(e) {
+    if (!this.view) return;
+    const box = this.$('col-world').getBoundingClientRect();
+    this.pointer.set(
+      ((e.clientX - box.left) / box.width) * 2 - 1,
+      (-(e.clientY - box.top) / box.height) * 2 + 1,
+    );
+    this.plane.constant = -BulkColony.height(this.game.player.x, this.game.player.z);
+    this.view.camera.updateMatrixWorld();
+    this.ray.setFromCamera(this.pointer, this.view.camera);
+    if (this.ray.ray.intersectPlane(this.plane, this.point)) {
+      this.mouse.active = true;
+      this.mouse.angle = Math.atan2(
+        this.point.x - this.game.player.x,
+        this.point.z - this.game.player.z,
+      );
+    }
+  }
+  input() {
+    const k = this.keys,
+      x = Number(!!(k.KeyD || k.ArrowRight)) - Number(!!(k.KeyA || k.ArrowLeft)),
+      z = Number(!!(k.KeyS || k.ArrowDown)) - Number(!!(k.KeyW || k.ArrowUp)),
+      a = this.viewState.yaw;
+    return {
+      x: x * Math.cos(a) + z * Math.sin(a),
+      z: z * Math.cos(a) - x * Math.sin(a),
+      block: !!k.KeyF,
+      sprint: !!(k.ShiftLeft || k.ShiftRight),
+      ...(this.mouse.active ? { angle: this.mouse.angle } : {}),
+    };
+  }
+  action(kind) {
+    if (this.dead) return;
+    if (kind === 'exit') {
+      this.onExit?.();
+      return;
+    }
+    if (this.renderError) return;
+    if (kind === 'closePanel') {
+      this.panel = null;
+      if (this.panelWasPlaying) this.game.resume();
+      this.clear();
+      this.last = performance.now();
+      this.cover();
+      return;
+    }
+    if (kind === 'journal' || kind === 'character') {
+      if (this.panel === kind) {
+        this.action('closePanel');
+        return;
+      }
+      if (!['playing', 'paused'].includes(this.game.state)) return;
+      if (!this.panel) this.panelWasPlaying = this.game.state === 'playing';
+      this.game.pause();
+      this.panel = kind;
+      this.clear();
+      this.effects.stop();
+      this.cover();
+      return;
+    }
+    if (kind === 'pause') {
+      if (this.panel) {
+        this.action('closePanel');
+        return;
+      }
+      if (this.game.state === 'dialogue') {
+        this.choose('leave');
+        return;
+      }
+      if (this.game.state === 'paused') {
+        this.game.resume();
+        this.clear();
+        this.last = performance.now();
+        this.cover();
+      } else this.pause();
+      return;
+    }
+    if (kind === 'start') {
+      this.game.start();
+      this.clear();
+      this.last = performance.now();
+      this.effects.play('powerup');
+      this.cover();
+      return;
+    }
+    if (kind === 'retry') {
+      this.game.retry();
+      this.clear();
+      this.last = performance.now();
+      this.persist();
+      this.cover();
+      return;
+    }
+    if (kind === 'explore') {
+      this.game.explore();
+      this.clear();
+      this.last = performance.now();
+      this.cover();
+      return;
+    }
+    if (kind === 'new') {
+      const old = this.game.progress;
+      this.game = new BulkColony.Game({
+        ...BulkColony.fresh(),
+        wins: old.wins,
+        deaths: old.deaths,
+      });
+      this.game.start();
+      this.panel = null;
+      this.clear();
+      this.last = performance.now();
+      this.persist();
+      this.cover();
+      return;
+    }
+    if (this.panel) return;
+    const accepted = this.game.action(kind, this.input());
+    if (accepted) {
+      const sounds = {
+        light: 'slash',
+        heavy: 'greatsword',
+        dodge: 'dash',
+        heal: 'click',
+        ability: 'payload',
+        lock: 'click',
+        interact: 'door',
+      };
+      if (sounds[kind]) this.effects.play(sounds[kind]);
+      if (this.game.state === 'dialogue') this.clear();
+      if (['interact', 'heal'].includes(kind)) this.persist();
+      this.cover();
+    } else if (
+      this.game.state === 'playing' &&
+      !this.game.player.action &&
+      this.game.player.stamina < 24
+    )
+      this.game.message =
+        'Brak wytrzymałości. Odpuść na chwilę, zanim zabraknie ci również reputacji.';
+    this.hud();
+  }
+  choose(id) {
+    if (this.dead || !this.game.choose(id)) return;
+    this.effects.play(
+      ['sword', 'armor', 'potion', 'strength', 'vitality'].includes(id)
+        ? 'upgrade'
+        : id === 'leave'
+          ? 'click'
+          : 'powerup',
+    );
+    this.clear();
+    this.last = performance.now();
+    this.persist();
+    this.cover();
+    this.hud();
+  }
+  pause() {
+    if (this.dead || this.game.state !== 'playing') return;
+    this.game.pause();
+    this.clear();
+    this.effects.stop();
+    this.persist();
+    this.cover();
+  }
+  persist() {
+    try {
+      this.storage.setItem('bulk-import-colony-legacy-v1', JSON.stringify(this.game.snapshot()));
+    } catch (e) {}
+    this.savedAt = performance.now();
+  }
+  portrait(id) {
+    const n = BulkColony.NPCS[id],
+      beard = ['guard', 'mentor'].includes(id),
+      happy = this.game.progress.reputation >= 0;
+    return (
+      '<svg viewBox="0 0 128 150" role="img" aria-label="Portret: ' +
+      n.name +
+      '"><rect width="128" height="150" fill="#283330"/><path d="M12 150Q17 106 64 105Q111 106 116 150" fill="' +
+      n.color +
+      '"/><path d="M53 92h22v24H53z" fill="#b38d70"/><path d="M30 49Q28 20 64 18Q100 20 98 49L94 85Q86 108 64 111Q42 108 34 85Z" fill="#d3b18e"/><path d="M29 63L27 35Q37 9 72 14Q106 19 100 67L87 35Q65 44 40 33L38 65Z" fill="' +
+      (id === 'mentor' ? '#adaba1' : '#4d3c31') +
+      '"/><path d="M41 62l15-3M72 59l15 3" stroke="#4e3f34" stroke-width="4"/><path d="M43 68h9M76 68h9" stroke="#293936" stroke-width="3"/><path d="M64 68l-4 15h9" fill="none" stroke="#a17e62" stroke-width="2"/>' +
+      (beard
+        ? '<path d="M37 82Q64 96 92 81L84 108L64 122L44 108Z" fill="' +
+          (id === 'mentor' ? '#b4b0a3' : '#604a39') +
+          '"/>'
+        : '') +
+      '<path d="' +
+      (happy ? 'M53 92Q64 99 76 92' : 'M53 97Q64 89 76 97') +
+      '" fill="none" stroke="#785443" stroke-width="3"/></svg>'
+    );
+  }
+  cover() {
+    if (this.renderError) return;
+    const g = this.game,
+      p = g.progress,
+      state = g.state,
+      box = this.$('col-cover');
+    this.lastState = state;
+    box.hidden = false;
+    if (this.panel) {
+      const journal = this.panel === 'journal';
+      box.innerHTML =
+        '<div><small class="col-eyebrow">' +
+        (journal ? 'DZIENNIK WĘDROWCA' : 'KARTA POSTACI') +
+        '</small><h2>' +
+        (journal ? 'Zadania kolonii' : 'Bezimienny Importer') +
+        '</h2>' +
+        (journal
+          ? '<ol class="col-journal">' +
+            [
+              'Trzy bryły rudy dla strażnika',
+              'Dołączenie do wybranej frakcji',
+              'Pieczęć External ID w ruinach',
+              'Raport dla Kory',
+              'Nadzorca Wielkiego Importu',
+            ]
+              .map(
+                (s, i) =>
+                  '<li class="' +
+                  (p.quest > i ? 'done' : '') +
+                  '">' +
+                  (p.quest > i ? '✓ ' : '') +
+                  s +
+                  '</li>',
+              )
+              .join('') +
+            '</ol><p>' +
+            g.objective().text +
+            '</p>'
+          : '<div class="col-character"><p>Poziom <b>' +
+            g.level +
+            '</b> · XP ' +
+            p.xp +
+            ' · punkty nauki <b>' +
+            p.lp +
+            '</b></p><p>Obrażenia <b>' +
+            g.damage +
+            '</b> · życie <b>' +
+            g.maxHp +
+            '</b> · siła ' +
+            p.strength +
+            '/8 · żywotność ' +
+            p.vitality +
+            '/6</p><p>' +
+            (p.weapon ? 'Miecz Ręcznego Merge' : 'Zardzewiały Klucz Apex') +
+            ' · ' +
+            (p.armor ? 'Kaftan Enterprise' : 'Ubranie nowicjusza') +
+            '</p><p>Ruda ' +
+            p.ore +
+            ' · mikstury ' +
+            p.potions +
+            ' · przychylność ' +
+            p.reputation +
+            '</p><p>Frakcja: ' +
+            (BulkColony.FACTIONS[p.faction]?.name || 'Niezrzeszony') +
+            '</p><p>Nauczyciel i kowalka są w obozie. Przyjazna rozmowa może obniżyć ceny.</p></div>') +
+        '<button class="primary" data-col-action="closePanel">Wróć do gry</button></div>';
+      return;
+    }
+    if (state === 'playing') {
+      box.hidden = true;
+      return;
+    }
+    if (state === 'dialogue') {
+      const d = g.dialogue();
+      box.innerHTML =
+        '<div class="col-dialogue"><div class="col-speaker"><div class="col-portrait">' +
+        this.portrait(d.id) +
+        '</div><div><small class="col-eyebrow">ROZMOWA / PRZYCHYLNOŚĆ ' +
+        (p.reputation >= 0 ? '+' : '') +
+        p.reputation +
+        '</small><h2>' +
+        d.name +
+        '</h2><p>Ruda: ' +
+        p.ore +
+        ' · PN: ' +
+        p.lp +
+        '</p></div></div><p class="col-dialogue-text">' +
+        d.text +
+        '</p><div class="col-choices">' +
+        d.choices
+          .map(
+            (c) =>
+              '<button data-col-choice="' +
+              c.id +
+              '" ' +
+              (c.disabled ? 'disabled' : '') +
+              '>' +
+              c.label +
+              '</button>',
+          )
+          .join('') +
+        '</div></div>';
+      return;
+    }
+    if (state === 'ready') {
+      box.innerHTML =
+        '<div><small class="col-eyebrow">RPG 3D / KOLONIA PO DRUGIEJ STRONIE IMPORTU</small><h2>IMPORTIC</h2><h3>Kolonia Legacy</h3><p>Trafiasz pod magiczną barierę. Strażnik chce rudy, kowalka klientów, a nauczyciel punktów nauki. Wybierz jedną z trzech frakcji, odzyskaj pieczęć w ruinach i pokonaj nadzorcę kopalni.</p><p>Każdy cios kosztuje wytrzymałość. Wrogowie zapowiadają ataki czerwonym sektorem. Ruda służy do zakupów; doświadczenie daje PN do nauki siły i żywotności.</p><p class="col-tip">E: rozmowa / ruda · J: miecz · K: mocny cios · F: blok · spacja: odskok · R: mikstura · Q: zdolność frakcji · T: namierz · I: dziennik</p><button class="primary" data-col-action="start">' +
+        (p.started ? '▶ KONTYNUUJ WYPRAWĘ' : '▶ WEJDŹ DO KOLONII') +
+        '</button><button data-col-action="exit">Wróć do Vice Import</button><small>Postęp zapisuje się osobno. Powrót do miasta zachowuje jego misję i pojazd.</small></div>';
+      return;
+    }
+    const dead = state === 'dead',
+      won = state === 'victory';
+    box.innerHTML =
+      '<div><small class="col-eyebrow">' +
+      (dead
+        ? 'LOS NOWICJUSZA / POSTĘP ZACHOWANY'
+        : won
+          ? 'BARIERA LEGACY PRZEŁAMANA'
+          : 'PAUZA / KOLONIA CZEKA') +
+      '</small><h2>' +
+      (dead ? 'Powalony' : won ? 'Kolonia jest wolna' : 'Chwila odpoczynku') +
+      '</h2><p>' +
+      g.message +
+      '</p><p>Poziom ' +
+      g.level +
+      ' · ruda ' +
+      p.ore +
+      ' · zwycięstwa ' +
+      p.wins +
+      ' · powalenia ' +
+      p.deaths +
+      '.</p><button class="primary" data-col-action="' +
+      (dead ? 'retry' : won ? 'explore' : 'pause') +
+      '">' +
+      (dead ? '↻ POWRÓT DO BEZPIECZNEGO PUNKTU' : won ? '▶ ZWIEDZAJ KOLONIĘ' : '▶ WZNÓW WYPRAWĘ') +
+      '</button>' +
+      (won ? '<button data-col-action="new">Nowa wyprawa</button>' : '') +
+      '<button data-col-action="exit">Wróć do Vice Import</button></div>';
+  }
+  hud() {
+    const g = this.game,
+      p = g.player,
+      s = g.progress;
+    this.$('col-hp').style.width = Math.max(0, (p.hp / g.maxHp) * 100) + '%';
+    this.$('col-hp-value').textContent = Math.ceil(p.hp) + ' / ' + g.maxHp;
+    this.$('col-stamina').style.width = (p.stamina / g.maxStamina) * 100 + '%';
+    this.$('col-stamina-value').textContent = Math.floor(p.stamina);
+    this.$('col-mana').style.width = (p.mana / 80) * 100 + '%';
+    this.$('col-mana-value').textContent =
+      s.faction === 'mage'
+        ? Math.floor(p.mana)
+        : p.cooldown > 0
+          ? 'Q: ' + Math.ceil(p.cooldown) + ' s'
+          : 'Q: gotowe';
+    this.$('col-level').textContent =
+      'POZIOM ' + g.level + ' · XP ' + s.xp + ' · PN ' + s.lp + ' · MIKSTURY ' + s.potions;
+    this.$('col-ore').textContent = '◆ ' + s.ore + ' RUDY';
+    this.$('col-faction').textContent = BulkColony.FACTIONS[s.faction]?.name || 'NIEZRZESZONY';
+    this.$('col-objective').textContent = g.objective().text;
+    this.$('col-progress').style.width = (s.quest / 5) * 100 + '%';
+    this.$('col-message').textContent = g.message;
+    this.$('col-prompt').textContent =
+      p.action?.kind === 'mine'
+        ? 'WYDOBYWANIE RUDY…'
+        : g.nearby()?.text || 'E · INTERAKCJA / T · NAMIERZANIE';
+    const boss = g.enemies.find((e) => e.type === 'boss' && e.hp > 0);
+    this.$('col-boss').hidden = !boss;
+    if (boss) this.$('col-boss-hp').style.width = (boss.hp / boss.maxHp) * 100 + '%';
+    this.minimap();
+  }
+  minimap() {
+    const p = this.mapContext,
+      g = this.game,
+      xy = (x, z) => [110 + x * 1.12, 110 + z * 1.12];
+    p.fillStyle = '#182421';
+    p.fillRect(0, 0, 220, 220);
+    p.strokeStyle = '#4d5b49';
+    p.strokeRect(74, 110, 72, 40);
+    p.fillStyle = '#344535';
+    for (const t of BulkColony.TREES) {
+      const [x, y] = xy(t.x, t.z);
+      p.fillRect(x - 2, y - 2, 4, 4);
+    }
+    const dot = (x, z, color, r = 3) => {
+      const q = xy(x, z);
+      p.fillStyle = color;
+      p.beginPath();
+      p.arc(...q, r, 0, Math.PI * 2);
+      p.fill();
+    };
+    for (const n of Object.values(BulkColony.NPCS)) dot(n.x, n.z, '#dbbb7f');
+    BulkColony.ORE.forEach((o, i) => {
+      if (!g.progress.mined[i]) dot(o.x, o.z, '#9ac1e9', 2);
+    });
+    for (const e of g.enemies) if (e.hp > 0) dot(e.x, e.z, '#c77b6f', 2);
+    const q = g.objective();
+    if (g.progress.quest < 5) dot(q.x, q.z, '#fff1ad', 5);
+    const pos = xy(g.player.x, g.player.z);
+    p.save();
+    p.translate(...pos);
+    p.rotate(Math.PI - g.player.angle);
+    p.fillStyle = '#f4f0d2';
+    p.beginPath();
+    p.moveTo(0, -6);
+    p.lineTo(4, 5);
+    p.lineTo(-4, 5);
+    p.closePath();
+    p.fill();
+    p.restore();
+  }
+  frame(now) {
+    if (this.dead) return;
+    this.raf = requestAnimationFrame(this.frame);
+    const dt = Math.min(0.1, Math.max(0, (now - this.last) / 1000));
+    this.last = now;
+    if (document.hidden) return;
+    if (this.game.state === 'playing') {
+      this.game.tick(dt, this.input());
+      const sound = {
+        ore: 'coin',
+        healed: 'heal',
+        rest: 'heal',
+        enemyHit: 'kill',
+        enemyDead: 'powerup',
+        enemyAttack: 'slash',
+        hurt: 'hit',
+        block: 'shield',
+        level: 'upgrade',
+        victory: 'upgrade',
+        spell: 'payload',
+        phase: 'greatsword',
+      };
+      for (const e of this.game.events) if (sound[e.type]) this.effects.play(sound[e.type]);
+      if (this.game.events.some((e) => ['ore', 'enemyDead', 'death', 'victory'].includes(e.type)))
+        this.persist();
+      if (this.lastState !== this.game.state) {
+        this.clear();
+        this.cover();
+      }
+      if (now - this.ambientAt > 1500) {
+        this.ambientAt = now;
+        this.effects.node('noise', 0, 0.005, 0.22);
+      }
+    }
+    if (this.game.state === 'playing' || now - this.renderAt > 50) {
+      this.renderAt = now;
+      this.view?.render(this.game, this.game.state === 'playing' ? dt : 0, this.viewState);
+    }
+    if (now - this.uiAt > 100) {
+      this.uiAt = now;
+      this.hud();
+    }
+    if (now - this.savedAt > 10000) this.persist();
+  }
+  destroy() {
+    if (this.dead) return;
+    this.persist();
+    this.dead = true;
+    cancelAnimationFrame(this.raf);
+    this.clear();
+    this.host.removeEventListener('click', this.onClick);
+    this.host.removeEventListener('pointerdown', this.onDown);
+    this.host.removeEventListener('pointerup', this.onPointerUp);
+    this.host.removeEventListener('pointercancel', this.onPointerUp);
+    this.host.removeEventListener('pointermove', this.onMove);
+    this.host.removeEventListener('contextmenu', this.onContext);
+    window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('keyup', this.onUp);
+    window.removeEventListener('blur', this.onBlur);
+    window.removeEventListener('resize', this.onResize);
+    document.removeEventListener('visibilitychange', this.onHidden);
+    this.effects.destroy();
+    this.view?.destroy();
+    this.host.replaceChildren();
+  }
+}
+if (typeof window !== 'undefined') window.BulkColonyGame = BulkColonyGame;

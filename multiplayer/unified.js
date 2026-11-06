@@ -11,7 +11,8 @@
     sudoku = null,
     runner = null,
     souls = null,
-    city = null;
+    city = null,
+    colony = null;
   const storage = Object.freeze({
     getItem: (key) => localStorage.getItem(key),
     setItem: (key, value) => localStorage.setItem(key, value),
@@ -55,36 +56,41 @@
     $('runner-host').hidden = next !== 'runner';
     $('souls-host').hidden = next !== 'souls';
     $('city-host').hidden = next !== 'city';
+    $('colony-host').hidden = next !== 'colony';
     $('unified-title').textContent =
-      next === 'city'
-        ? 'GRAND THEFT CSV · VICE IMPORT'
-        : next === 'campaign'
-          ? 'KAMPANIA SOLO · WSPÓLNA GALAKTYKA'
-          : next === 'souls'
-            ? 'APEX SOULS · KLĄTWA LEGACY'
-            : next === 'runner'
-              ? 'METRO IMPORT · UCIECZKA PRZED AUDYTEM'
-              : next === 'sudoku'
-                ? 'SUDOKU · WALIDACJA WIERSZY'
-                : next === 'double'
-                  ? 'CSV DOUBLE · PTAKI I DUPLIKATY'
-                  : next === 'cards'
-                    ? 'GWINTFORCE · WOJNA REKORDÓW'
-                    : 'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
+      next === 'colony'
+        ? 'IMPORTIC · KOLONIA LEGACY'
+        : next === 'city'
+          ? 'GRAND THEFT CSV · VICE IMPORT'
+          : next === 'campaign'
+            ? 'KAMPANIA SOLO · WSPÓLNA GALAKTYKA'
+            : next === 'souls'
+              ? 'APEX SOULS · KLĄTWA LEGACY'
+              : next === 'runner'
+                ? 'METRO IMPORT · UCIECZKA PRZED AUDYTEM'
+                : next === 'sudoku'
+                  ? 'SUDOKU · WALIDACJA WIERSZY'
+                  : next === 'double'
+                    ? 'CSV DOUBLE · PTAKI I DUPLIKATY'
+                    : next === 'cards'
+                      ? 'GWINTFORCE · WOJNA REKORDÓW'
+                      : 'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
     $('unified-back').textContent =
-      next === 'city'
-        ? '← Wróć do Apex Souls'
-        : next === 'souls'
-          ? '← Wróć do Metro Import'
-          : next === 'runner'
-            ? '← Wróć do Sudoku'
-            : next === 'sudoku'
-              ? '← Wróć do CSV Double'
-              : next === 'double'
-                ? '← Wróć do Bird Game 3'
-                : ['bird', 'cards'].includes(next)
-                  ? '← Wróć do terminala'
-                  : '← Menu główne';
+      next === 'colony'
+        ? '← Wróć do Vice Import'
+        : next === 'city'
+          ? '← Wróć do Apex Souls'
+          : next === 'souls'
+            ? '← Wróć do Metro Import'
+            : next === 'runner'
+              ? '← Wróć do Sudoku'
+              : next === 'sudoku'
+                ? '← Wróć do CSV Double'
+                : next === 'double'
+                  ? '← Wróć do Bird Game 3'
+                  : ['bird', 'cards'].includes(next)
+                    ? '← Wróć do terminala'
+                    : '← Menu główne';
   }
   function leaveNetwork() {
     return network?.suspend() !== false;
@@ -181,11 +187,31 @@
     city = new BulkCityGame($('city-host'), {
       storage,
       onExit: back,
+      onOpenColony: openColony,
+      soundEnabled: () => $('sound-toggle').textContent.includes('ON'),
+    });
+    return true;
+  }
+  function openColony() {
+    if (screen !== 'city' || !city || double?.online.active) return false;
+    city.suspendForMinigame();
+    setScreen('colony');
+    colony = new BulkColonyGame($('colony-host'), {
+      storage,
+      onExit: back,
       soundEnabled: () => $('sound-toggle').textContent.includes('ON'),
     });
     return true;
   }
   function back() {
+    if (screen === 'colony') {
+      colony?.destroy();
+      colony = null;
+      setScreen('city');
+      city?.resumeFromMinigame();
+      return;
+    }
+
     if (screen === 'city') {
       city?.destroy();
       city = null;
@@ -267,6 +293,7 @@
     openRunner,
     openSouls,
     openCity,
+    openColony,
     back,
     registerNetwork(api) {
       network = api;
@@ -294,6 +321,9 @@
     },
     get city() {
       return city;
+    },
+    get colony() {
+      return colony;
     },
   });
   networkReady(false);

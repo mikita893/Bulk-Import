@@ -1,9 +1,11 @@
 'use strict';
 class BulkCityGame {
-  constructor(host, { storage, onExit, soundEnabled = () => true } = {}) {
+  constructor(host, { storage, onExit, onOpenColony, soundEnabled = () => true } = {}) {
     this.host = host;
     this.storage = storage;
     this.onExit = onExit;
+    this.onOpenColony = onOpenColony;
+    this.suspended = false;
     this.dead = false;
     this.keys = {};
     this.pointers = new Map();
@@ -30,7 +32,7 @@ class BulkCityGame {
     } catch (e) {
       this.renderError = true;
       this.$('city-cover').innerHTML =
-        '<div><h2>Potrzebny WebGL</h2><p>Włącz akcelerację sprzętową, aby zwiedzić Vice Import.</p><button data-city-action="exit">Wróć do Apex Souls</button></div>';
+        '<div><h2>Potrzebny WebGL</h2><p>Włącz akcelerację sprzętową, aby zwiedzić Vice Import.</p><button data-city-action="colony">⚔ IMPORTIC · KOLONIA LEGACY</button><button data-city-action="exit">Wróć do Apex Souls</button></div>';
     }
     this.onClick = (e) => {
       const b = e.target.closest('[data-city-action]');
@@ -39,6 +41,7 @@ class BulkCityGame {
     this.onKey = (e) => {
       if (
         this.dead ||
+        this.suspended ||
         e.metaKey ||
         e.altKey ||
         e.ctrlKey ||
@@ -72,7 +75,9 @@ class BulkCityGame {
     this.onHidden = () => {
       if (document.hidden) this.pause();
     };
-    this.onResize = () => this.view?.resize();
+    this.onResize = () => {
+      if (!this.suspended) this.view?.resize();
+    };
     this.onPointerDown = (e) => {
       const b = e.target.closest('[data-city-hold]');
       if (!b || this.game.state !== 'playing') return;
@@ -120,7 +125,20 @@ class BulkCityGame {
     };
   }
   action(kind) {
-    if (this.dead) return;
+    if (this.dead || this.suspended) return;
+    if (kind === 'colony') {
+      this.onOpenColony?.();
+      return;
+    }
+    if (
+      kind === 'interact' &&
+      this.game.state === 'playing' &&
+      this.game.mode === 'foot' &&
+      Math.hypot(this.game.player.x - BulkCity.PORTAL.x, this.game.player.z - BulkCity.PORTAL.z) < 4
+    ) {
+      this.onOpenColony?.();
+      return;
+    }
     if (kind === 'exit') {
       this.onExit?.();
       return;
@@ -194,12 +212,30 @@ class BulkCityGame {
     this.hud();
   }
   pause() {
-    if (this.dead || this.game.state !== 'playing') return;
+    if (this.dead || this.suspended || this.game.state !== 'playing') return;
     this.game.pause();
     this.clearInput();
     this.effects.stop();
     this.persist();
     this.cover();
+  }
+  suspendForMinigame() {
+    if (this.dead || this.suspended) return;
+    this.game.pause();
+    this.persist();
+    this.suspended = true;
+    cancelAnimationFrame(this.raf);
+    this.clearInput();
+    this.effects.stop();
+  }
+  resumeFromMinigame() {
+    if (this.dead || !this.suspended) return;
+    this.suspended = false;
+    this.last = performance.now();
+    this.view?.resize();
+    this.cover();
+    this.hud();
+    this.raf = requestAnimationFrame(this.frame);
   }
   persist() {
     try {
@@ -232,7 +268,7 @@ class BulkCityGame {
           : 'WASD: ruch / gaz i kierownica · E: wsiądź / wysiądź · spacja: hamulec · Shift: Bulk Boost · F: klakson · P: pauza.') +
         '</p><button class="primary" data-city-action="start">' +
         (air ? '▶ NA LĄDOWISKO' : '▶ WITAJ W VICE IMPORT') +
-        '</button><button data-city-action="exit">Wróć do Apex Souls</button><small>Własne miasto i modele 3D · pełna gra w jednym HTML · zapis checkpointów w tej przeglądarce</small></div>';
+        '</button><button data-city-action="colony">⚔ IMPORTIC · KOLONIA LEGACY</button><button data-city-action="exit">Wróć do Apex Souls</button><small>Własne miasto i modele 3D · pełna gra w jednym HTML · zapis checkpointów w tej przeglądarce</small></div>';
       return;
     }
     const failed = state === 'failed',
@@ -262,7 +298,7 @@ class BulkCityGame {
       (failed ? '↻ KONTYNUUJ OD CHECKPOINTU' : won ? '🚗 SWOBODNA JAZDA' : '▶ WZNÓW') +
       '</button>' +
       (won ? '<button data-city-action="new">Nowa historia od pierwszej misji</button>' : '') +
-      '<button data-city-action="exit">Wróć do Apex Souls</button></div>';
+      '<button data-city-action="colony">⚔ IMPORTIC · KOLONIA LEGACY</button><button data-city-action="exit">Wróć do Apex Souls</button></div>';
   }
   hud() {
     const g = this.game,
@@ -312,15 +348,18 @@ class BulkCityGame {
     this.$('city-controls').textContent = flight
       ? 'WASD: lot · spacja: wzlot · X: opadanie · F: zrzut · P: pauza · M: radio'
       : 'WASD: ruch / auto · E: pojazd · spacja: hamulec ręczny · Shift: sprint / Bulk Boost · F: klakson · P: pauza';
-    this.$('city-prompt').textContent = flight
-      ? g.phase === 'return'
-        ? 'LĄDOWISKO H · ZNIŻAJ (X), ZATRZYMAJ SIĘ'
-        : g.phase === 'free'
-          ? 'LOT SWOBODNY'
-          : (objective.name || 'Lądowisko') + ' · RÓŻOWY ZNACZNIK'
-      : g.mode === 'car'
-        ? 'E · WYSIĄDŹ PO ZATRZYMANIU'
-        : 'E · WSIĄDŹ DO POJAZDU';
+    this.$('city-prompt').textContent =
+      g.mode === 'foot' && Math.hypot(a.x - BulkCity.PORTAL.x, a.z - BulkCity.PORTAL.z) < 4
+        ? 'E · PORTAL DO KOLONII LEGACY'
+        : flight
+          ? g.phase === 'return'
+            ? 'LĄDOWISKO H · ZNIŻAJ (X), ZATRZYMAJ SIĘ'
+            : g.phase === 'free'
+              ? 'LOT SWOBODNY'
+              : (objective.name || 'Lądowisko') + ' · RÓŻOWY ZNACZNIK'
+          : g.mode === 'car'
+            ? 'E · WYSIĄDŹ PO ZATRZYMANIU'
+            : 'E · WSIĄDŹ DO POJAZDU';
     this.$('city-up').textContent = flight ? 'Wzlot ↑' : 'Hamulec';
     this.$('city-down').hidden = !flight;
     this.$('city-drop').textContent = flight ? 'Zrzut DELETE' : 'Klakson F';
@@ -349,6 +388,7 @@ class BulkCityGame {
       p.arc(q[0], q[1], r, 0, Math.PI * 2);
       p.fill();
     };
+    dot(BulkCity.PORTAL.x, BulkCity.PORTAL.z, '#c4a3f4', 5);
     if (g.phase === 'pickup') dot(BulkCity.PICKUP.x, BulkCity.PICKUP.z, '#ffdb7e', 6);
     dot(BulkCity.PAD.x, BulkCity.PAD.z, '#67ffdb', 6);
     if (g.progress.stage === 1)
@@ -400,7 +440,7 @@ class BulkCityGame {
     }
   }
   frame(now) {
-    if (this.dead) return;
+    if (this.dead || this.suspended) return;
     this.raf = requestAnimationFrame(this.frame);
     const dt = Math.min(0.1, Math.max(0, (now - this.last) / 1000));
     this.last = now;

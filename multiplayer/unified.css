@@ -100,7 +100,8 @@ body[data-screen='double'],
 body[data-screen='sudoku'],
 body[data-screen='runner'],
 body[data-screen='souls'],
-body[data-screen='city'] {
+body[data-screen='city'],
+body[data-screen='colony'] {
   overflow: hidden;
 }
 @media (max-width: 700px) {

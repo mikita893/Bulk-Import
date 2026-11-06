@@ -1,6 +1,6 @@
 # Czytelne źródła Bulk Import
 
-Ta gałąź, `dev/readable-source`, zawiera tę samą grę v26 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
+Ta gałąź, `dev/readable-source`, zawiera tę samą grę v27 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
 
 ## Pierwsze uruchomienie
 
@@ -12,7 +12,7 @@ npm run build:client
 npm start
 ```
 
-Otwórz http://localhost:3000. Sam `Bulk-Import-v26.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
+Otwórz http://localhost:3000. Sam `Bulk-Import-v27.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
 
 ## Mapa modułów
 
@@ -185,3 +185,19 @@ Wejście jest wyłącznie z ukończonego Apex Souls (`progress.wins > 0`). `Bulk
 Zapis `bulk-import-grand-theft-csv-v1` (schema 1) zawiera etap, cztery zrzuty, kredyty, wygrane, kraksy i czas lotu. `retry`/wczytanie resetują pojazdy i zegar, zachowując zakończone zrzuty. Jazda swobodna po historii nie uruchamia limitu czasu. Nowa historia zachowuje liczniki wygranych/kraks i rekord, resetując cele oraz kredyty. Stare formaty kampanii i minigier bez zmian.
 
 `tests/city.test.cjs` przechodzi obie misje legalnymi wejściami, bez teleportowania czy uzupełniania życia, i sprawdza kolizje, boost, drony, zegary, zapis, próby i swobodną jazdę. `runner-browser.cjs` rozszerza pełne zagnieżdżenie o rzeczywistą jazdę/lot/dotyk, cztery zrzuty, fizyczną kraksę i retry, lądowanie, zwycięstwo, ponowne odczytanie zapisu, zamrożenie rodziców i GPU. `pages-browser.cjs` dodatkowo testuje nową grę w statycznej ramce z prawdziwym localStorage. Szczegóły: [DESIGN-v26.md](DESIGN-v26.md).
+
+## v27: Importic — kolonia RPG z Vice Import
+
+Wejście jest z `city`, bez wymogu ukończenia jego fabuły: pieszo przy `BulkCity.PORTAL` na E albo przycisk `colony` na ekranie wejścia/pauzy. `openColony` sprawdza ekran i brak aktywnej partii online. Nie dodawaj skrótu w menu głównym ani terminalu. `BulkCityGame.suspendForMinigame` pauzuje model i zatrzymuje RAF, wejście, audio oraz resize. `resumeFromMinigame` zeruje zegar i odtwarza ten sam model; celowo pozostawia trwającą wcześniej misję w pauzie. Dzięki temu podczas lotu nie tracimy wysokości ani czasu, zanim gracz wznowi miasto.
+
+- `colony-sim.js`: czysty model `Game`, poziomy, frakcje, zadania, dialogi i handel. `quest` 0–5 wyznacza kolejno przepustkę, frakcję, ruiny, raport, finał i ukończenie. `nearby`/`action('interact')` są wspólną bramką do NPC, rudy, skrzyni i ogniska. Nie przyznawaj nagród ani przedmiotów w samym UI.
+- `fresh`, `valid`, `read`, `snapshot`: schema 1, klucz `bulk-import-colony-legacy-v1`. Walidacja sprawdza m.in. zgodność `lp + strength + 2 * vitality = 3 * (level - 1)`, osiem złóż, unikalne ID zabitych wrogów oraz warunki fabularne. `spawn`/retry/wczytanie odtwarzają bezpieczny punkt, zachowując postęp; niedokończona walka wraca do pełnego życia przeciwnika.
+- `NPCS`, `HUTS`, `TREES`, `ORE`, `FIRE`, `CHEST`, `MINE`, `height` są wspólne dla fizyki, renderera i mapy. Oś z maleje w kierunku północy. Brama obozu jest zamknięta przed oddaniem rudy. Nie blokuj początkowych złóż ani dojścia do NPC; po zmianie mapy zaktualizuj trasę pełnego testu fabuły.
+- `dialogue` zwraca wyłącznie aktualne, dozwolone wybory i ich stan disabled. `choose` ponownie je waliduje. Pierwsze przywitanie zmienia przychylność tylko raz, a ceny zależą od aktualnej przychylności. Wybór frakcji jest jednorazowy. Zmiana statystyk i zakup muszą zużywać PN/rudę atomowo. Złoża, skrzynia, pokonanie wroga i raport nie mogą naliczać nagród ponownie.
+- Walka: koszty wytrzymałości, opóźnione trafienie i zakres kierunkowy; odskok ma krótkie okno nietykalności. Blok działa z przodu. Ognisty Upsert zużywa skupienie i tworzy ograniczony pocisk, który zatrzymują drzewa i ściany. Krzyk Walidacji zużywa wytrzymałość i działa w obszarze. `tick` dzieli czas na 1/120 s z ograniczeniem nadrabiania. Dialog, pauza i dziennik zamrażają świat.
+- `colony-render.js`: jeden teren, wspólne geometrie, instancjonowane mury/drzewa/domki/ruda, proceduralni ludzie i stworzenia. Cache wrogów jest ograniczony do siedmiu ID. Zapowiedzi sektorów korzystają z modelowego kąta i zasięgu. Pula magicznych pocisków 6, cząstek 40, budżet pikseli około 900 tys. Poziomy terenu muszą być identyczne dla modeli i mapy kolizji.
+- `colony-game.js/css`: dziennik, karta postaci, dialogi, własne portrety SVG reagujące na przychylność, sterowanie klawiaturą i wskaźnikami, minimapa, audio i zapis. Czyść klawisze po dialogu/panelu, blur i powrocie. W panelach nie nadrabiaj upływu czasu. Dźwięk przyjętej akcji odtwarzaj w kontrolerze; `tick` resetuje listę zdarzeń. Wyniki trafień i zadań w pętli pochodzą ze zdarzeń modelu. Wszystkie źródła audio respektują główne wyciszenie.
+
+`tests/colony.test.cjs` zawiera pełną legalną trasę dla każdej frakcji: ruch, walkę, wydobywanie, rozmowy, zakupy, naukę, ruiny, raport i bossa. Nie podmienia życia ani pozycji w tym teście. Osobne scenariusze izolują koszty, dialogi, bramki, zapis i pauzę. `runner-browser.cjs` przechodzi rzeczywisty portal oraz cały interfejs nowego RPG i sprawdza m.in. powrót do niezmienionego, zapauzowanego miasta. Czekaj na klatkę renderera przy sprawdzaniu bramy; stan zadania aktualizuje się wcześniej niż widoczność obiektu 3D. `pages-browser.cjs` sprawdza wejście z pauzy nieukończonego miasta i zachowanie zapisu po przeładowaniu strony.
+
+Formaty wcześniejszych gier i wszystkie archiwalne HTML pozostają bez zmian. Szczegóły: [DESIGN-v27.md](DESIGN-v27.md).
