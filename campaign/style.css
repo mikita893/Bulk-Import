@@ -1357,3 +1357,18 @@ body[data-encounter='excel'] #boss-hud {
     font-size: 9px;
   }
 }
+
+.hero-line {
+  border-left: 2px solid #90d7da;
+  padding: 10px 13px;
+  background: #0e2633;
+  color: #bbdce1;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.hero-line b {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #91daca;
+  margin-right: 6px;
+}

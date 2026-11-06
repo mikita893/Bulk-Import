@@ -37,7 +37,7 @@ const { createGameServer } = require('../server/index.cjs'),
     let frame = await (await page.locator('#campaign-frame').elementHandle()).contentFrame();
     console.log('dubbing: campaign boot');
     await frame.locator('#voice-settings').click();
-    assert.equal(await frame.locator('[data-voice-sample]').count(), 6);
+    assert.equal(await frame.locator('[data-voice-sample]').count(), 7);
     await frame.getByRole('button', { name: 'Wróć', exact: true }).click();
     assert(
       await frame.getByRole('button', { name: '▶ ROZPOCZNIJ KAMPANIĘ', exact: true }).isVisible(),
@@ -69,7 +69,12 @@ const { createGameServer } = require('../server/index.cjs'),
     assert(await frame.evaluate(() => dubbing.current.clip.text === crewScene(0, 0).line));
     const reply = await frame.evaluate(() => crewScene(0, 0).answers[0][3]);
     await frame.getByRole('button', { name: /Zrobimy kopię i przetestujemy/ }).click();
-    assert.equal(await frame.evaluate(() => dubbing.current.clip.text), reply);
+    assert.equal(await frame.evaluate(() => dubbing.current.clip.speaker), 'hero');
+    assert((await frame.locator('.hero-line').textContent()).includes('Zrobimy kopię'));
+    await frame.waitForFunction(
+      (text) => dubbing.current?.clip.speaker === 'vael' && dubbing.current?.clip.text === text,
+      reply,
+    );
     assert((await frame.locator('.crew-line').textContent()).includes(reply));
     await frame.locator('#voice-settings').click();
     await frame.locator('#voice-enabled').uncheck();
@@ -80,7 +85,7 @@ const { createGameServer } = require('../server/index.cjs'),
     await frame.locator('#voice-enabled').check();
     await frame.locator('#voice-volume').fill('45');
     assert.equal(await frame.locator('#voice-volume-value').textContent(), '45%');
-    for (const speaker of ['syra', 'excel', 'reaper', 'marc', 'ship']) {
+    for (const speaker of ['hero', 'syra', 'excel', 'reaper', 'marc', 'ship']) {
       await frame.locator('[data-voice-sample="' + speaker + '"]').click();
       await frame.waitForFunction(
         (s) =>
@@ -90,7 +95,7 @@ const { createGameServer } = require('../server/index.cjs'),
         speaker,
       );
     }
-    console.log('dubbing: six samples played');
+    console.log('dubbing: seven samples played');
     await page.setViewportSize({ width: 430, height: 932 });
     assert(await frame.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
     await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-dubbing-mobile.png' });
@@ -123,6 +128,34 @@ const { createGameServer } = require('../server/index.cjs'),
       ),
     );
     await frame.getByRole('button', { name: '▶ Wznów', exact: true }).click();
+    await frame.evaluate(() => {
+      dubbing.stop();
+      run = null;
+      mode = 'hub';
+      progress.credits = 10000;
+      buildEnvironment('hub');
+      hud();
+    });
+    await frame.locator('#shop').click();
+    await frame.locator('[data-upgrade="damage"]').click();
+    assert(await frame.evaluate(() => soundEffects.counts.upgrade >= 1));
+    await frame.getByRole('button', { name: 'Wróć na statek', exact: true }).click();
+    await frame.evaluate(() => {
+      beginMission(0);
+      run.clock = 999;
+      indo = 999;
+      inv = 999;
+      dubbing.stop();
+    });
+    await frame.locator('#world').click({ position: { x: 500, y: 300 } });
+    await frame.evaluate(() => {
+      mouse.down = false;
+    });
+    const shots = await frame.evaluate(() => soundEffects.counts.shot || 0);
+    await page.keyboard.down('Space');
+    await frame.waitForFunction((n) => (soundEffects.counts.shot || 0) > n, shots);
+    await page.keyboard.up('Space');
+    assert(await frame.evaluate(() => soundEffects.active.size <= 32));
     await frame.evaluate(() => notify('EXCEL: „Scal komórki” / test'));
     await frame.waitForFunction(() => dubbing.audio.currentTime > 0.05);
     await frame.locator('#audio').click();
@@ -155,7 +188,7 @@ const { createGameServer } = require('../server/index.cjs'),
       await context.close();
       return count;
     });
-    assert(decoded >= 180);
+    assert(decoded >= 290);
     assert.deepEqual(traffic, []);
     await context.close();
     // Same-origin reload preserves dubbing preferences independently from campaign saves.
@@ -182,7 +215,7 @@ const { createGameServer } = require('../server/index.cjs'),
     console.log(
       'PASS prerecorded dubbing: ' +
         decoded +
-        ' real MP3s decoded with nonzero audio, standalone/no traffic, six voices, actual playback progress, crew questions/replies, skip/replay, volume/mute, Marc priority, pause/navigation cleanup, settings overlay/return, mobile and saved preferences.',
+        ' real MP3s decoded with nonzero audio, standalone/no traffic, seven voices, actual playback progress, crew questions/replies, skip/replay, volume/mute, Marc priority, pause/navigation cleanup, settings overlay/return, mobile and saved preferences.',
     );
   } finally {
     await browser?.close();

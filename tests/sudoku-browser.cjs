@@ -166,6 +166,10 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     const completeTime = await page.evaluate(() => BulkUnified.sudoku.game.elapsed);
     await sleep(400);
     assert.equal(await page.evaluate(() => BulkUnified.sudoku.game.elapsed), completeTime);
+    await page.waitForFunction(() => BulkUnified.screen === 'runner');
+    assert(await page.locator('#runner-world').isVisible());
+    await page.locator('#unified-back').click();
+    await page.waitForFunction(() => BulkUnified.screen === 'sudoku');
     await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-sudoku-complete.png' });
     assert.equal(
       await page.evaluate(() => JSON.stringify(BulkUnified.double.model)),

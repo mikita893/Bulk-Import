@@ -9,3 +9,5 @@ package-lock.json
 voice/clips/
 voice/models/
 scripts/*.py
+
+assets/**/*.webp

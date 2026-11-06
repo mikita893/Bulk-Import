@@ -1,0 +1,243 @@
+#runner-host {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: #172d40;
+  color: #fff;
+}
+.run-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  touch-action: none;
+}
+.run-page canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+.run-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(#07162c99, transparent 30%, transparent 65%, #081a2dcc);
+}
+.run-top {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  top: 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+.run-top small,
+.run-eyebrow {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #b9f7ee;
+}
+.run-top h1 {
+  font: bold clamp(24px, 4vw, 48px) Arial;
+  letter-spacing: -2px;
+  margin: 7px 0;
+  text-shadow: 0 3px 0 #102e43;
+}
+.run-top h1 span {
+  color: #ffc06a;
+  margin-left: 5px;
+}
+.run-top button {
+  background: #142d47cc;
+  border: 1px solid #a9cfdb88;
+  color: #fff;
+}
+.run-hud {
+  position: absolute;
+  left: 28px;
+  top: 115px;
+  display: flex;
+  gap: 25px;
+  padding: 12px 18px;
+  background: #0c233acb;
+  border: 1px solid #addbd655;
+  border-radius: 9px;
+}
+.run-hud > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.run-hud small {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #a5ddd8;
+}
+.run-hud b {
+  font-size: 22px;
+  color: #ffe4b6;
+}
+.run-bottom {
+  position: absolute;
+  bottom: 20px;
+  left: 28px;
+  right: 28px;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 2px 5px #000;
+}
+.run-bottom p {
+  font-size: 13px;
+  margin: 9px 0;
+  color: #c8ffff;
+}
+.run-bottom small {
+  font-size: 11px;
+  color: #d3d9e9;
+}
+#runner-lives {
+  font-size: 25px;
+  color: #ffbbaa;
+}
+#runner-powers {
+  color: #ffe6a0;
+  min-height: 18px;
+}
+.run-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #07172b66;
+  backdrop-filter: blur(3px);
+  padding: 20px;
+}
+.run-cover > div {
+  max-width: 550px;
+  background: linear-gradient(145deg, #163b50f5, #0d2035fa);
+  border: 1px solid #99e4d477;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 18px 90px #07121b88;
+}
+.run-cover h2 {
+  font: 700 clamp(28px, 4vw, 47px)/1.05 Arial;
+  letter-spacing: -1.5px;
+  color: #f9f1df;
+  margin: 20px 0;
+}
+.run-cover h2 em {
+  font-style: normal;
+  color: #8ae9dc;
+}
+.run-cover p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #c0d5dc;
+}
+.run-cover button {
+  display: block;
+  width: 100%;
+  margin: 12px 0;
+  font-size: 12px;
+  min-height: 45px;
+}
+.run-cover small {
+  display: block;
+  font-size: 10px;
+  color: #a7c5d6;
+  line-height: 1.6;
+}
+.run-cover .primary {
+  background: #9de2c9;
+  color: #112c36;
+  border-color: #d4f9e5;
+}
+.run-touch {
+  display: none;
+  position: absolute;
+  bottom: 110px;
+  left: 12px;
+  right: 12px;
+  justify-content: space-between;
+  pointer-events: none;
+  gap: 8px;
+}
+.run-touch button {
+  pointer-events: auto;
+  width: 54px;
+  height: 50px;
+  background: #102c4bbf;
+  border: 1px solid #92cfda88;
+  border-radius: 12px;
+  font-size: 24px;
+  touch-action: manipulation;
+  color: #ecfbff;
+}
+@media (pointer: coarse), (max-width: 700px) {
+  .run-touch {
+    display: flex;
+  }
+  .run-top {
+    left: 14px;
+    right: 14px;
+    top: 12px;
+  }
+  .run-top small {
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+  .run-top h1 {
+    font-size: 25px;
+    letter-spacing: -1px;
+  }
+  .run-top button {
+    padding: 8px;
+    font-size: 10px;
+  }
+  .run-hud {
+    left: 14px;
+    top: 85px;
+    gap: 16px;
+    padding: 10px 12px;
+    max-width: calc(100% - 28px);
+  }
+  .run-hud b {
+    font-size: 18px;
+  }
+  .run-hud small {
+    font-size: 8px;
+  }
+  .run-bottom {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+  }
+  .run-bottom small {
+    display: none;
+  }
+  .run-bottom p {
+    font-size: 11px;
+  }
+  .run-cover {
+    padding: 12px;
+  }
+  .run-cover > div {
+    padding: 22px;
+  }
+  .run-cover p {
+    font-size: 12px;
+  }
+  .run-cover h2 {
+    font-size: 31px;
+  }
+  .run-touch {
+    bottom: 105px;
+  }
+}

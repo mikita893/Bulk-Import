@@ -22,12 +22,13 @@ function refreshDubbingUI(state) {
     skip.disabled = !dubbing.current;
   }
 }
-function speakCrew(i, text) {
+function speakCrew(i, text, playerLine = null) {
   const speaker = i === 0 ? 'vael' : 'syra',
     ending = ' Nasz związek się kończy. Potrzebuję dystansu.';
   const hasEnding = text.endsWith(ending);
   if (hasEnding) text = text.slice(0, -ending.length);
-  dubbing.play(speaker, text, { kind: 'dialogue', priority: 4 });
+  if (playerLine) dubbing.play('hero', playerLine, { kind: 'dialogue', priority: 4 });
+  dubbing.play(speaker, text, { kind: playerLine ? 'dialogueTail' : 'dialogue', priority: 4 });
   if (hasEnding) dubbing.play(speaker, ending.trim(), { kind: 'dialogueTail', priority: 4 });
   const target = $('panel-body').querySelector('.crew-line');
   if (!target) return;
@@ -37,7 +38,9 @@ function speakCrew(i, text) {
   replay.id = 'dialogue-replay';
   replay.textContent = '▶ Powtórz kwestię';
   replay.onclick = () => {
-    dubbing.play(speaker, text, { kind: 'dialogue', priority: 4 });
+    dubbing.stop();
+    if (playerLine) dubbing.play('hero', playerLine, { kind: 'dialogue', priority: 4 });
+    dubbing.play(speaker, text, { kind: playerLine ? 'dialogueTail' : 'dialogue', priority: 4 });
   };
   const skip = document.createElement('button');
   skip.id = 'dialogue-skip';
@@ -128,4 +131,22 @@ function dubbingMenu() {
   }
   button('Zatrzymaj odsłuch', () => dubbing.stop());
   button('Wróć', back);
+}
+
+const heroBarkTimers = { next: 0, types: {}, index: 0 };
+function heroBark(kind) {
+  if (
+    mode !== 'combat' ||
+    !HERO_BARKS[kind] ||
+    dubbing.current ||
+    time < heroBarkTimers.next ||
+    time < (heroBarkTimers.types[kind] || 0)
+  )
+    return;
+  const lines = HERO_BARKS[kind],
+    line = lines[heroBarkTimers.index++ % lines.length];
+  if (dubbing.play('hero', line, { priority: 0, cooldown: 25 })) {
+    heroBarkTimers.next = time + 6;
+    heroBarkTimers.types[kind] = time + (kind === 'shot' ? 28 : 18);
+  }
 }

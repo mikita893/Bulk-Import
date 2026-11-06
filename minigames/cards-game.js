@@ -31,12 +31,7 @@ class BulkCardGame {
       title="${c.name}. ${tip}"
       aria-label="${c.name}, moc ${power}. ${tip}"
     >
-      <b class="gw-power">${power}</b
-      ><svg class="gw-art" viewBox="0 0 100 90" aria-hidden="true">
-        <path d="M50 4 92 28 87 71 50 88 13 71 8 28Z" />
-        <path d="M18 28 50 12 82 28 76 66 50 78 24 66Z" />
-        <text x="50" y="55">${c.icon.replaceAll('&', '&amp;')}</text></svg
-      ><strong>${c.name}</strong
+      <b class="gw-power">${power}</b>${BulkCardArt.markup(id)}<strong>${c.name}</strong
       ><small
         >${c.ability ? { bond: 'WIĘŹ', morale: 'MORALE', medic: 'BACKUP', spy: 'SZPIEG', hero: 'BOHATER', horn: 'KEYNOTE', frost: 'FREEZE', fog: 'MGŁA', rain: 'DESZCZ', clear: 'REFRESH', scorch: 'DELETE', decoy: 'PODMIANA' }[c.ability] : this.rules.CARD_ROW_NAMES[c.row]}</small
       >
@@ -85,7 +80,7 @@ class BulkCardGame {
           .map((id) => {
             const o = R.CARD_OPPONENTS[id];
             return /* HTML */ `<article>
-              <div class="gw-avatar">${id === 'vael' ? '◈' : id === 'syra' ? '⚙' : '▦'}</div>
+              ${BulkCardArt.markup(id === 'vael' ? 'prize-vael' : id === 'syra' ? 'prize-syra' : 'xl-hero', 'gw-avatar')}
               <h2>${o.name}</h2>
               <small>${o.title} · ${['', 'Rekrut', 'Taktyk', 'Ekspert'][o.level]}</small>
               <p>„${o.quote}”</p>

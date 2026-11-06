@@ -1,0 +1,251 @@
+'use strict';
+class BulkRunnerGame {
+  constructor(host, { storage, onExit, soundEnabled = () => true } = {}) {
+    this.host = host;
+    this.storage = storage;
+    this.onExit = onExit;
+    this.dead = false;
+    this.saved = false;
+    this.record = BulkRunner.readRecord(null);
+    try {
+      this.record = BulkRunner.readRecord(storage.getItem('bulk-import-metro-runner-v1'));
+    } catch (e) {}
+    this.game = new BulkRunner.Game();
+    this.last = performance.now();
+    this.uiAt = 0;
+    this.effects = new BulkEffects.Effects({ enabled: soundEnabled });
+    host.innerHTML =
+      '<div class="run-page"><canvas id="runner-world" aria-label="Metro Import: trójwymiarowy bieg przez trzy tory"></canvas><div class="run-vignette"></div><div class="run-top"><div><small>METRO IMPORT / UCIECZKA PRZED AUDYTEM</small><h1>METRO<span>IMPORT</span></h1></div><button data-run-action="pause">Ⅱ Pauza</button></div><div class="run-hud"><div><small>DYSTANS</small><b id="runner-distance">0 m</b></div><div><small>CSV</small><b id="runner-coins">0</b></div><div><small>WYNIK</small><b id="runner-score">0</b></div><div><small>REKORD</small><b id="runner-best">' +
+      this.record.score +
+      '</b></div></div><div class="run-bottom"><div id="runner-lives" aria-label="Pozostałe życie">♥ ♥ ♥</div><p id="runner-powers"></p><p id="runner-message" role="status">Sudoku zaliczone. Teraz spróbuj uciec przed audytem!</p><small>← → / A D: tory · ↑ / W / spacja: skok · ↓ / S: ślizg · P: pauza</small></div><div class="run-touch" aria-label="Sterowanie dotykowe"><button data-run-action="left" aria-label="Lewy tor">←</button><button data-run-action="jump" aria-label="Skok">↑</button><button data-run-action="slide" aria-label="Ślizg">↓</button><button data-run-action="right" aria-label="Prawy tor">→</button></div><div class="run-cover" id="runner-cover"></div></div>';
+    try {
+      this.view = new BulkRunnerRenderer(host.querySelector('#runner-world'));
+    } catch (e) {
+      host.querySelector('#runner-cover').innerHTML =
+        '<div><h2>Potrzebny WebGL</h2><p>Włącz akcelerację sprzętową w przeglądarce.</p><button data-run-action="exit">Wróć do Sudoku</button></div>';
+      this.renderError = true;
+    }
+    this.onClick = (e) => {
+      const b = e.target.closest('[data-run-action]');
+      if (b && host.contains(b)) this.action(b.dataset.runAction);
+    };
+    this.onKey = (e) => {
+      const map = {
+        ArrowLeft: 'left',
+        KeyA: 'left',
+        ArrowRight: 'right',
+        KeyD: 'right',
+        ArrowUp: 'jump',
+        KeyW: 'jump',
+        Space: 'jump',
+        ArrowDown: 'slide',
+        KeyS: 'slide',
+        KeyP: 'pause',
+        Escape: 'pause',
+      };
+      if (
+        !map[e.code] ||
+        e.ctrlKey ||
+        e.metaKey ||
+        e.altKey ||
+        ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)
+      )
+        return;
+      e.preventDefault();
+      if (!e.repeat) this.action(map[e.code]);
+    };
+    this.onBlur = () => this.pause();
+    this.onHidden = () => {
+      if (document.hidden) this.pause();
+    };
+    this.onResize = () => this.view?.resize();
+    this.onPointerDown = (e) => {
+      if (e.target.closest('button')) {
+        this.swipe = null;
+        return;
+      }
+      this.swipe = { x: e.clientX, y: e.clientY, id: e.pointerId };
+      host.querySelector('canvas').setPointerCapture?.(e.pointerId);
+    };
+    this.onPointerUp = (e) => {
+      if (!this.swipe || this.swipe.id !== e.pointerId) return;
+      const dx = e.clientX - this.swipe.x,
+        dy = e.clientY - this.swipe.y;
+      this.swipe = null;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+      this.action(
+        Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'jump' : 'slide',
+      );
+    };
+    this.onPointerCancel = () => {
+      this.swipe = null;
+    };
+    host.addEventListener('pointercancel', this.onPointerCancel);
+    host.addEventListener('click', this.onClick);
+    host.addEventListener('pointerdown', this.onPointerDown);
+    host.addEventListener('pointerup', this.onPointerUp);
+    window.addEventListener('keydown', this.onKey);
+    window.addEventListener('blur', this.onBlur);
+    window.addEventListener('resize', this.onResize);
+    document.addEventListener('visibilitychange', this.onHidden);
+    if (!this.renderError) this.cover();
+    this.frame = this.frame.bind(this);
+    this.raf = requestAnimationFrame(this.frame);
+  }
+  $(id) {
+    return this.host.querySelector('#' + id);
+  }
+  action(action) {
+    if (this.dead) return;
+    if (action === 'exit') {
+      this.onExit?.();
+      return;
+    }
+    if (this.renderError) return;
+    if (action === 'start' || action === 'restart') {
+      if (action === 'restart') this.game = new BulkRunner.Game();
+      this.game.start();
+      this.last = performance.now();
+      this.saved = false;
+      this.effects.play('powerup');
+      this.cover();
+      return;
+    }
+    if (action === 'pause') {
+      if (this.game.state === 'playing') this.pause();
+      else if (this.game.state === 'paused') {
+        this.game.resume();
+        this.last = performance.now();
+        this.cover();
+      }
+      return;
+    }
+    if (this.game.action(action)) {
+      if (action === 'jump' || action === 'slide') this.effects.play(action);
+      else this.effects.play('click');
+    }
+  }
+  pause() {
+    if (this.dead || this.game.state !== 'playing') return;
+    this.game.pause();
+    this.effects.stop();
+    this.swipe = null;
+    this.cover();
+  }
+  persist() {
+    this.record = {
+      version: 1,
+      score: Math.max(this.record.score, this.game.score),
+      coins: Math.max(this.record.coins, this.game.coins),
+    };
+    try {
+      this.storage.setItem('bulk-import-metro-runner-v1', JSON.stringify(this.record));
+    } catch (e) {}
+    this.saved = true;
+  }
+  cover() {
+    const state = this.game.state,
+      cover = this.$('runner-cover');
+    if (state === 'playing') {
+      cover.hidden = true;
+      return;
+    }
+    cover.hidden = false;
+    const ready = state === 'ready',
+      over = state === 'over';
+    cover.innerHTML =
+      '<div><div class="run-eyebrow">' +
+      (ready
+        ? 'ODDZIAŁ WALIDACJI → ODDZIAŁ UCIECZKI'
+        : over
+          ? 'AUDYT CIĘ DOPADŁ'
+          : 'PAUZA / CSV NIE UCIEKNĄ') +
+      '</div><h2>' +
+      (ready
+        ? 'Następny przystanek:<br><em>zero duplikatów.</em>'
+        : over
+          ? 'Koniec importu.<br><em>Jeszcze jeden bieg?</em>'
+          : 'Odpoczynek<br><em>od kontroli.</em>') +
+      '</h2><p>' +
+      (ready
+        ? 'Biegnij przez trzy tory. Omijaj pociągi, skacz nad skrzyniami, ślizgaj się pod limitami API. Zbieraj CSV, tarczę, magnes i ZIPsert. Masz trzy szanse.'
+        : over
+          ? 'Wynik: ' +
+            this.game.score +
+            ' · dystans: ' +
+            Math.floor(this.game.distance) +
+            ' m · CSV: ' +
+            this.game.coins +
+            '. Audytor: „U mnie w Excelu wyszło mniej”.'
+          : 'Wznowienie nie nadrabia czasu w tle. Audytor też poszedł po kawę.') +
+      '</p><button class="primary" data-run-action="' +
+      (ready ? 'start' : over ? 'restart' : 'pause') +
+      '">' +
+      (ready ? '▶ ROZPOCZNIJ BIEG' : over ? '↻ NOWY BIEG' : '▶ WZNÓW BIEG') +
+      '</button><button data-run-action="exit">Wróć do ukończonego Sudoku</button><small>Na telefonie: przesuwaj palcem lub używaj przycisków.</small></div>';
+  }
+  frame(now) {
+    if (this.dead) return;
+    this.raf = requestAnimationFrame(this.frame);
+    const dt = Math.min(0.1, Math.max(0, (now - this.last) / 1000));
+    this.last = now;
+    if (document.hidden) return;
+    if (this.game.state === 'playing') {
+      this.game.tick(dt);
+      for (const event of this.game.events) {
+        const sounds = {
+          coin: 'coin',
+          hit: 'hit',
+          absorbed: 'shield',
+          shield: 'powerup',
+          magnet: 'powerup',
+          boost: 'dash',
+        };
+        if (sounds[event]) this.effects.play(sounds[event]);
+        if (event === 'hit')
+          this.$('runner-message').textContent = 'Trafienie! Validation Rule: patrz przed siebie.';
+        if (event === 'boost')
+          this.$('runner-message').textContent = 'ZIPsert! Przez 8 sekund audyt nie ma uprawnień.';
+        if (event === 'magnet')
+          this.$('runner-message').textContent =
+            'Magnes External ID: przyciąga CSV z sąsiednich torów.';
+      }
+      if (this.game.state === 'over') {
+        this.persist();
+        this.cover();
+      }
+    }
+    this.view?.render(this.game, now / 1000);
+    if (now - this.uiAt > 100) {
+      this.uiAt = now;
+      this.$('runner-distance').textContent = Math.floor(this.game.distance) + ' m';
+      this.$('runner-coins').textContent = this.game.coins;
+      this.$('runner-score').textContent = this.game.score;
+      this.$('runner-best').textContent = Math.max(this.record.score, this.game.score);
+      this.$('runner-lives').textContent =
+        '♥ '.repeat(this.game.hearts) + '♡ '.repeat(3 - this.game.hearts);
+      this.$('runner-powers').textContent =
+        (this.game.shields ? 'TARCZA ×' + this.game.shields + ' · ' : '') +
+        (this.game.magnet > 0 ? 'MAGNES ' + Math.ceil(this.game.magnet) + ' s · ' : '') +
+        (this.game.boost > 0 ? 'ZIPsert ' + Math.ceil(this.game.boost) + ' s' : '');
+    }
+  }
+  destroy() {
+    if (this.dead) return;
+    this.persist();
+    this.dead = true;
+    cancelAnimationFrame(this.raf);
+    this.host.removeEventListener('pointercancel', this.onPointerCancel);
+    this.host.removeEventListener('click', this.onClick);
+    this.host.removeEventListener('pointerdown', this.onPointerDown);
+    this.host.removeEventListener('pointerup', this.onPointerUp);
+    window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('blur', this.onBlur);
+    window.removeEventListener('resize', this.onResize);
+    document.removeEventListener('visibilitychange', this.onHidden);
+    this.effects.destroy();
+    this.view?.destroy();
+    this.host.replaceChildren();
+  }
+}
+if (typeof window !== 'undefined') window.BulkRunnerGame = BulkRunnerGame;

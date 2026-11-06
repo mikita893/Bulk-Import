@@ -45,9 +45,9 @@ test('recording catalogue covers every dialogue and ships verified playable-size
   const pack = require('../voice/build.cjs')(),
     rows = catalogue();
   assert.equal(pack.length, rows.length);
-  assert(pack.length >= 180);
+  assert(pack.length >= 290);
   assert.equal(new Set(pack.map((c) => c.id)).size, pack.length);
-  assert.equal(new Set(pack.map((c) => c.speaker)).size, 6);
+  assert.equal(new Set(pack.map((c) => c.speaker)).size, 7);
   for (const c of pack) {
     assert(c.duration > 0.3 && c.duration < 40);
     assert(Buffer.from(c.data, 'base64').length > 2000);

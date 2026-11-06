@@ -6,6 +6,7 @@
 })(typeof window !== 'undefined' ? window : globalThis, function () {
   const STORAGE_KEY = 'bulk-import-dubbing-v1';
   const SPEAKERS = {
+    hero: 'Komandor Admin',
     vael: 'Vael',
     syra: 'Syra',
     excel: 'Excel',

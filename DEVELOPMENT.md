@@ -1,6 +1,6 @@
 # Czytelne źródła Bulk Import
 
-Ta gałąź, `dev/readable-source`, zawiera tę samą grę v22 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
+Ta gałąź, `dev/readable-source`, zawiera tę samą grę v23 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
 
 ## Pierwsze uruchomienie
 
@@ -12,7 +12,7 @@ npm run build:client
 npm start
 ```
 
-Otwórz http://localhost:3000. Sam `Bulk-Import-v22.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
+Otwórz http://localhost:3000. Sam `Bulk-Import-v23.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
 
 ## Mapa modułów
 
@@ -135,3 +135,17 @@ Testy `sudoku.test.cjs` sprawdzają solver, 60 generowanych plansz, ruchy i odcz
 `campaign/dubbing-ui.js` obsługuje napisy komunikatów, przyciski dialogów i panel głośności. Otwarcie ustawień zachowuje węzły i funkcje poprzedniego panelu, a powrót je przywraca. `bulk-import-dubbing-v1` przechowuje wyłącznie wyłącznik i głośność; nie zmieniaj schematów kampanii. Wyciszenie, pauza i nawigacja muszą zatrzymywać głos. Nie używaj Web Speech API jako zamiennika osadzonych nagrań.
 
 `tests/dubbing.test.cjs` sprawdza katalog, odtwarzacz, pamięć i autoplay. `tests/dubbing-browser.cjs` dekoduje wszystkie nagrania, sprawdza niezerowy sygnał i rzeczywisty postęp odtwarzania, wszystkie profile, dialogi/reakcje, sterowanie, priorytety, zapis preferencji, telefon i brak ruchu sieciowego. Adresy Blob są lokalnymi zasobami; testy nadal odrzucają żądania do zewnętrznych plików i usług. Dokument wydania: [DESIGN-v22.md](DESIGN-v22.md).
+
+## v23: karty z postaciami, Metro Import i głos komandora
+
+Atlas `assets/cards/portraits.webp` zawiera szesnaście malowanych archetypów, a `minigames/cards-art.js` mapuje wszystkie 49 kart. Builder dodaje jeden osadzony obraz do CSS. Poszczególne karty przechowują współrzędne kafelka, bez kopii base64 w DOM. Warianty Batch/Flow mogą współdzielić postać. Zachowuj czytelne portrety na stole, w ręce i kolekcji — stare reguły CSS zmniejszające ilustracje do 18 px zostały usunięte.
+
+- `minigames/runner-sim.js`: czysta fizyka, generator z wolnym torem, małe kroki kolizji, trzy życia, tarcza, magnes i ZIPsert. Każdy efekt ma skończony czas lub liczbę ładunków. Model nie zależy od renderera ani FPS.
+- `minigames/runner-render.js`: jedna scena Three.js, animowany człowiek, instancjonowane obiekty i stałe geometrie. Nie twórz geometrii w `render`. Wyjście zwalnia renderer, materiały, tekstury i kontekst WebGL.
+- `minigames/runner-game.js`, `runner-game.css`: wejście klawiaturą, gestami i dotykiem, HUD, pauza, start/restart, audio i osobny rekord `bulk-import-metro-runner-v1`.
+- `minigames/sudoku-game.js`, `multiplayer/unified.js`: nowe ukończenie Sudoku otwiera Metro po 0,9 s; stare ukończone plansze mają przycisk. `openRunner` wymaga tej konkretnej ukończonej minigry. Na czas biegu Sudoku zawiesza timery i wejście, pozostawiając wszystkich rodziców zamrożonych. Nie dodawaj wejść w menu ani terminalu.
+- `audio/effects.js`: lokalne warstwy dźwięku, bufor szumu do ponownego użycia, limit 32 źródeł, master mute i ducking. Instancja kampanii nazywa się `soundEffects`, ponieważ `effects` już oznacza grupę Three.js.
+
+Katalog głosu bierze odpowiedzi gracza z tych samych `CREW_SCENES` co tekst UI. Profil `hero` w generatorze dodaje komandora bez ponownego generowania istniejących nagrań załogi. `speakCrew` kolejkuje bohatera i reakcję NPC w jednym kanale. Zmiana sceny przerywa kolejkę, a odtworzenie nie nalicza relacji po raz drugi. Krótkie kwestie walki mają oddzielne ograniczenia częstotliwości. Gra zawiera 290 nagrań, bez usługi TTS przy uruchamianiu.
+
+Nowe testy: `runner.test.cjs` (trasy, fizyka, bonusy, rekord, kompletność atlasu), `runner-browser.cjs` (rzeczywiste ilustracje, pełne zagnieżdżenie, wejście/wyjście, gesty, budżet GPU), `effects.test.cjs` (audio). Testy dubbingu i Pages sprawdzają też odpowiedzi komandora oraz ukończenie Sudoku prowadzące do Metro. Szczegóły: [DESIGN-v23.md](DESIGN-v23.md). Formaty zapisów kampanii i starych minigier pozostają bez zmian.

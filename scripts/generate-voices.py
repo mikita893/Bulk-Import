@@ -18,6 +18,7 @@ import sherpa_onnx
 
 ROOT = Path(__file__).resolve().parents[1]
 PROFILES = {
+    "hero": ("darkman", 1.03, "highpass=f=100,equalizer=f=1300:t=q:w=1:g=1"),
     "vael": ("darkman", .97, "asetrate=22050*0.92,aresample=22050,atempo=1.087,highpass=f=85,equalizer=f=220:t=q:w=1:g=2"),
     "syra": ("gosia", 1.04, "highpass=f=90"),
     "excel": ("darkman", 1.09, "asetrate=22050*1.12,aresample=22050,atempo=0.893,highpass=f=240,tremolo=f=19:d=0.12"),

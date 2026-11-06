@@ -7,6 +7,10 @@ const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const versioned = (value) => value.replaceAll('__VERSION__', String(release.major));
 const json = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
+const cardArtStyle =
+  '\n.gw-art,.gw-avatar{background-image:url(data:image/webp;base64,' +
+  fs.readFileSync(path.join(root, 'assets/cards/portraits.webp')).toString('base64') +
+  ')}\n';
 const bakedConfig = {
   missions: shared.MISSIONS,
   upgrades: shared.UPGRADES,
@@ -48,11 +52,13 @@ const app =
   json(campaign) +
   ';\n' +
   [
+    'audio/effects.js',
     'voice/player.js',
     'minigames/bird-sim.js',
     'minigames/bird-render.js',
     'minigames/bird-game-3.js',
     'minigames/cards-sim.js',
+    'minigames/cards-art.js',
     'minigames/cards-game.js',
     'minigames/symbol-deck.js',
     'minigames/symbol-sim.js',
@@ -60,6 +66,9 @@ const app =
     'minigames/symbol-game.js',
     'minigames/sudoku-sim.js',
     'minigames/sudoku-game.js',
+    'minigames/runner-sim.js',
+    'minigames/runner-render.js',
+    'minigames/runner-game.js',
     'multiplayer/unified.js',
     'multiplayer/render.js',
     'multiplayer/client.js',
@@ -67,17 +76,20 @@ const app =
     .map(read)
     .join('\n');
 const output = versioned(read('multiplayer/client-shell.html'))
-  .replace('/*CLIENT_STYLE*/', () =>
-    [
-      'multiplayer/client.css',
-      'multiplayer/unified.css',
-      'minigames/bird-game-3.css',
-      'minigames/cards-game.css',
-      'minigames/symbol-game.css',
-      'minigames/sudoku-game.css',
-    ]
-      .map(read)
-      .join('\n'),
+  .replace(
+    '/*CLIENT_STYLE*/',
+    () =>
+      [
+        'multiplayer/client.css',
+        'multiplayer/unified.css',
+        'minigames/bird-game-3.css',
+        'minigames/cards-game.css',
+        'minigames/symbol-game.css',
+        'minigames/sudoku-game.css',
+        'minigames/runner-game.css',
+      ]
+        .map(read)
+        .join('\n') + cardArtStyle,
   )
   .replace('<!--THREE_BUNDLE-->', () => vendor)
   .replace('/*CLIENT_APP*/', () => app);
@@ -99,6 +111,6 @@ console.log(
     release.filename +
     ' (' +
     Buffer.byteLength(output) +
-    ' bytes): standalone campaign + multiplayer + Bird Game 3 + Gwintforce + CSV Double + Sudoku',
+    ' bytes): standalone campaign + multiplayer + Bird Game 3 + Gwintforce + CSV Double + Sudoku + Metro Import 3D',
 );
 console.log('GitHub Pages: ' + require('../deploy/pages/build.cjs').buildPages());

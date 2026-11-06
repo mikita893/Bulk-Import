@@ -120,6 +120,10 @@ const dubbing = new window.parent.BulkVoice.Player({
   soundEnabled: () => audioOn,
   onState: refreshDubbingUI,
 });
+const soundEffects = new window.parent.BulkEffects.Effects({
+  enabled: () => audioOn,
+  duck: () => !!dubbing.current,
+});
 const settings = readSettings();
 let renderScale = 1,
   adaptiveRatio = 1,
@@ -153,7 +157,7 @@ function sound(freq = 220, dur = 0.08, type = 'sine', volume = 0.025) {
     o.type = type;
     o.frequency.setValueAtTime(freq, audioCtx.currentTime);
     o.frequency.exponentialRampToValueAtTime(Math.max(30, freq * 0.45), audioCtx.currentTime + dur);
-    g.gain.setValueAtTime(volume, audioCtx.currentTime);
+    g.gain.setValueAtTime(volume * (dubbing.current ? 0.25 : 1), audioCtx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
     o.connect(g).connect(audioCtx.destination);
     o.start();
@@ -957,7 +961,7 @@ function button(t, fn, cls = '', disabled = false) {
   b.className = cls;
   b.disabled = disabled;
   b.onclick = () => {
-    sound(420, 0.04, 'sine', 0.012);
+    soundEffects.play('click');
     fn();
   };
   $('panel-actions').appendChild(b);
@@ -1447,6 +1451,7 @@ function killEnemy(e) {
   if (e.dead) return;
   e.hp = 0;
   e.dead = true;
+  soundEffects.play('kill');
   retireEnemy(e);
   progress.kills++;
   combo = comboTime > 0 ? combo + 1 : 1;
@@ -1600,6 +1605,8 @@ function update(dt) {
     if (m.ready && player.hp < maxHealth() && Math.hypot(player.x - m.x, player.z - m.z) < 1.35) {
       const healed = Math.min(healAmount(), maxHealth() - player.hp);
       player.hp += healed;
+      soundEffects.play('heal');
+      heroBark('heal');
       m.ready = false;
       m.timer = 18;
       burst(m.x, m.z, 0x61ffc1, 18);
@@ -1633,7 +1640,8 @@ function update(dt) {
     bullets.push(b);
     shotClock += interval();
     muzzle = 0.07;
-    sound(400 + Math.random() * 90, 0.065, 'sawtooth', 0.009);
+    soundEffects.play('shot');
+    heroBark('shot');
   }
   if (isExcelMission()) updateExcelEncounter(dt);
   else {
@@ -2119,7 +2127,10 @@ addEventListener('pagehide', save);
 $('voice-settings').onclick = dubbingMenu;
 $('voice-replay').onclick = () => dubbing.replay();
 $('voice-skip').onclick = () => dubbing.skip();
-addEventListener('pagehide', () => dubbing.destroy());
+addEventListener('pagehide', () => {
+  dubbing.destroy();
+  soundEffects.destroy();
+});
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) dubbing.pause();
   else dubbing.resume();
@@ -2134,7 +2145,10 @@ $('pause').onclick = () => {
 };
 $('audio').onclick = () => {
   audioOn = !audioOn;
-  if (!audioOn) dubbing.stop();
+  if (!audioOn) {
+    dubbing.stop();
+    soundEffects.stop();
+  }
   $('audio').textContent = 'DŹWIĘK: ' + (audioOn ? 'ON' : 'OFF');
   if (audioOn) sound();
 };
@@ -2379,6 +2393,8 @@ function dodgeRoll() {
   dashTime = 0.18;
   inv = Math.max(inv, 0.35);
   beginDodgeVisual();
+  soundEffects.play('dash');
+  heroBark('dash');
   burst(player.x, player.z, 0x9cffff, 8);
   sound(230, 0.1, 'sine', 0.018);
 }
@@ -2867,9 +2883,14 @@ function crewMenu() {
   );
   button('Wróć na pokład', back);
 }
-function conversation(i, base, topicIndex = null, reply = null) {
+function conversation(i, base, topicIndex = null, reply = null, playerLine = null) {
   if (!crewAvailable(i)) {
     showDepartedCrew(i, base);
+    speakCrew(
+      i,
+      reply || progress.crew[i].lastOutcome?.text || 'Nasza wspólna służba dobiegła końca.',
+      playerLine,
+    );
     return;
   }
   const c = progress.crew[i];
@@ -2902,7 +2923,7 @@ function conversation(i, base, topicIndex = null, reply = null) {
       .forEach((answer, n) =>
         button(String(n + 1) + '. ' + answer[0], () => {
           applyCrewAnswer(i, t.key, answer);
-          conversation(i, base, null, c.lastOutcome.text);
+          conversation(i, base, null, c.lastOutcome.text, answer[0]);
         }),
       );
     button('Wróć do tematów bez odpowiedzi', () => conversation(i, base));
@@ -2927,9 +2948,14 @@ function conversation(i, base, topicIndex = null, reply = null) {
   $('panel-body').innerHTML = relationshipPanel(
     i,
     c,
-    '<p class="crew-line">„' + (reply || greeting) + '”</p>',
+    (playerLine
+      ? '<p class="hero-line"><b>KOMANDOR:</b> ' + relationshipEscape(playerLine) + '</p>'
+      : '') +
+      '<p class="crew-line">„' +
+      (reply || greeting) +
+      '”</p>',
   );
-  speakCrew(i, reply || greeting);
+  speakCrew(i, reply || greeting, playerLine);
   CREW_TOPICS.forEach((topic, n) => {
     const used = c.usedTopics.includes(topic.key);
     button(
@@ -2953,7 +2979,7 @@ function conversation(i, base, topicIndex = null, reply = null) {
             ? 'Dziękuję. Szczere przeprosiny nie kasują pamięci, ale otwierają nowy rozdział.'
             : 'Przyjmuję. Najważniejsze będzie to, jak potraktujesz mnie w kolejnej rozmowie.',
         ]);
-        conversation(i, base, null, c.lastOutcome.text);
+        conversation(i, base, null, c.lastOutcome.text, HERO_LINES.apology);
       },
       '',
       c.usedTopics.includes('apology'),
@@ -2974,7 +3000,7 @@ function conversation(i, base, topicIndex = null, reply = null) {
         };
         save();
         hud();
-        conversation(i, base, null, c.lastOutcome.text);
+        conversation(i, base, null, c.lastOutcome.text, HERO_LINES.romance);
         notify('♥ ' + c.name + ' odwzajemnia uczucia. Związek zapisany.');
         sound(650, 0.3, 'sine', 0.03);
         if (typeof buildEnvironment === 'function') buildEnvironment('hub');
@@ -3000,7 +3026,7 @@ function conversation(i, base, topicIndex = null, reply = null) {
       };
       save();
       hud();
-      conversation(i, base, null, c.lastOutcome.text);
+      conversation(i, base, null, c.lastOutcome.text, HERO_LINES.friendship);
     });
   if (partner)
     button(
@@ -3023,7 +3049,7 @@ function conversation(i, base, topicIndex = null, reply = null) {
           };
           save();
           hud();
-          conversation(i, base, null, c.lastOutcome.text);
+          conversation(i, base, null, c.lastOutcome.text, HERO_LINES.breakup);
         });
         button('Wróć do rozmowy', () => conversation(i, base));
       },
@@ -4126,7 +4152,8 @@ function hurtPlayer(n) {
   const hit = applyIncomingDamage(n);
   if (hit.blocked || (!hit.healthDamage && !hit.shieldDamage)) return hit;
   shake = 0.28;
-  sound(hit.healthDamage > 0 ? 95 : 190, 0.12, 'triangle', 0.035);
+  soundEffects.play(hit.healthDamage > 0 ? 'hit' : 'shield');
+  if (hit.healthDamage > 0) heroBark('hit');
   hud();
   return hit;
 }
@@ -4252,9 +4279,9 @@ function shopMenu() {
       const scroll = tile.closest('.card').scrollTop,
         key = tile.dataset.upgrade;
       if (buyUpgrade(key)) {
-        sound(420, 0.04, 'sine', 0.012);
         mode = base;
         shopMenu();
+        soundEffects.play('upgrade');
         const next = $('panel-body').querySelector('[data-upgrade="' + key + '"]');
         next.closest('.card').scrollTop = scroll;
         if (!next.disabled) next.focus({ preventScroll: true });
@@ -6402,9 +6429,15 @@ installBetrayalTypes();
 window.BulkCampaign = Object.freeze({
   dispose() {
     dubbing.destroy();
+    soundEffects.destroy();
+    audioCtx?.close().catch(() => {});
+    audioCtx = null;
   },
   suspend() {
     dubbing.stop();
+    soundEffects.stop();
+    audioCtx?.close().catch(() => {});
+    audioCtx = null;
     shellSuspended = true;
     keys = {};
     mouse.down = mouse.right = false;

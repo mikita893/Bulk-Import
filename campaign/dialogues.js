@@ -991,6 +991,19 @@ const VOICE_EVENTS = [
     cooldown: 25,
   },
 ];
+const HERO_LINES = {
+  apology: 'Przepraszam. Chcę lepiej słuchać i poprzeć to działaniem.',
+  romance: 'Chcę z tobą być. Czy ty też?',
+  friendship: 'Chcę rozwijać naszą przyjaźń.',
+  breakup: 'To trudna decyzja. Zostańmy przyjaciółmi.',
+};
+const HERO_BARKS = {
+  shot: ['Upsert albo nic!', 'Rekord namierzony. Zero duplikatów!', 'Ten import ma zasięg!'],
+  hit: ['Tego nie było w specyfikacji!', 'Przydałby się permission set na nietykalność.'],
+  heal: ['Medigel zaimportowany. Bez błędnych rekordów.'],
+  upgrade: ['Nowa wersja mnie. Wdrożenie bez przerwy technicznej!'],
+  dash: ['Przenoszę rekord!'],
+};
 if (typeof module !== 'undefined' && module.exports)
   module.exports = {
     CREW_SCENES,
@@ -998,4 +1011,6 @@ if (typeof module !== 'undefined' && module.exports)
     CREW_EXTRA_LINES,
     CREW_SHARED_LINES,
     VOICE_EVENTS,
+    HERO_LINES,
+    HERO_BARKS,
   };

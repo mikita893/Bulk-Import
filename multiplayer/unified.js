@@ -8,7 +8,8 @@
     bird = null,
     cards = null,
     double = null,
-    sudoku = null;
+    sudoku = null,
+    runner = null;
   const storage = Object.freeze({
     getItem: (key) => localStorage.getItem(key),
     setItem: (key, value) => localStorage.setItem(key, value),
@@ -49,24 +50,29 @@
     $('cards-host').hidden = next !== 'cards';
     $('double-host').hidden = next !== 'double';
     $('sudoku-host').hidden = next !== 'sudoku';
+    $('runner-host').hidden = next !== 'runner';
     $('unified-title').textContent =
       next === 'campaign'
         ? 'KAMPANIA SOLO · WSPÓLNA GALAKTYKA'
-        : next === 'sudoku'
-          ? 'SUDOKU · WALIDACJA WIERSZY'
-          : next === 'double'
-            ? 'CSV DOUBLE · PTAKI I DUPLIKATY'
-            : next === 'cards'
-              ? 'GWINTFORCE · WOJNA REKORDÓW'
-              : 'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
+        : next === 'runner'
+          ? 'METRO IMPORT · UCIECZKA PRZED AUDYTEM'
+          : next === 'sudoku'
+            ? 'SUDOKU · WALIDACJA WIERSZY'
+            : next === 'double'
+              ? 'CSV DOUBLE · PTAKI I DUPLIKATY'
+              : next === 'cards'
+                ? 'GWINTFORCE · WOJNA REKORDÓW'
+                : 'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
     $('unified-back').textContent =
-      next === 'sudoku'
-        ? '← Wróć do CSV Double'
-        : next === 'double'
-          ? '← Wróć do Bird Game 3'
-          : ['bird', 'cards'].includes(next)
-            ? '← Wróć do terminala'
-            : '← Menu główne';
+      next === 'runner'
+        ? '← Wróć do Sudoku'
+        : next === 'sudoku'
+          ? '← Wróć do CSV Double'
+          : next === 'double'
+            ? '← Wróć do Bird Game 3'
+            : ['bird', 'cards'].includes(next)
+              ? '← Wróć do terminala'
+              : '← Menu główne';
   }
   function leaveNetwork() {
     return network?.suspend() !== false;
@@ -128,10 +134,29 @@
       storage,
       soundEnabled: () => $('sound-toggle').textContent.includes('ON'),
       onExit: back,
+      onComplete: openRunner,
+    });
+    return true;
+  }
+  function openRunner() {
+    if (screen !== 'sudoku' || !sudoku?.game.solved || double?.online.active) return false;
+    sudoku.suspendForMinigame();
+    setScreen('runner');
+    runner = new BulkRunnerGame($('runner-host'), {
+      storage,
+      onExit: back,
+      soundEnabled: () => $('sound-toggle').textContent.includes('ON'),
     });
     return true;
   }
   function back() {
+    if (screen === 'runner') {
+      runner?.destroy();
+      runner = null;
+      setScreen('sudoku');
+      sudoku?.resumeFromMinigame();
+      return;
+    }
     if (screen === 'sudoku') {
       sudoku?.destroy();
       sudoku = null;
@@ -187,6 +212,7 @@
     openCards,
     openDouble,
     openSudoku,
+    openRunner,
     back,
     registerNetwork(api) {
       network = api;
@@ -205,6 +231,9 @@
     },
     get sudoku() {
       return sudoku;
+    },
+    get runner() {
+      return runner;
     },
   });
   networkReady(false);

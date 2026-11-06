@@ -66,7 +66,10 @@ function resetEnemyAnimation(root, e) {
 }
 function triggerEnemyShot(e) {
   const r = e.model?.userData.animation;
-  if (r) r.shot = 0.2;
+  if (r) {
+    if (r.shot < 0.18) soundEffects.play('enemyShot');
+    r.shot = 0.2;
+  }
 }
 function triggerEnemyMelee(e) {
   const r = e.model?.userData.animation;

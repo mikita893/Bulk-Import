@@ -4,6 +4,9 @@ class BulkSudokuGame {
     this.host = host;
     this.storage = options.storage;
     this.onExit = options.onExit;
+    this.onComplete = options.onComplete;
+    this.suspended = false;
+    this.completionTimer = null;
     this.soundEnabled = options.soundEnabled || (() => true);
     this.dead = false;
     this.paused = false;
@@ -24,6 +27,7 @@ class BulkSudokuGame {
     this.last = performance.now();
     this.saveAt = this.last;
     this.onClick = (event) => {
+      if (this.suspended) return;
       const button = event.target.closest('button');
       if (!button || !host.contains(button)) return;
       if (button.dataset.sudokuCell !== undefined) {
@@ -32,6 +36,10 @@ class BulkSudokuGame {
         return;
       }
       const action = button.dataset.sudokuAction;
+      if (action === 'runner') {
+        if (this.game.solved) this.onComplete?.();
+        return;
+      }
       if (action === 'exit') {
         this.onExit?.();
         return;
@@ -84,6 +92,7 @@ class BulkSudokuGame {
       }
     };
     this.onKey = (event) => {
+      if (this.suspended) return;
       if (
         event.ctrlKey ||
         event.metaKey ||
@@ -151,7 +160,7 @@ class BulkSudokuGame {
     );
   }
   tickTime(now = performance.now()) {
-    if (!this.dead && !this.paused && !this.game.solved)
+    if (!this.dead && !this.paused && !this.suspended && !this.game.solved)
       this.game.elapsed += Math.min(1000, Math.max(0, now - this.last));
     this.last = now;
   }
@@ -200,6 +209,11 @@ class BulkSudokuGame {
     this.persist();
     this.tone();
     this.render();
+    clearTimeout(this.completionTimer);
+    if (this.game.solved)
+      this.completionTimer = setTimeout(() => {
+        if (!this.dead && !this.suspended && this.game.solved) this.onComplete?.();
+      }, 900);
   }
   render(focus = false) {
     if (this.dead) return;
@@ -241,14 +255,14 @@ class BulkSudokuGame {
       )
       .join(
         '',
-      )}</select></label><button class="primary" data-sudoku-action="new" ${this.paused ? 'disabled' : ''}>Nowa plansza</button><p class="sdk-save">${this.storageOK ? 'Postęp Sudoku zapisuje się automatycznie w tej przeglądarce.' : 'Pamięć zablokowana — postęp tylko w tej sesji.'}</p><p class="sdk-joke">„Excel proponuje scalić komórki. Sudoku odrzuca pull request.”</p><p class="sdk-keys">1–9: cyfra · strzałki: wybór · N: notatki · Delete: wymaż · P / Esc: pauza</p></section></div><p id="sudoku-message" class="sdk-message" role="status">${this.message}</p>${g.solved ? `<section class="sdk-win" role="status"><div aria-hidden="true">✦</div><h2>Import 81 rekordów zakończony!</h2><p>Zero duplikatów. ${this.timeLabel()} · podpowiedzi: ${g.hints}. Excel nadal szuka scalonych komórek.</p><button data-sudoku-action="exit">Wróć do CSV Double</button></section>` : ''}${this.paused ? '<div class="sdk-cover"><div><div class="eyebrow">PAUZA / ZEGAR ZATRZYMANY</div><h2>Arkusz zaczeka.</h2><p>Wznów, gdy znów masz Permission Set na skupienie.</p><button class="primary" data-sudoku-action="pause">▶ Wznów Sudoku</button><button data-sudoku-action="exit">Wróć do CSV Double</button></div></div>' : ''}</div>`;
+      )}</select></label><button class="primary" data-sudoku-action="new" ${this.paused ? 'disabled' : ''}>Nowa plansza</button><p class="sdk-save">${this.storageOK ? 'Postęp Sudoku zapisuje się automatycznie w tej przeglądarce.' : 'Pamięć zablokowana — postęp tylko w tej sesji.'}</p><p class="sdk-joke">„Excel proponuje scalić komórki. Sudoku odrzuca pull request.”</p><p class="sdk-keys">1–9: cyfra · strzałki: wybór · N: notatki · Delete: wymaż · P / Esc: pauza</p></section></div><p id="sudoku-message" class="sdk-message" role="status">${this.message}</p>${g.solved ? `<section class="sdk-win" role="status"><div aria-hidden="true">✦</div><h2>Import 81 rekordów zakończony!</h2><p>Zero duplikatów. ${this.timeLabel()} · podpowiedzi: ${g.hints}. Excel nadal szuka scalonych komórek.</p><p>Odblokowano Metro Import 3D. Za chwilę ruszamy na tory!</p><button class="primary" data-sudoku-action="runner">▶ METRO IMPORT 3D</button><button data-sudoku-action="exit">Wróć do CSV Double</button></section>` : ''}${this.paused ? '<div class="sdk-cover"><div><div class="eyebrow">PAUZA / ZEGAR ZATRZYMANY</div><h2>Arkusz zaczeka.</h2><p>Wznów, gdy znów masz Permission Set na skupienie.</p><button class="primary" data-sudoku-action="pause">▶ Wznów Sudoku</button><button data-sudoku-action="exit">Wróć do CSV Double</button></div></div>' : ''}</div>`;
     if (focus)
       this.host
         .querySelector('[data-sudoku-cell="' + g.selected + '"]')
         .focus({ preventScroll: true });
   }
   pause() {
-    if (this.dead || this.paused) return;
+    if (this.dead || this.paused || this.suspended) return;
     this.tickTime();
     this.paused = true;
     this.persist();
@@ -261,8 +275,22 @@ class BulkSudokuGame {
       this.render();
     } else this.pause();
   }
-  frame(now) {
+  suspendForMinigame() {
+    this.tickTime();
+    this.suspended = true;
+    clearInterval(this.timer);
+    clearTimeout(this.completionTimer);
+    this.persist();
+  }
+  resumeFromMinigame() {
     if (this.dead) return;
+    this.suspended = false;
+    this.last = performance.now();
+    this.render();
+    this.timer = setInterval(() => this.frame(performance.now()), 250);
+  }
+  frame(now) {
+    if (this.dead || this.suspended) return;
     this.tickTime(now);
     const clock = this.$('sudoku-time');
     if (clock && clock.textContent !== this.timeLabel()) clock.textContent = this.timeLabel();
@@ -277,6 +305,7 @@ class BulkSudokuGame {
     this.persist();
     this.dead = true;
     clearInterval(this.timer);
+    clearTimeout(this.completionTimer);
     this.host.removeEventListener('click', this.onClick);
     window.removeEventListener('keydown', this.onKey);
     window.removeEventListener('blur', this.onBlur);

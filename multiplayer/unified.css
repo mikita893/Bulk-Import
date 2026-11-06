@@ -94,9 +94,11 @@ input:disabled {
   overflow: auto;
 }
 body[data-screen='campaign'],
+body[data-screen='cards'],
 body[data-screen='bird'],
 body[data-screen='double'],
-body[data-screen='sudoku'] {
+body[data-screen='sudoku'],
+body[data-screen='runner'] {
   overflow: hidden;
 }
 @media (max-width: 700px) {
