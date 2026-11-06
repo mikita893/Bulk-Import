@@ -24,7 +24,7 @@ class BulkRunnerRenderer{
   this.sideGlass=this.instances(this.m.glass,192);this.trainStripes=this.instances(this.m.gold,48);this.wheels=this.instances(this.m.roof,96,this.geo(new THREE.CylinderGeometry(.34,.34,.18,8).rotateZ(Math.PI/2)));
   this.gates=this.instances(this.m.shoe,30);this.gatePosts=this.instances(this.m.white,60);this.powerups=this.instances(this.mat(0xffffff,.3),12);
   this.trainLabels=this.instances(this.label('EXCEL EXPRESS','#adf8cf'),24);this.gateLabels=this.instances(this.label('LIMIT API','#ffe1ab'),30);
-  this.finishArch=new THREE.Group();this.scene.add(this.finishArch);for(const x of [-5.5,5.5])this.box(this.finishArch,this.m.gold,x,3,0,.6,6,.6);this.box(this.finishArch,this.label('META / 30 000 M','#c5ffdf'),0,6,0,11.4,2,.25);
+  this.finishArch=new THREE.Group();this.scene.add(this.finishArch);for(const x of [-5.5,5.5])this.box(this.finishArch,this.m.gold,x,3,0,.6,6,.6);this.box(this.finishArch,this.label('META / 25 000 PKT','#c5ffdf'),0,6,0,11.4,2,.25);
   const sign=this.box(this.scene,this.label('CSV CENTRAL / 01','#87ffef'),-9,6,-35,9,1.7,.2);sign.rotation.y=.15;
   this.box(this.scene,this.m.roof,-9,3,-35,.3,6,.3);this.box(this.scene,this.m.roof,9,3,-65,.3,6,.3);this.box(this.scene,this.label('BULK TRANSIT','#ffe2a0'),9,6,-65,8,1.5,.2);
  }
@@ -38,7 +38,7 @@ class BulkRunnerRenderer{
  }
  resize(){const c=this.renderer.domElement,w=Math.max(1,c.clientWidth),h=Math.max(1,c.clientHeight);const ratio=Math.min(devicePixelRatio||1,1,Math.sqrt(1000000/(w*h)));this.renderer.setPixelRatio(ratio);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();}
  render(game,time){
-  const d=game.distance;this.finishArch.visible=BulkRunner.GOAL-d<200;this.finishArch.position.z=3-(BulkRunner.GOAL-d);let n=0;for(let i=0;i<70;i++)for(const lane of [-3,0,3])this.set(this.sleepers,n++,lane,.015,12-((i*3.2-d)%224+224)%224,2.45,.12,.3);this.finish(this.sleepers,n);
+  const d=game.distance;this.finishArch.visible=game.state==='won';this.finishArch.position.z=-8;let n=0;for(let i=0;i<70;i++)for(const lane of [-3,0,3])this.set(this.sleepers,n++,lane,.015,12-((i*3.2-d)%224+224)%224,2.45,.12,.3);this.finish(this.sleepers,n);
   let win=0;for(let i=0;i<64;i++){const side=i%2?-1:1,row=Math.floor(i/2),z=10-((row*8-d*.7)%256+256)%256,h=5+(Math.sin(i*19.1)+1)*8;this.set(this.city,i,side*(9+(i%3)*2),h/2,z,4.3,h,6);this.color.setHex([0xa3c5d1,0xae9ebf,0xd9aa9c,0x83b0c1][i%4]);this.city.setColorAt(i,this.color);for(let k=0;k<4;k++)this.set(this.windows,win++,side*(9+(i%3)*2-2.16),2+k*(h-2)/4,z,.05,.7,3.5);}
   this.finish(this.city,64);this.finish(this.windows,win);for(let i=0;i<40;i++)this.set(this.poles,i,i%2?-5.8:5.8,2.4,9-((Math.floor(i/2)*12-d)%240+240)%240,.1,4.8,.1);this.finish(this.poles,40);
   const counts={csv:0,crates:0,trains:0,gates:0,powerups:0};

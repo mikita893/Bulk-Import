@@ -2,6 +2,14 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v25.0.0 — 2026-11-06
+
+Plik gry: [Bulk-Import-v25.html](Bulk-Import-v25.html).
+
+- Metro Import: wystarczy 25 000 punktów; premie CSV przyspieszają ukończenie.
+- Cel i pasek postępu pokazują punkty, a Apex Souls otwiera się automatycznie po osiągnięciu progu.
+- Starsze rekordy od 25 000 pkt również odblokowują grę; zachowano ukończenia, checkpointy i zapisy kampanii.
+
 ## v24.0.0 — 2026-11-06
 
 Plik gry: [Bulk-Import-v24.html](Bulk-Import-v24.html).

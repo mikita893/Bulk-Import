@@ -98,7 +98,7 @@ const release = require('../release.cjs');
     await game.locator('[data-run-action="start"]').click();
     await game.waitForFunction(() => BulkUnified.runner.game.distance > 1);
     await page.screenshot({path:'/tmp/bulk-pages-v'+release.major+'-metro-mobile.png'});
-    await game.evaluate(()=>{const g=BulkUnified.runner.game;g.distance=29999;g.items=[];g.nextRow=1e8;});
+    await game.evaluate(()=>{const g=BulkUnified.runner.game;g.distance=100;g.coins=995;g.score=24975;g.items=[];g.nextRow=1e8;g.add('csv',g.lane,g.distance+.4,1);});
     await game.waitForFunction(()=>BulkUnified.screen==='souls');
     assert(await game.locator('#souls-world').isVisible());
     await game.locator('[data-souls-action="start"]').click();

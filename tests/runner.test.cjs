@@ -31,29 +31,33 @@ test('seeded tracks stay bounded and always offer a traversable clear lane, even
  for(const seed of [1,7,999]){const g=new Game(seed);g.start();for(let i=0;i<30000;i++){
   const obstacles=g.items.filter(x=>['train','crate','gate'].includes(x.type)&&x.d+6>g.distance).sort((a,b)=>a.d-b.d);if(obstacles.length){const d=obstacles[0].d,blocked=new Set(obstacles.filter(x=>x.d===d).map(x=>x.lane));const safe=[0,1,2].find(l=>!blocked.has(l));assert(safe!==undefined);g.lane=safe;}
   g.tick(1/120);assert(g.items.length<100);assert(g.speed<=37);if(g.state==='over')throw Error('Generated clear-lane route was impossible');
- }assert(g.distance>4000);assert(g.coins>100);}
+ }assert(g.distance>2000);assert(g.coins>100);}
  const a=new Game(42),b=new Game(42);assert.deepEqual(a.items,b.items);
 });
 test('record parsing rejects corrupt data without touching other game saves',()=>{
  assert.deepEqual(readRecord('{"version":1,"score":123,"coins":5}'),{version:1,score:123,coins:5,bestDistance:0,checkpoint:0,completed:false});for(const raw of ['bad','{}','{"version":1,"score":-1,"coins":0}','{"version":1,"score":1,"coins":"2"}'])assert.equal(readRecord(raw).score,0);
 });
-test('the complete 30 km route is physically traversable, finishes once and stops generating obstacles at the finish',()=>{
- for(const seed of [12,847]){const g=new Game(seed);g.start();let checkpoints=0,wins=0;
-  for(let frame=0;frame<140000&&g.state==='playing';frame++){
+test('25,000 points including CSV finish ordinary safe-lane runs in a few minutes, without running 25 km',()=>{
+ for(const seed of [12,847]){const g=new Game(seed);g.start();let wins=0;
+  for(let frame=0;frame<36000&&g.state==='playing';frame++){
    const obstacles=g.items.filter(x=>['train','crate','gate'].includes(x.type)&&x.d+6>g.distance).sort((a,b)=>a.d-b.d);
    if(obstacles.length){const d=obstacles[0].d,blocked=new Set(obstacles.filter(x=>x.d===d).map(x=>x.lane));g.lane=[0,1,2].find(l=>!blocked.has(l));}
-   g.tick(1/120);checkpoints+=g.events.filter(e=>e==='checkpoint').length;wins+=g.events.filter(e=>e==='won').length;assert(g.items.length<100);
+   g.tick(1/120);wins+=g.events.filter(e=>e==='won').length;assert(g.items.length<100);
   }
-  assert.equal(g.state,'won');assert.equal(g.distance,GOAL);assert.equal(checkpoints,5);assert.equal(wins,1);assert(g.hearts>0);const before=JSON.stringify(g);g.tick(10);assert.equal(JSON.stringify(g),before);
+  assert.equal(g.state,'won');assert(g.score>=GOAL);assert(g.distance<5000);assert(g.elapsed<240);assert.equal(wins,1);assert(g.hearts>0);const before=JSON.stringify(g);g.tick(10);assert.equal(JSON.stringify(g),before);
  }
+});
+test('24,999 points stay locked, a CSV can cross the goal immediately, and distance points work too',()=>{
+ const g=new Game(7);g.start();g.distance=24;g.coins=999;g.items=[];g.nextRow=1e8;g.tick(.01);assert.equal(g.score,24999);assert.equal(g.state,'playing');g.add('csv',1,g.distance+.2,1);g.tick(.01);assert.equal(g.state,'won');assert(g.score>=25000);assert(g.distance<25);assert(g.events.includes('coin'));assert(g.events.includes('won'));
+ const d=new Game(8);d.start();d.distance=24999;d.items=[];d.nextRow=1e8;d.tick(.1);assert.equal(d.state,'won');assert.equal(d.coins,0);
 });
 test('checkpoints restore health, can resume after reload, and medkits are finite pickups',()=>{
  const g=new Game(9,10000);assert.equal(g.distance,10000);g.start();g.hearts=1;g.distance=14999;g.items=[];g.nextRow=1e8;g.tick(.1);assert.equal(g.checkpoint,15000);assert.equal(g.hearts,3);assert(g.events.includes('checkpoint'));assert.equal(CHECKPOINT,5000);
  g.hearts=1;g.add('medkit',g.lane,g.distance+1,1);g.tick(.1);assert.equal(g.hearts,2);g.tick(.1);assert.equal(g.hearts,2);
  for(const start of [-5000,123,30000,Infinity])assert.equal(new Game(1,start).distance,0);
 });
-test('old high scores cannot unlock Souls, and new completion requires the full distance',()=>{
- const parse=r=>readRecord(JSON.stringify({version:1,score:999999,coins:50,...r}));assert.equal(parse({}).completed,false);assert.equal(parse({completed:true,bestDistance:29999}).completed,false);assert.equal(parse({completed:true,bestDistance:30000}).completed,true);assert.equal(parse({checkpoint:25000,bestDistance:24000}).checkpoint,0);assert.equal(parse({checkpoint:15000,bestDistance:16000}).checkpoint,15000);
+test('v23/v24 scores unlock at 25,000; old completions and checkpoints remain compatible',()=>{
+ const parse=r=>readRecord(JSON.stringify({version:1,score:24999,coins:50,...r}));assert.equal(parse({}).completed,false);assert.equal(parse({completed:true,bestDistance:29999}).completed,false);assert.equal(parse({completed:true,bestDistance:30000}).completed,true);assert.equal(parse({score:25000}).completed,true);assert.equal(parse({score:25001,bestDistance:1000}).completed,true);assert.equal(parse({score:999999}).completed,true);assert.equal(parse({checkpoint:25000,bestDistance:24000}).checkpoint,0);assert.equal(parse({checkpoint:25000,bestDistance:26000}).checkpoint,25000);assert.equal(parse({checkpoint:15000,bestDistance:16000}).checkpoint,15000);
 });
 test('all Gwintforce cards map to actual painted human/alien/creature portraits',()=>{
  const cards=require('../minigames/cards-sim.js').CARD_CATALOG,art=require('../minigames/cards-art.js');for(const id of Object.keys(cards)){assert(Number.isInteger(art.tiles[id]));assert(art.tiles[id]>=0&&art.tiles[id]<16);assert(art.markup(id).includes('data-card-art="'+id+'"'));}assert(require('node:fs').statSync(require('node:path').join(__dirname,'../assets/cards/portraits.webp')).size>50000);
