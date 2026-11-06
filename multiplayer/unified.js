@@ -1,7 +1,7 @@
 'use strict';
 (() => {
  const $=id=>document.getElementById(id),local=!/^https?:$/.test(location.protocol);
- let screen='main',network=null,campaign=null,bird=null,cards=null,double=null,sudoku=null,runner=null,souls=null,city=null;
+ let screen='main',network=null,campaign=null,bird=null,cards=null,double=null,sudoku=null,runner=null,souls=null,city=null,colony=null;
  const storage=Object.freeze({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)});
  const onlineControls=['create-coop','create-versus','join-room','join-code','connect-server','server-url'];
  function networkReady(ready){
@@ -13,9 +13,9 @@
   screen=next;document.body.dataset.screen=next;
   document.querySelector('body > header').hidden=next!=='main';
   document.querySelector('body > main').hidden=next!=='main';
-  $('unified-stage').hidden=next==='main';$('campaign-host').hidden=next!=='campaign';$('bird-host').hidden=next!=='bird';$('cards-host').hidden=next!=='cards';$('double-host').hidden=next!=='double';$('sudoku-host').hidden=next!=='sudoku';$('runner-host').hidden=next!=='runner';$('souls-host').hidden=next!=='souls';$('city-host').hidden=next!=='city';
-  $('unified-title').textContent=next==='city'?'GRAND THEFT CSV · VICE IMPORT':next==='campaign'?'KAMPANIA SOLO · WSPÓLNA GALAKTYKA':next==='souls'?'APEX SOULS · KLĄTWA LEGACY':next==='runner'?'METRO IMPORT · UCIECZKA PRZED AUDYTEM':next==='sudoku'?'SUDOKU · WALIDACJA WIERSZY':next==='double'?'CSV DOUBLE · PTAKI I DUPLIKATY':next==='cards'?'GWINTFORCE · WOJNA REKORDÓW':'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
-  $('unified-back').textContent=next==='city'?'← Wróć do Apex Souls':next==='souls'?'← Wróć do Metro Import':next==='runner'?'← Wróć do Sudoku':next==='sudoku'?'← Wróć do CSV Double':next==='double'?'← Wróć do Bird Game 3':['bird','cards'].includes(next)?'← Wróć do terminala':'← Menu główne';
+  $('unified-stage').hidden=next==='main';$('campaign-host').hidden=next!=='campaign';$('bird-host').hidden=next!=='bird';$('cards-host').hidden=next!=='cards';$('double-host').hidden=next!=='double';$('sudoku-host').hidden=next!=='sudoku';$('runner-host').hidden=next!=='runner';$('souls-host').hidden=next!=='souls';$('city-host').hidden=next!=='city';$('colony-host').hidden=next!=='colony';
+  $('unified-title').textContent=next==='colony'?'IMPORTIC · KOLONIA LEGACY':next==='city'?'GRAND THEFT CSV · VICE IMPORT':next==='campaign'?'KAMPANIA SOLO · WSPÓLNA GALAKTYKA':next==='souls'?'APEX SOULS · KLĄTWA LEGACY':next==='runner'?'METRO IMPORT · UCIECZKA PRZED AUDYTEM':next==='sudoku'?'SUDOKU · WALIDACJA WIERSZY':next==='double'?'CSV DOUBLE · PTAKI I DUPLIKATY':next==='cards'?'GWINTFORCE · WOJNA REKORDÓW':'BIRD GAME 3 · PTAKI KONTRA DUPLIKATY';
+  $('unified-back').textContent=next==='colony'?'← Wróć do Vice Import':next==='city'?'← Wróć do Apex Souls':next==='souls'?'← Wróć do Metro Import':next==='runner'?'← Wróć do Sudoku':next==='sudoku'?'← Wróć do CSV Double':next==='double'?'← Wróć do Bird Game 3':['bird','cards'].includes(next)?'← Wróć do terminala':'← Menu główne';
  }
  function leaveNetwork(){return network?.suspend()!==false;}
  function openCampaign(){
@@ -58,9 +58,15 @@
  }
  function openCity(){
   if(screen!=='souls'||!souls?.canEnterCity()||double?.online.active)return false;
-  souls.suspendForMinigame();setScreen('city');city=new BulkCityGame($('city-host'),{storage,onExit:back,soundEnabled:()=>$('sound-toggle').textContent.includes('ON')});return true;
+  souls.suspendForMinigame();setScreen('city');city=new BulkCityGame($('city-host'),{storage,onExit:back,onOpenColony:openColony,soundEnabled:()=>$('sound-toggle').textContent.includes('ON')});return true;
+ }
+ function openColony(){
+  if(screen!=='city'||!city||double?.online.active)return false;
+  city.suspendForMinigame();setScreen('colony');colony=new BulkColonyGame($('colony-host'),{storage,onExit:back,soundEnabled:()=>$('sound-toggle').textContent.includes('ON')});return true;
  }
  function back(){
+  if(screen==='colony'){colony?.destroy();colony=null;setScreen('city');city?.resumeFromMinigame();return;}
+
   if(screen==='city'){city?.destroy();city=null;setScreen('souls');souls?.resumeFromMinigame();return;}
 
   if(screen==='souls'){souls?.destroy();souls=null;setScreen('runner');runner?.resumeFromMinigame();return;}
@@ -79,6 +85,6 @@
  }
  $('play-campaign').onclick=$('nav-campaign').onclick=openCampaign;
  $('unified-back').onclick=back;
- window.BulkUnified=Object.freeze({storage,local,networkReady,openCampaign,openBird,openCards,openDouble,openSudoku,openRunner,openSouls,openCity,back,registerNetwork(api){network=api;},get screen(){return screen;},get bird(){return bird;},get cards(){return cards;},get double(){return double;},get sudoku(){return sudoku;},get runner(){return runner;},get souls(){return souls;},get city(){return city;}});
+ window.BulkUnified=Object.freeze({storage,local,networkReady,openCampaign,openBird,openCards,openDouble,openSudoku,openRunner,openSouls,openCity,openColony,back,registerNetwork(api){network=api;},get screen(){return screen;},get bird(){return bird;},get cards(){return cards;},get double(){return double;},get sudoku(){return sudoku;},get runner(){return runner;},get souls(){return souls;},get city(){return city;},get colony(){return colony;}});
  networkReady(false);
 })();

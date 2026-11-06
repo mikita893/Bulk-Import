@@ -1,6 +1,6 @@
 'use strict';
 (function(root,factory){const api=factory();if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.BulkCity=api;})(typeof window!=='undefined'?window:globalThis,function(){
- const PAD={x:0,z:80},PICKUP={x:0,z:-96},LIMIT=124;
+ const PAD={x:0,z:80},PICKUP={x:0,z:-96},PORTAL={x:-5,z:112},LIMIT=124;
  const TARGETS=[{x:-60,z:-60,h:20,name:'Wieża Duplikatów'},{x:60,z:-20,h:28,name:'Excel Plaza'},{x:60,z:60,h:18,name:'Biuro Ręcznego Merge'},{x:-60,z:60,h:14,name:'Archiwum Final_FINAL'}];
  const BUILDINGS=[];
  for(let x=-100;x<=100;x+=40)for(let z=-100;z<=100;z+=40){const target=TARGETS.find(t=>t.x===x&&t.z===z);BUILDINGS.push({x,z,w:25,d:25,h:target?.h||9+((x+100)*7+(z+100)*13)%25});}
@@ -116,5 +116,5 @@
   }
   snapshot(){return JSON.parse(JSON.stringify(this.progress));}
  }
- return {Game,PAD,PICKUP,TARGETS,BUILDINGS,RADIO,LIMIT,fresh,valid,read,blocked,trafficAt,angleDiff};
+ return {Game,PAD,PICKUP,PORTAL,TARGETS,BUILDINGS,RADIO,LIMIT,fresh,valid,read,blocked,trafficAt,angleDiff};
 });
