@@ -1,6 +1,6 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {Game,LANES,readRecord}=require('../minigames/runner-sim.js');
+const {Game,LANES,GOAL,CHECKPOINT,readRecord}=require('../minigames/runner-sim.js');
 function fixture(type,lane=1){const g=new Game(7);g.items=[];g.nextRow=1e8;g.start();const item=g.add(type,lane,12,['csv','shield','magnet','boost'].includes(type)?1:0);return {g,item};}
 function run(g,seconds,dt=1/120){for(let i=0;i<seconds/dt;i++)g.tick(dt);}
 test('three lanes clamp input; jump and slide have separate physical clearance',()=>{
@@ -35,7 +35,25 @@ test('seeded tracks stay bounded and always offer a traversable clear lane, even
  const a=new Game(42),b=new Game(42);assert.deepEqual(a.items,b.items);
 });
 test('record parsing rejects corrupt data without touching other game saves',()=>{
- assert.deepEqual(readRecord('{"version":1,"score":123,"coins":5}'),{version:1,score:123,coins:5});for(const raw of ['bad','{}','{"version":1,"score":-1,"coins":0}','{"version":1,"score":1,"coins":"2"}'])assert.equal(readRecord(raw).score,0);
+ assert.deepEqual(readRecord('{"version":1,"score":123,"coins":5}'),{version:1,score:123,coins:5,bestDistance:0,checkpoint:0,completed:false});for(const raw of ['bad','{}','{"version":1,"score":-1,"coins":0}','{"version":1,"score":1,"coins":"2"}'])assert.equal(readRecord(raw).score,0);
+});
+test('the complete 30 km route is physically traversable, finishes once and stops generating obstacles at the finish',()=>{
+ for(const seed of [12,847]){const g=new Game(seed);g.start();let checkpoints=0,wins=0;
+  for(let frame=0;frame<140000&&g.state==='playing';frame++){
+   const obstacles=g.items.filter(x=>['train','crate','gate'].includes(x.type)&&x.d+6>g.distance).sort((a,b)=>a.d-b.d);
+   if(obstacles.length){const d=obstacles[0].d,blocked=new Set(obstacles.filter(x=>x.d===d).map(x=>x.lane));g.lane=[0,1,2].find(l=>!blocked.has(l));}
+   g.tick(1/120);checkpoints+=g.events.filter(e=>e==='checkpoint').length;wins+=g.events.filter(e=>e==='won').length;assert(g.items.length<100);
+  }
+  assert.equal(g.state,'won');assert.equal(g.distance,GOAL);assert.equal(checkpoints,5);assert.equal(wins,1);assert(g.hearts>0);const before=JSON.stringify(g);g.tick(10);assert.equal(JSON.stringify(g),before);
+ }
+});
+test('checkpoints restore health, can resume after reload, and medkits are finite pickups',()=>{
+ const g=new Game(9,10000);assert.equal(g.distance,10000);g.start();g.hearts=1;g.distance=14999;g.items=[];g.nextRow=1e8;g.tick(.1);assert.equal(g.checkpoint,15000);assert.equal(g.hearts,3);assert(g.events.includes('checkpoint'));assert.equal(CHECKPOINT,5000);
+ g.hearts=1;g.add('medkit',g.lane,g.distance+1,1);g.tick(.1);assert.equal(g.hearts,2);g.tick(.1);assert.equal(g.hearts,2);
+ for(const start of [-5000,123,30000,Infinity])assert.equal(new Game(1,start).distance,0);
+});
+test('old high scores cannot unlock Souls, and new completion requires the full distance',()=>{
+ const parse=r=>readRecord(JSON.stringify({version:1,score:999999,coins:50,...r}));assert.equal(parse({}).completed,false);assert.equal(parse({completed:true,bestDistance:29999}).completed,false);assert.equal(parse({completed:true,bestDistance:30000}).completed,true);assert.equal(parse({checkpoint:25000,bestDistance:24000}).checkpoint,0);assert.equal(parse({checkpoint:15000,bestDistance:16000}).checkpoint,15000);
 });
 test('all Gwintforce cards map to actual painted human/alien/creature portraits',()=>{
  const cards=require('../minigames/cards-sim.js').CARD_CATALOG,art=require('../minigames/cards-art.js');for(const id of Object.keys(cards)){assert(Number.isInteger(art.tiles[id]));assert(art.tiles[id]>=0&&art.tiles[id]<16);assert(art.markup(id).includes('data-card-art="'+id+'"'));}assert(require('node:fs').statSync(require('node:path').join(__dirname,'../assets/cards/portraits.webp')).size>50000);

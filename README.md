@@ -1,12 +1,12 @@
-# Bulk Import: Wspólna Galaktyka — v23
+# Bulk Import: Wspólna Galaktyka — v24
 
 Historia zmian: [CHANGELOG.md](CHANGELOG.md) — aktualizowana przy każdym nowym wydaniu, począwszy od v16.
 
-**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v23.html](Bulk-Import-v23.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów**, **CSV Double**, **Sudoku** i **Metro Import 3D**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
+**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v24.html](Bulk-Import-v24.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów**, **CSV Double**, **Sudoku**, **Metro Import 3D** i **Apex Souls 3D**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
 
 ## Pobierz HTML i graj lokalnie
 
-Pobierz **Bulk-Import-v23.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce, CSV Double i Sudoku są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
+Pobierz **Bulk-Import-v24.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce, CSV Double, Sudoku, Metro Import i Apex Souls są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
 
 Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo działa offline; Bird Game 3 i Gwintforce uruchomisz w terminalu na statku; CSV Double otworzysz wewnątrz Bird Game 3, a Sudoku wewnątrz CSV Double. Kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
 
@@ -26,6 +26,8 @@ npm start
 ```
 
 Otwórz `http://localhost:3000`. Serwer udostępnia ten sam HTML; po udanym połączeniu dostępne są również kooperacja i VS. HTTP i WebSocket `/ws` korzystają z jednego portu, ustawianego przez `PORT`. Gospodarz tworzy pokój i przekazuje znajomym link lub kod.
+
+- **Nowości v24:** Metro Import ma metę na **30 000 m**, checkpointy co 5000 m i apteczki. Dopiero ukończenie całej trasy automatycznie odblokowuje **Apex Souls: Klątwa Legacy** — nową grę 3D z trzema lokacjami, walką na miecze, unikami, tarczą, ogniskami, rozwojem postaci i bossem w trzech fazach. Zapis odblokowania pozwala wracać bez ponownego biegu. Szczegóły i sterowanie: [DESIGN-v24.md](DESIGN-v24.md).
 
 - **Nowości v23:** malowane portrety postaci na kartach Gwintforce, głos komandora i bogatsze efekty walki oraz zakupów. Po ukończeniu Sudoku automatycznie otwiera się **Metro Import 3D — Ucieczka przed Audytem**: bieg po trzech torach, skok, ślizg, pociągi, CSV i bonusy. Start biegu na ekranie minigry; powrót zachowuje ukończone Sudoku. Szczegóły: [DESIGN-v23.md](DESIGN-v23.md).
 

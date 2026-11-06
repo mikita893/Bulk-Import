@@ -24,6 +24,7 @@ class BulkRunnerRenderer{
   this.sideGlass=this.instances(this.m.glass,192);this.trainStripes=this.instances(this.m.gold,48);this.wheels=this.instances(this.m.roof,96,this.geo(new THREE.CylinderGeometry(.34,.34,.18,8).rotateZ(Math.PI/2)));
   this.gates=this.instances(this.m.shoe,30);this.gatePosts=this.instances(this.m.white,60);this.powerups=this.instances(this.mat(0xffffff,.3),12);
   this.trainLabels=this.instances(this.label('EXCEL EXPRESS','#adf8cf'),24);this.gateLabels=this.instances(this.label('LIMIT API','#ffe1ab'),30);
+  this.finishArch=new THREE.Group();this.scene.add(this.finishArch);for(const x of [-5.5,5.5])this.box(this.finishArch,this.m.gold,x,3,0,.6,6,.6);this.box(this.finishArch,this.label('META / 30 000 M','#c5ffdf'),0,6,0,11.4,2,.25);
   const sign=this.box(this.scene,this.label('CSV CENTRAL / 01','#87ffef'),-9,6,-35,9,1.7,.2);sign.rotation.y=.15;
   this.box(this.scene,this.m.roof,-9,3,-35,.3,6,.3);this.box(this.scene,this.m.roof,9,3,-65,.3,6,.3);this.box(this.scene,this.label('BULK TRANSIT','#ffe2a0'),9,6,-65,8,1.5,.2);
  }
@@ -37,7 +38,7 @@ class BulkRunnerRenderer{
  }
  resize(){const c=this.renderer.domElement,w=Math.max(1,c.clientWidth),h=Math.max(1,c.clientHeight);const ratio=Math.min(devicePixelRatio||1,1,Math.sqrt(1000000/(w*h)));this.renderer.setPixelRatio(ratio);this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();}
  render(game,time){
-  const d=game.distance;let n=0;for(let i=0;i<70;i++)for(const lane of [-3,0,3])this.set(this.sleepers,n++,lane,.015,12-((i*3.2-d)%224+224)%224,2.45,.12,.3);this.finish(this.sleepers,n);
+  const d=game.distance;this.finishArch.visible=BulkRunner.GOAL-d<200;this.finishArch.position.z=3-(BulkRunner.GOAL-d);let n=0;for(let i=0;i<70;i++)for(const lane of [-3,0,3])this.set(this.sleepers,n++,lane,.015,12-((i*3.2-d)%224+224)%224,2.45,.12,.3);this.finish(this.sleepers,n);
   let win=0;for(let i=0;i<64;i++){const side=i%2?-1:1,row=Math.floor(i/2),z=10-((row*8-d*.7)%256+256)%256,h=5+(Math.sin(i*19.1)+1)*8;this.set(this.city,i,side*(9+(i%3)*2),h/2,z,4.3,h,6);this.color.setHex([0xa3c5d1,0xae9ebf,0xd9aa9c,0x83b0c1][i%4]);this.city.setColorAt(i,this.color);for(let k=0;k<4;k++)this.set(this.windows,win++,side*(9+(i%3)*2-2.16),2+k*(h-2)/4,z,.05,.7,3.5);}
   this.finish(this.city,64);this.finish(this.windows,win);for(let i=0;i<40;i++)this.set(this.poles,i,i%2?-5.8:5.8,2.4,9-((Math.floor(i/2)*12-d)%240+240)%240,.1,4.8,.1);this.finish(this.poles,40);
   const counts={csv:0,crates:0,trains:0,gates:0,powerups:0};
@@ -46,7 +47,7 @@ class BulkRunnerRenderer{
    else if(item.type==='crate'){const i=counts.crates++;this.set(this.crates,i,x,.65,z,2,1.3,1.4);this.set(this.crateMarks,i,x,.67,z+.711,.35,.9,.02);}
    else if(item.type==='train'){const i=counts.trains++;this.set(this.trains,i,x,1.8,z,2.4,3.4,10);this.set(this.trainRoofs,i,x,3.58,z,2.2,.24,9.6);this.set(this.trainGlass,i,x,2.8,z+5.02,1.9,.6,.04);this.set(this.trainLabels,i,x,1.9,z+5.03,1.9,.35,.02);for(let j=0;j<2;j++)this.set(this.trainLights,i*2+j,x+(j?-.8:.8),.65,z+5.04,.3,.18,.03);for(let j=0;j<2;j++){const side=j?-1:1;this.set(this.trainStripes,i*2+j,x+side*1.21,1.45,z,.025,.12,9.4);for(let k=0;k<4;k++)this.set(this.sideGlass,i*8+j*4+k,x+side*1.212,2.65,z-3+k*2,.025,.67,1.35);for(let k=0;k<2;k++)this.set(this.wheels,i*4+j*2+k,x+side*1.23,.34,z+(k?-3.5:3.5),1,1,1);}}
    else if(item.type==='gate'){const i=counts.gates++;this.set(this.gates,i,x,1.9,z,2.7,.8,.6);this.set(this.gateLabels,i,x,1.9,z+.31,2.3,.43,.025);for(let j=0;j<2;j++)this.set(this.gatePosts,i*2+j,x+(j?-1.25:1.25),1.35,z,.18,2.7,.28);}
-   else{const i=counts.powerups++;this.set(this.powerups,i,x,1+Math.sin(time*3)*.14,z,.75,.75,.75,time);this.color.setHex(item.type==='shield'?0x63e8ff:item.type==='magnet'?0xff83bf:0xb5fc69);this.powerups.setColorAt(i,this.color);}
+   else{const i=counts.powerups++;this.set(this.powerups,i,x,1+Math.sin(time*3)*.14,z,.75,.75,.75,time);this.color.setHex(item.type==='shield'?0x63e8ff:item.type==='magnet'?0xff83bf:item.type==='medkit'?0xff8b8b:0xb5fc69);this.powerups.setColorAt(i,this.color);}
   }
   this.finish(this.csv,counts.csv);this.finish(this.crates,counts.crates);this.finish(this.crateMarks,counts.crates);for(const mesh of [this.trains,this.trainRoofs,this.trainGlass,this.trainLabels])this.finish(mesh,counts.trains);this.finish(this.trainLights,counts.trains*2);this.finish(this.sideGlass,counts.trains*8);this.finish(this.trainStripes,counts.trains*2);this.finish(this.wheels,counts.trains*4);for(const mesh of [this.gates,this.gateLabels])this.finish(mesh,counts.gates);this.finish(this.gatePosts,counts.gates*2);this.finish(this.powerups,counts.powerups);
   const hero=this.hero,run=game.state==='playing',slide=game.slide>0&&game.y<.25;hero.root.position.set(game.x,game.y,3);hero.root.rotation.y=game.state==='ready'?Math.PI-.25:0;hero.body.scale.y=slide?.42:1;hero.body.rotation.z=(BulkRunner.LANES[game.lane]-game.x)*-.13;

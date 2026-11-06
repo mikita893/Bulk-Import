@@ -11,6 +11,8 @@
   play(name){
    if(!this.ready())return false;this.counts[name]=(this.counts[name]||0)+1;
    if(name==='shot'){this.node('noise',0,.035,.065);this.node('triangle',190,.085,.1,0,40);this.node('sine',1600,.018,.075,.025,750);}
+   else if(name==='slash'){this.node('noise',0,.028,.13);this.node('triangle',620,.025,.12,0,120);}
+   else if(name==='greatsword'){this.node('noise',0,.05,.2);this.node('triangle',140,.07,.23,0,35);}
    else if(name==='enemyShot'){this.node('sawtooth',360,.02,.09,0,90);this.node('noise',0,.015,.06);}
    else if(name==='upgrade'){[520,780,1040,1560].forEach((f,i)=>this.node('sine',f,.05,.17,i*.075));this.node('noise',0,.013,.18);}
    else if(name==='click'){this.node('sine',850,.025,.025,0,450);}
