@@ -279,7 +279,7 @@ class BulkSoulsGame {
     box.hidden = false;
     if (state === 'ready') {
       box.innerHTML =
-        '<div><div class="souls-eyebrow">30 000 METRÓW ZA TOBĄ / KLĄTWA DOPIERO SIĘ ZACZYNA</div><h2>APEX <em>SOULS</em></h2><h3>Klątwa Legacy</h3><p>Trzy lokacje, miecz, tarcza i przeciwnicy, którzy telegrafują ataki. Zarządzaj wytrzymałością. Unik ma krótkie okno nietykalności. Ogniska odnawiają flakony i pozwalają kupować poziomy.</p><p>Po śmierci zostawiasz runy na ziemi. Lord Legacy czeka w katedrze — i nadal używa makr z 2007 roku.</p><button class="primary" data-souls-action="start">⚔ ' +
+        '<div><div class="souls-eyebrow">25 000 PUNKTÓW ZA TOBĄ / KLĄTWA DOPIERO SIĘ ZACZYNA</div><h2>APEX <em>SOULS</em></h2><h3>Klątwa Legacy</h3><p>Trzy lokacje, miecz, tarcza i przeciwnicy, którzy telegrafują ataki. Zarządzaj wytrzymałością. Unik ma krótkie okno nietykalności. Ogniska odnawiają flakony i pozwalają kupować poziomy.</p><p>Po śmierci zostawiasz runy na ziemi. Lord Legacy czeka w katedrze — i nadal używa makr z 2007 roku.</p><button class="primary" data-souls-action="start">⚔ ' +
         (g.area > 0 ? 'KONTYNUUJ WYPRAWĘ' : 'ROZPOCZNIJ WYPRAWĘ') +
         '</button><button data-souls-action="exit">Wróć do Metro Import</button><small>J / LPM: cios · K: mocny cios · spacja: unik · F: blok · R: flakon · Q: namierz · E: ognisko/brama · P: pauza</small></div>';
       return;

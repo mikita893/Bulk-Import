@@ -18,9 +18,9 @@ class BulkRunnerGame {
     this.uiAt = 0;
     this.effects = new BulkEffects.Effects({ enabled: soundEnabled });
     host.innerHTML =
-      '<div class="run-page"><canvas id="runner-world" aria-label="Metro Import: trójwymiarowy bieg przez trzy tory"></canvas><div class="run-vignette"></div><div class="run-top"><div><small>METRO IMPORT / UCIECZKA PRZED AUDYTEM</small><h1>METRO<span>IMPORT</span></h1></div><button data-run-action="pause">Ⅱ Pauza</button></div><div class="run-hud"><div><small>DYSTANS</small><b id="runner-distance">0 / 30 000 m</b></div><div><small>CSV</small><b id="runner-coins">0</b></div><div><small>WYNIK</small><b id="runner-score">0</b></div><div><small>REKORD</small><b id="runner-best">' +
+      '<div class="run-page"><canvas id="runner-world" aria-label="Metro Import: trójwymiarowy bieg przez trzy tory"></canvas><div class="run-vignette"></div><div class="run-top"><div><small>METRO IMPORT / UCIECZKA PRZED AUDYTEM</small><h1>METRO<span>IMPORT</span></h1></div><button data-run-action="pause">Ⅱ Pauza</button></div><div class="run-hud"><div><small>CEL / PUNKTY</small><b id="runner-score">0 / 25 000 pkt</b></div><div><small>CSV</small><b id="runner-coins">0</b></div><div><small>DYSTANS</small><b id="runner-distance">0 m</b></div><div><small>REKORD</small><b id="runner-best">' +
       this.record.score +
-      '</b></div></div><div class="run-progress"><span id="runner-stage">ETAP 1 / 6</span><div><i id="runner-progress"></i></div></div><div class="run-bottom"><div id="runner-lives" aria-label="Pozostałe życie">♥ ♥ ♥</div><p id="runner-powers"></p><p id="runner-message" role="status">Sudoku zaliczone. Teraz spróbuj uciec przed audytem!</p><small>← → / A D: tory · ↑ / W / spacja: skok · ↓ / S: ślizg · P: pauza</small></div><div class="run-touch" aria-label="Sterowanie dotykowe"><button data-run-action="left" aria-label="Lewy tor">←</button><button data-run-action="jump" aria-label="Skok">↑</button><button data-run-action="slide" aria-label="Ślizg">↓</button><button data-run-action="right" aria-label="Prawy tor">→</button></div><div class="run-cover" id="runner-cover"></div></div>';
+      '</b></div></div><div class="run-progress"><span id="runner-stage">CEL: 25 000 PKT · CSV: +25 PKT</span><div><i id="runner-progress"></i></div></div><div class="run-bottom"><div id="runner-lives" aria-label="Pozostałe życie">♥ ♥ ♥</div><p id="runner-powers"></p><p id="runner-message" role="status">Sudoku zaliczone. Teraz spróbuj uciec przed audytem!</p><small>← → / A D: tory · ↑ / W / spacja: skok · ↓ / S: ślizg · P: pauza</small></div><div class="run-touch" aria-label="Sterowanie dotykowe"><button data-run-action="left" aria-label="Lewy tor">←</button><button data-run-action="jump" aria-label="Skok">↑</button><button data-run-action="slide" aria-label="Ślizg">↓</button><button data-run-action="right" aria-label="Prawy tor">→</button></div><div class="run-cover" id="runner-cover"></div></div>';
     try {
       this.view = new BulkRunnerRenderer(host.querySelector('#runner-world'));
     } catch (e) {
@@ -147,10 +147,7 @@ class BulkRunnerGame {
     this.cover();
   }
   canEnterSouls() {
-    return (
-      this.game.state === 'won' ||
-      (this.record.completed && this.record.bestDistance === BulkRunner.GOAL)
-    );
+    return this.game.state === 'won' || this.record.completed;
   }
   persist() {
     this.record = {
@@ -179,16 +176,16 @@ class BulkRunnerGame {
       won = state === 'won',
       checkpoint = this.record.checkpoint;
     const title = won
-      ? '30 000 metrów.<br><em>Import ukończony!</em>'
+      ? '25 000 punktów.<br><em>Import ukończony!</em>'
       : ready
         ? 'Następny przystanek:<br><em>koniec arkusza.</em>'
         : over
           ? 'Audyt cię dopadł.<br><em>Backup jest gotowy.</em>'
           : 'Odpoczynek<br><em>od kontroli.</em>';
     const body = won
-      ? 'Cała trasa za tobą. Pieczęć Legacy pękła — za chwilę otworzy się Apex Souls 3D.'
+      ? 'Cel punktowy osiągnięty. Pieczęć Legacy pękła — za chwilę otworzy się Apex Souls 3D.'
       : ready
-        ? 'Cel: przebiegnij 30 000 metrów. Sześć etapów po 5000 m, zapis punktów kontrolnych, apteczki i trzy życia. Skacz, ślizgaj się, omijaj pociągi. Dopiero meta odblokuje Apex Souls.'
+        ? 'Cel: zdobądź 25 000 punktów. Każdy CSV daje +25 pkt, a każdy metr +1 pkt. Zbieraj pliki, skacz i omijaj pociągi — wynik odblokuje Apex Souls. Nie musisz przebiegać określonego dystansu.'
         : over
           ? 'Wynik: ' +
             this.game.score +
@@ -197,7 +194,7 @@ class BulkRunnerGame {
             ' m. Możesz kontynuować od ' +
             checkpoint +
             ' m. Audytor nie potrafi skasować backupu.'
-          : 'Zegar i bonusy zatrzymane. Trasa nadal kończy się na 30 000 m.';
+          : 'Zegar i bonusy zatrzymane. Do ukończenia wystarczy 25 000 punktów, razem z premiami za CSV.';
     const next = won ? 'souls' : ready ? 'start' : over ? 'restart' : 'pause',
       label = won
         ? '⚔ WEJDŹ DO APEX SOULS 3D'
@@ -214,7 +211,7 @@ class BulkRunnerGame {
         ? 'TRASA ZAKOŃCZONA / NOWA KLĄTWA'
         : over
           ? 'PUNKT KONTROLNY ZACHOWANY'
-          : 'META / 30 000 M') +
+          : 'CEL / 25 000 PKT') +
       '</div><h2>' +
       title +
       '</h2><p>' +
@@ -296,15 +293,17 @@ class BulkRunnerGame {
     if (now - this.uiAt > 100) {
       this.uiAt = now;
       this.$('runner-distance').textContent =
-        Math.floor(this.game.distance).toLocaleString('pl-PL') + ' / 30 000 m';
-      this.$('runner-progress').style.width = (this.game.distance / BulkRunner.GOAL) * 100 + '%';
+        Math.floor(this.game.distance).toLocaleString('pl-PL') + ' m';
+      this.$('runner-progress').style.width =
+        Math.min(100, (this.game.score / BulkRunner.GOAL) * 100) + '%';
       this.$('runner-stage').textContent =
-        'ETAP ' +
-        Math.min(6, Math.floor(this.game.distance / 5000) + 1) +
-        ' / 6 · ' +
-        (this.game.state === 'won' ? 'META' : this.record.checkpoint + ' m zapisane');
+        this.game.state === 'won'
+          ? 'CEL OSIĄGNIĘTY'
+          : Math.max(0, BulkRunner.GOAL - this.game.score).toLocaleString('pl-PL') +
+            ' PKT DO CELU · CSV: +25 PKT';
       this.$('runner-coins').textContent = this.game.coins;
-      this.$('runner-score').textContent = this.game.score;
+      this.$('runner-score').textContent =
+        this.game.score.toLocaleString('pl-PL') + ' / 25 000 pkt';
       this.$('runner-best').textContent = Math.max(this.record.score, this.game.score);
       this.$('runner-lives').textContent =
         '♥ '.repeat(this.game.hearts) + '♡ '.repeat(3 - this.game.hearts);

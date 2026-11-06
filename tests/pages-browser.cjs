@@ -123,9 +123,12 @@ const release = require('../release.cjs');
     await page.screenshot({ path: '/tmp/bulk-pages-v' + release.major + '-metro-mobile.png' });
     await game.evaluate(() => {
       const g = BulkUnified.runner.game;
-      g.distance = 29999;
+      g.distance = 100;
+      g.coins = 995;
+      g.score = 24975;
       g.items = [];
       g.nextRow = 1e8;
+      g.add('csv', g.lane, g.distance + 0.4, 1);
     });
     await game.waitForFunction(() => BulkUnified.screen === 'souls');
     assert(await game.locator('#souls-world').isVisible());

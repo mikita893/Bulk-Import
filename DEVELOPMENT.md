@@ -1,6 +1,6 @@
 # Czytelne źródła Bulk Import
 
-Ta gałąź, `dev/readable-source`, zawiera tę samą grę v24 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
+Ta gałąź, `dev/readable-source`, zawiera tę samą grę v25 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
 
 ## Pierwsze uruchomienie
 
@@ -12,7 +12,7 @@ npm run build:client
 npm start
 ```
 
-Otwórz http://localhost:3000. Sam `Bulk-Import-v24.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
+Otwórz http://localhost:3000. Sam `Bulk-Import-v25.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
 
 ## Mapa modułów
 
@@ -162,3 +162,11 @@ Nowe testy: `runner.test.cjs` (trasy, fizyka, bonusy, rekord, kompletność atla
 Osobny zapis `bulk-import-apex-souls-v1` (schema 1) zawiera poziom, runy, lokację, zgony, zwycięstwa i miejsce utraty run. Nie zapisujemy ataku w połowie animacji; wczytanie wraca do ogniska. Format solo nadal 10, kooperacja 1. Wszystkie zasoby należą do jednego HTML. Dubbing i ilustracje v23 są zachowane.
 
 Testy: `souls.test.cjs` obejmuje zasady walki, checkpointy, zgony/runy i pełne zwycięstwo bez ulepszeń przy użyciu legalnych wejść. `runner-browser.cjs` sprawdza automatyczne otwarcie, walkę, dotyk, ognisko, fazy, zapis, powrót i budżet GPU. Dokument about:blank testu offline ma jawną pamięć testową (zarządzany Chromium blokuje file://); `pages-browser.cjs` dodatkowo sprawdza prawdziwy localStorage pod originem HTTP, bez backendu. Szczegóły: [DESIGN-v24.md](DESIGN-v24.md).
+
+## v25: cel Metro to wynik punktowy
+
+`BulkRunner.GOAL` oznacza teraz **25 000 punktów**, nie metry. `finishIfReady` oblicza wynik z dystansu i CSV (+25 pkt) oraz sprawdza próg zarówno po ruchu, jak i od razu po zebraniu pliku. Dzięki temu ostatni CSV kończy bieg w tej samej aktualizacji. Nie przywracaj ograniczenia dystansu w generatorze ani HUD. Dystans pozostaje statystyką i jednostką starych checkpointów co 5000 m.
+
+`LEGACY_DISTANCE_GOAL = 30000` służy jedynie zgodności starych zapisów i punktów wznowienia. `readRecord` odblokowuje Apex Souls, gdy stary/nowy rekord wynosi co najmniej 25 000 pkt lub zachodzi zapisane ukończenie dawnej trasy. Klucz i schema 1 bez zmian. `canEnterSouls` nie wymaga dystansu 30 000 m. HUD, ekran mety, brama oraz wstęp Apex Souls pokazują punkty.
+
+Testy modelu obejmują próg 24 999 pkt, ostatni CSV, dystans jako składnik wyniku, rekordy v23/v24 i pełne legalne biegi poniżej czterech minut. Testy Chromium/Pages kończą trasę przez rzeczywiste zebranie CSV przy około 100 m i sprawdzają automatyczne wejście. Szczegóły: [DESIGN-v25.md](DESIGN-v25.md).

@@ -225,16 +225,26 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await page.locator('[data-run-action="restart"]').click();
     await page.waitForFunction(() => BulkUnified.runner.game.state === 'playing');
     assert.equal(await page.evaluate(() => BulkUnified.openSouls()), false);
-    // Put the runner immediately before the finish; normal RAF physics must cross the exact gate.
+    // Put the score just below the goal; normal CSV pickup must unlock Souls at a short distance.
     await page.evaluate(() => {
       const g = BulkUnified.runner.game;
-      g.distance = 29999;
+      g.distance = 100;
+      g.coins = 995;
+      g.score = 24975;
+      g.y = 0;
+      g.vy = 0;
+      g.slide = 0;
       g.items = [];
       g.nextRow = 1e8;
       g.inv = 0;
+      g.add('csv', g.lane, g.distance + 0.4, 1);
     });
     await page.waitForFunction(() => BulkUnified.runner.game.state === 'won');
-    assert.equal(await page.evaluate(() => BulkUnified.runner.game.distance), 30000);
+    assert(
+      await page.evaluate(
+        () => BulkUnified.runner.game.score >= 25000 && BulkUnified.runner.game.distance < 101,
+      ),
+    );
     await page.waitForFunction(() => BulkUnified.screen === 'souls');
     assert(await page.locator('#souls-world').isVisible());
     assert(
@@ -380,7 +390,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.equal(await page.evaluate(() => BulkUnified.souls.game.state), 'victory');
     await page.locator('#unified-back').click();
     console.log(
-      'PASS 30,000m gate, automatic Apex Souls, real keyboard melee/roll, pause, bonfire upgrades, mobile touch, boss phases/telegraphs, GPU budget, death/rune retrieval, victory save and suspended parent cleanup.',
+      'PASS 25,000-point CSV gate, automatic Apex Souls, real keyboard melee/roll, pause, bonfire upgrades, mobile touch, boss phases/telegraphs, GPU budget, death/rune retrieval, victory save and suspended parent cleanup.',
       JSON.stringify(soulsBudget),
     );
     await page.evaluate(() => (window._formerRunner = BulkUnified.runner));

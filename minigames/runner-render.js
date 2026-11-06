@@ -162,7 +162,7 @@ class BulkRunnerRenderer {
     this.finishArch = new THREE.Group();
     this.scene.add(this.finishArch);
     for (const x of [-5.5, 5.5]) this.box(this.finishArch, this.m.gold, x, 3, 0, 0.6, 6, 0.6);
-    this.box(this.finishArch, this.label('META / 30 000 M', '#c5ffdf'), 0, 6, 0, 11.4, 2, 0.25);
+    this.box(this.finishArch, this.label('META / 25 000 PKT', '#c5ffdf'), 0, 6, 0, 11.4, 2, 0.25);
     const sign = this.box(
       this.scene,
       this.label('CSV CENTRAL / 01', '#87ffef'),
@@ -237,8 +237,8 @@ class BulkRunnerRenderer {
   }
   render(game, time) {
     const d = game.distance;
-    this.finishArch.visible = BulkRunner.GOAL - d < 200;
-    this.finishArch.position.z = 3 - (BulkRunner.GOAL - d);
+    this.finishArch.visible = game.state === 'won';
+    this.finishArch.position.z = -8;
     let n = 0;
     for (let i = 0; i < 70; i++)
       for (const lane of [-3, 0, 3])

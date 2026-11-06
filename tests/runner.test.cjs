@@ -131,7 +131,7 @@ test('seeded tracks stay bounded and always offer a traversable clear lane, even
       assert(g.speed <= 37);
       if (g.state === 'over') throw Error('Generated clear-lane route was impossible');
     }
-    assert(g.distance > 4000);
+    assert(g.distance > 2000);
     assert(g.coins > 100);
   }
   const a = new Game(42),
@@ -155,13 +155,12 @@ test('record parsing rejects corrupt data without touching other game saves', ()
   ])
     assert.equal(readRecord(raw).score, 0);
 });
-test('the complete 30 km route is physically traversable, finishes once and stops generating obstacles at the finish', () => {
+test('25,000 points including CSV finish ordinary safe-lane runs in a few minutes, without running 25 km', () => {
   for (const seed of [12, 847]) {
     const g = new Game(seed);
     g.start();
-    let checkpoints = 0,
-      wins = 0;
-    for (let frame = 0; frame < 140000 && g.state === 'playing'; frame++) {
+    let wins = 0;
+    for (let frame = 0; frame < 36000 && g.state === 'playing'; frame++) {
       const obstacles = g.items
         .filter((x) => ['train', 'crate', 'gate'].includes(x.type) && x.d + 6 > g.distance)
         .sort((a, b) => a.d - b.d);
@@ -171,19 +170,45 @@ test('the complete 30 km route is physically traversable, finishes once and stop
         g.lane = [0, 1, 2].find((l) => !blocked.has(l));
       }
       g.tick(1 / 120);
-      checkpoints += g.events.filter((e) => e === 'checkpoint').length;
       wins += g.events.filter((e) => e === 'won').length;
       assert(g.items.length < 100);
     }
     assert.equal(g.state, 'won');
-    assert.equal(g.distance, GOAL);
-    assert.equal(checkpoints, 5);
+    assert(g.score >= GOAL);
+    assert(g.distance < 5000);
+    assert(g.elapsed < 240);
     assert.equal(wins, 1);
     assert(g.hearts > 0);
     const before = JSON.stringify(g);
     g.tick(10);
     assert.equal(JSON.stringify(g), before);
   }
+});
+test('24,999 points stay locked, a CSV can cross the goal immediately, and distance points work too', () => {
+  const g = new Game(7);
+  g.start();
+  g.distance = 24;
+  g.coins = 999;
+  g.items = [];
+  g.nextRow = 1e8;
+  g.tick(0.01);
+  assert.equal(g.score, 24999);
+  assert.equal(g.state, 'playing');
+  g.add('csv', 1, g.distance + 0.2, 1);
+  g.tick(0.01);
+  assert.equal(g.state, 'won');
+  assert(g.score >= 25000);
+  assert(g.distance < 25);
+  assert(g.events.includes('coin'));
+  assert(g.events.includes('won'));
+  const d = new Game(8);
+  d.start();
+  d.distance = 24999;
+  d.items = [];
+  d.nextRow = 1e8;
+  d.tick(0.1);
+  assert.equal(d.state, 'won');
+  assert.equal(d.coins, 0);
 });
 test('checkpoints restore health, can resume after reload, and medkits are finite pickups', () => {
   const g = new Game(9, 10000);
@@ -206,12 +231,16 @@ test('checkpoints restore health, can resume after reload, and medkits are finit
   assert.equal(g.hearts, 2);
   for (const start of [-5000, 123, 30000, Infinity]) assert.equal(new Game(1, start).distance, 0);
 });
-test('old high scores cannot unlock Souls, and new completion requires the full distance', () => {
-  const parse = (r) => readRecord(JSON.stringify({ version: 1, score: 999999, coins: 50, ...r }));
+test('v23/v24 scores unlock at 25,000; old completions and checkpoints remain compatible', () => {
+  const parse = (r) => readRecord(JSON.stringify({ version: 1, score: 24999, coins: 50, ...r }));
   assert.equal(parse({}).completed, false);
   assert.equal(parse({ completed: true, bestDistance: 29999 }).completed, false);
   assert.equal(parse({ completed: true, bestDistance: 30000 }).completed, true);
+  assert.equal(parse({ score: 25000 }).completed, true);
+  assert.equal(parse({ score: 25001, bestDistance: 1000 }).completed, true);
+  assert.equal(parse({ score: 999999 }).completed, true);
   assert.equal(parse({ checkpoint: 25000, bestDistance: 24000 }).checkpoint, 0);
+  assert.equal(parse({ checkpoint: 25000, bestDistance: 26000 }).checkpoint, 25000);
   assert.equal(parse({ checkpoint: 15000, bestDistance: 16000 }).checkpoint, 15000);
 });
 test('all Gwintforce cards map to actual painted human/alien/creature portraits', () => {

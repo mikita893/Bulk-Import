@@ -4,16 +4,18 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.BulkRunner = api;
 })(typeof window !== 'undefined' ? window : globalThis, function () {
+  // GOAL is a score threshold; the old distance limit only validates legacy saves.
   const LANES = [-3, 0, 3],
     TYPES = ['crate', 'gate', 'train'],
-    GOAL = 30000,
-    CHECKPOINT = 5000;
+    GOAL = 25000,
+    CHECKPOINT = 5000,
+    LEGACY_DISTANCE_GOAL = 30000;
   class Game {
     constructor(seed = Date.now(), checkpoint = 0) {
       const start =
         Number.isInteger(checkpoint) &&
         checkpoint >= 0 &&
-        checkpoint < GOAL &&
+        checkpoint < LEGACY_DISTANCE_GOAL &&
         checkpoint % CHECKPOINT === 0
           ? checkpoint
           : 0;
@@ -81,7 +83,7 @@
       return item;
     }
     generate() {
-      while (this.nextRow < this.distance + 220 && this.nextRow < GOAL - 18) {
+      while (this.nextRow < this.distance + 220) {
         const d = this.nextRow,
           safe = Math.floor(this.random() * 3),
           style = this.row % 5;
@@ -110,16 +112,18 @@
         this.step(step);
       }
     }
+    finishIfReady() {
+      this.score = Math.floor(this.distance) + this.coins * 25;
+      if (this.score < GOAL) return false;
+      this.state = 'won';
+      this.events.push('won');
+      return true;
+    }
     step(dt) {
       this.elapsed += dt;
       this.speed = Math.min(32, 16 + this.distance / 550) + (this.boost > 0 ? 5 : 0);
-      this.distance = Math.min(GOAL, this.distance + this.speed * dt);
-      if (this.distance === GOAL) {
-        this.score = GOAL + this.coins * 25;
-        this.state = 'won';
-        this.events.push('won');
-        return;
-      }
+      this.distance += this.speed * dt;
+      if (this.finishIfReady()) return;
       const checkpoint = Math.floor(this.distance / CHECKPOINT) * CHECKPOINT;
       if (checkpoint > this.checkpoint) {
         this.checkpoint = checkpoint;
@@ -154,6 +158,7 @@
             if (item.type === 'csv') {
               this.coins++;
               this.events.push('coin');
+              if (this.finishIfReady()) return;
             } else if (item.type === 'shield') {
               this.shields = Math.min(2, this.shields + 1);
               this.events.push('shield');
@@ -215,13 +220,15 @@
       )
         return empty;
       const best =
-        Number.isFinite(r.bestDistance) && r.bestDistance >= 0 && r.bestDistance <= GOAL
+        Number.isFinite(r.bestDistance) &&
+        r.bestDistance >= 0 &&
+        r.bestDistance <= LEGACY_DISTANCE_GOAL
           ? r.bestDistance
           : 0;
       const checkpoint =
         Number.isInteger(r.checkpoint) &&
         r.checkpoint >= 0 &&
-        r.checkpoint < GOAL &&
+        r.checkpoint < LEGACY_DISTANCE_GOAL &&
         r.checkpoint % CHECKPOINT === 0 &&
         r.checkpoint <= best
           ? r.checkpoint
@@ -232,7 +239,7 @@
         coins: r.coins,
         bestDistance: best,
         checkpoint,
-        completed: best === GOAL && r.completed === true,
+        completed: r.score >= GOAL || (best === LEGACY_DISTANCE_GOAL && r.completed === true),
       };
     } catch (e) {
       return empty;
