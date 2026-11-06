@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v20.0.0 — 2026-11-06
+
+Plik gry: [Bulk-Import-v20.html](Bulk-Import-v20.html).
+
+- Dodano Sudoku uruchamiane bezpośrednio z CSV Double: plansze 9×9 z jednym rozwiązaniem, trzy poziomy, notatki, cofanie, podpowiedzi i sprawdzanie wpisów.
+- Dodano zegar, pauzę, ekran ukończenia, sterowanie dotykowe/klawiaturą i automatyczny zapis Sudoku w localStorage.
+- Powrót zachowuje tę samą partię CSV Double; gra lokalna zostaje zatrzymana na czas Sudoku i czeka na ręczne wznowienie. W aktywnym pokoju online wejście do Sudoku jest wyłączone.
+- Zachowano stare zapisy i minigry. Wydano nowy HTML i aktualizację strony solo; multiplayer pozostaje wyłączony, a alwaysdata wstrzymane.
+
 ## v19.0.0 — 2026-11-04
 
 Plik gry: [Bulk-Import-v19.html](Bulk-Import-v19.html).

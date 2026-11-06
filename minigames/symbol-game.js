@@ -1,13 +1,14 @@
 'use strict';
 class BulkDoubleGame{
  constructor(host,options={}){
-  this.host=host;this.storage=options.storage;this.soundEnabled=options.soundEnabled||(()=>true);this.onExit=options.onExit;this.dead=false;this.timer=null;this.frameId=0;this.audio=null;this.storageOK=true;this.lastCountdown=0;
+  this.host=host;this.storage=options.storage;this.soundEnabled=options.soundEnabled||(()=>true);this.onExit=options.onExit;this.openSudoku=options.openSudoku;this.nestedSuspended=false;this.dead=false;this.timer=null;this.frameId=0;this.audio=null;this.storageOK=true;this.lastCountdown=0;
   try{const raw=JSON.parse(this.storage.getItem('bulk-import-csv-double-v1')||'null');this.settings=BulkDouble.normalizeDoubleSettings(raw?.version===1?raw.settings:{});}catch{this.settings=BulkDouble.normalizeDoubleSettings();this.storageOK=false;}
   this.model=new BulkDouble.DoubleMatch(this.settings,Date.now());
   this.online=new BulkDoubleNetwork(this,options.network);
   this.onClick=event=>{const button=event.target.closest('button');if(!button||!host.contains(button))return;
    if(button.hasAttribute('data-double-symbol')){event.preventDefault();const token={session:Number(button.dataset.session),roundId:Number(button.dataset.round)};if(this.online.active){this.online.answer(Number(button.dataset.doubleSymbol),token);return;}const result=this.model.answer(Number(button.dataset.doubleSymbol),token,performance.now());if(result==='correct')this.tone(880);if(result==='wrong')this.tone(155);this.render();return;}
    const action=button.dataset.doubleAction;
+   if(action==='sudoku'){this.openSudoku?.();return;}
    if(action?.startsWith('net-')){this.online.action(action);return;}
    if(action==='start'){if(this.readMenu()){this.model.start(performance.now(),this.settings);this.lastCountdown=0;this.tone(520);this.render();}}
    if(action==='restart'){this.model.start(performance.now(),this.settings);this.lastCountdown=0;this.tone(520);this.render();}
@@ -25,12 +26,13 @@ class BulkDoubleGame{
    this.readMenu();if(this.$('double-bots'))this.$('double-bots').disabled=this.$('double-training').checked;
   };
   this.onKey=event=>{
+   if(this.nestedSuspended)return;
    if(event.ctrlKey||event.altKey||event.metaKey||['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)||this.model.state==='MENU')return;
    if(event.repeat){if(/^[1-7]$/.test(event.key))event.preventDefault();return;}
    if(['Escape','KeyP'].includes(event.code)){event.preventDefault();this.togglePause();return;}
    if(/^[1-7]$/.test(event.key)){event.preventDefault();this.host.querySelectorAll('[data-double-symbol]')[Number(event.key)-1]?.click();}
   };
-  this.onBlur=()=>{if(!this.online.active&&this.model.pause(performance.now()))this.render();};this.onHidden=()=>{if(document.hidden)this.onBlur();};
+  this.onBlur=()=>{if(!this.nestedSuspended&&!this.online.active&&this.model.pause(performance.now()))this.render();};this.onHidden=()=>{if(document.hidden)this.onBlur();};
   host.addEventListener('click',this.onClick);host.addEventListener('change',this.onChange);host.addEventListener('input',this.onChange);window.addEventListener('keydown',this.onKey);window.addEventListener('blur',this.onBlur);document.addEventListener('visibilitychange',this.onHidden);this.render();
  }
  $(id){return this.host.querySelector('#'+id);}
@@ -80,8 +82,8 @@ class BulkDoubleGame{
   return `<section class="dbl-results ${r.outcome==='win'?'celebrate':''}"><div class="dbl-trophy" aria-hidden="true">${r.outcome==='win'?'🏆':r.outcome==='draw'?'🤝':r.outcome==='training'?'🎯':'🪶'}</div><div class="eyebrow">${r.outcome==='aborted'?'MECZ PRZERWANY':'STOS WYCZERPANY / WYNIKI'}</div><h2 id="double-result-title">${titles[r.outcome]}</h2><p>${r.outcome==='aborted'?bulkDoubleEscape(m.reason):'Zdobyto '+m.total+' kart. Żaden rekord nie został naliczony dwa razy.'}</p><ol class="dbl-ranking">${r.ranking.map(p=>`<li data-rank="${p.rank}"><b>${p.rank}.</b><span>${p.avatar} ${bulkDoubleEscape(p.name)}</span><strong>${p.score} kart</strong></li>`).join('')}</ol><div class="dbl-statistics"><div><b>${r.percent.toFixed(1)}%</b><span>STOSU DLA CIEBIE</span></div><div><b>${r.correct}</b><span>POPRAWNYCH PRÓB</span></div><div><b>${r.wrong}</b><span>BŁĘDNYCH PRÓB</span></div><div><b>${r.average===null?'—':(r.average/1000).toFixed(2)+' s'}</b><span>ŚREDNIA POPRAWNYCH ODPOWIEDZI</span></div></div><p>„Nie przegrałem. Wykonałem migrację punktów do ${this.online.active?'znajomego':'bota'}.”</p><div class="dbl-result-actions">${this.online.active?`<button class="primary" data-double-action="net-lobby" ${!this.online.host||!this.online.connected?'disabled':''}>Wróć do lobby / rewanż</button><button data-double-action="net-leave">Opuść pokój</button>`:`<button class="primary" data-double-action="restart">▶ Zagraj ponownie</button><button data-double-action="menu">Ustawienia</button>`}<button data-double-action="exit">Wróć do Bird Game 3</button></div></section>`;
  }
  render(){
-  if(this.dead)return;clearTimeout(this.timer);this.timer=null;cancelAnimationFrame(this.frameId);this.frameId=0;
-  const m=this.model;this.host.innerHTML=`<div class="dbl-page" data-double-state="${m.state}">${this.header()}${this.online.active&&!(m instanceof BulkDoubleRemoteView)?this.online.lobbyHTML():m.state==='MENU'?this.menuHTML():m.state==='GAME_OVER'?this.resultsHTML():this.playHTML()}</div>`;
+  if(this.dead||this.nestedSuspended)return;clearTimeout(this.timer);this.timer=null;cancelAnimationFrame(this.frameId);this.frameId=0;
+  const m=this.model;this.host.innerHTML=`<div class="dbl-page" data-double-state="${m.state}">${this.header()}<div class="dbl-side-games"><p>${this.online.active?'Aby wejść do Sudoku, najpierw opuść pokój CSV Double.':'Przerwa od refleksu? Czeka arkusz bez duplikatów.'}</p><button id="double-sudoku" data-double-action="sudoku" ${this.online.active?'disabled':''}>▦ Sudoku · walidacja cyfr</button></div>${this.online.active&&!(m instanceof BulkDoubleRemoteView)?this.online.lobbyHTML():m.state==='MENU'?this.menuHTML():m.state==='GAME_OVER'?this.resultsHTML():this.playHTML()}</div>`;
   this.updateLive();this.schedule();
   if(['COUNTDOWN','PLAYING','ROUND_TRANSITION'].includes(m.state))this.frameId=requestAnimationFrame(()=>this.frame());
  }
@@ -94,12 +96,14 @@ class BulkDoubleGame{
   for(const b of this.host.querySelectorAll('[data-double-symbol]'))b.disabled=m.state!=='PLAYING'||locked||(this.online.active&&!this.online.connected);
  }
  schedule(){
-  if(this.dead)return;const deadline=this.model.nextDeadline();if(!Number.isFinite(deadline))return;
+  if(this.dead||this.nestedSuspended)return;const deadline=this.model.nextDeadline();if(!Number.isFinite(deadline))return;
   const delay=Math.max(0,deadline-this.model.projectedTime(performance.now()));
-  this.timer=setTimeout(()=>{if(this.dead)return;const before=this.model.history.length,previous=this.model.state;this.model.advance(performance.now());if(previous!=='GAME_OVER'&&this.model.state==='GAME_OVER')this.tone(1150);else if(this.model.history.length>before)this.tone(this.model.state==='GAME_OVER'?950:430);this.render();},Math.min(60000,delay+1));
+  this.timer=setTimeout(()=>{if(this.dead||this.nestedSuspended)return;const before=this.model.history.length,previous=this.model.state;this.model.advance(performance.now());if(previous!=='GAME_OVER'&&this.model.state==='GAME_OVER')this.tone(1150);else if(this.model.history.length>before)this.tone(this.model.state==='GAME_OVER'?950:430);this.render();},Math.min(60000,delay+1));
  }
- frame(){this.frameId=0;if(this.dead)return;this.updateLive();if(['COUNTDOWN','PLAYING','ROUND_TRANSITION'].includes(this.model.state))this.frameId=requestAnimationFrame(()=>this.frame());}
+ frame(){this.frameId=0;if(this.dead||this.nestedSuspended)return;this.updateLive();if(['COUNTDOWN','PLAYING','ROUND_TRANSITION'].includes(this.model.state))this.frameId=requestAnimationFrame(()=>this.frame());}
  togglePause(){if(this.online.active){this.online.action('net-pause');return;}if(this.model.state==='PAUSED'){this.model.resume(performance.now());this.tone(620);}else this.model.pause(performance.now());this.render();}
+ suspendForMinigame(){if(this.online.active)return false;this.model.pause(performance.now());this.nestedSuspended=true;clearTimeout(this.timer);cancelAnimationFrame(this.frameId);this.persist();return true;}
+ resumeFromMinigame(){this.nestedSuspended=false;this.render();}
  destroy(){this.dead=true;this.online.destroy();clearTimeout(this.timer);cancelAnimationFrame(this.frameId);this.persist();this.host.removeEventListener('click',this.onClick);this.host.removeEventListener('change',this.onChange);this.host.removeEventListener('input',this.onChange);window.removeEventListener('keydown',this.onKey);window.removeEventListener('blur',this.onBlur);document.removeEventListener('visibilitychange',this.onHidden);this.audio?.close();this.host.replaceChildren();}
 }
 if(typeof window!=='undefined')window.BulkDoubleGame=BulkDoubleGame;
