@@ -104,6 +104,18 @@
     if (!blocked(actor.x + dx, actor.z, r)) actor.x += dx;
     if (!blocked(actor.x, actor.z + dz, r)) actor.z += dz;
   }
+  // Critical attacks never teleport: both the prompt and the delayed hit check the same clear path.
+  function clearPath(a, b) {
+    const d = Math.hypot(b.x - a.x, b.z - a.z),
+      steps = Math.max(1, Math.ceil(d / 0.15));
+    for (let i = 0; i <= steps; i++)
+      if (blocked(a.x + ((b.x - a.x) * i) / steps, a.z + ((b.z - a.z) * i) / steps, 0.18))
+        return false;
+    return true;
+  }
+  function parryable(e) {
+    return e.attackKind === 'slash' && !(e.criticalGuard > 0);
+  }
   class Game {
     constructor(progress = defaultProgress()) {
       this.progress = validProgress(progress)
@@ -147,6 +159,7 @@
         regen: 0,
         stagger: 0,
         blocking: false,
+        parryCooldown: 0,
       };
       const layout =
         this.area === 0
@@ -182,6 +195,7 @@
             windup: 1,
             step: 0,
             flash: 0,
+            criticalGuard: 0,
           }));
       this.bolts = [];
       this.target = null;
@@ -198,6 +212,31 @@
     resume() {
       if (this.state === 'paused') this.state = 'playing';
     }
+    criticalTarget() {
+      const p = this.player;
+      if (this.state !== 'playing' || p.action || p.roll > 0 || p.stagger > 0) return null;
+      const candidates = [];
+      for (const e of this.enemies) {
+        if (e.hp <= 0 || e.criticalGuard > 0 || e.state === 'critical') continue;
+        const d = Math.hypot(e.x - p.x, e.z - p.z),
+          aim = Math.atan2(e.x - p.x, e.z - p.z);
+        if (d > 0.35 && d <= 2.25 && Math.abs(angleDiff(aim, p.angle)) < 0.95 && clearPath(p, e)) {
+          if (e.state === 'stunned' && e.timer > 0.12)
+            candidates.push({ enemy: e, kind: 'riposte', d });
+          else if (
+            e.type !== 'boss' &&
+            e.state !== 'stunned' &&
+            d <= 2 &&
+            Math.abs(angleDiff(Math.atan2(p.x - e.x, p.z - e.z), e.angle)) > 2.35
+          )
+            candidates.push({ enemy: e, kind: 'backstab', d });
+        }
+      }
+      candidates.sort(
+        (a, b) => (a.kind === 'riposte' ? 0 : 1) - (b.kind === 'riposte' ? 0 : 1) || a.d - b.d,
+      );
+      return candidates[0] || null;
+    }
     action(kind, input = {}) {
       const p = this.player;
       if (this.state !== 'playing' || p.hp <= 0) return false;
@@ -212,6 +251,43 @@
       }
       if (kind === 'interact') return this.interact();
       if (p.action || p.roll > 0 || p.stagger > 0) return false;
+      if (kind === 'parry') {
+        if (p.stamina < 18 || p.parryCooldown > 0) return false;
+        if (Number.isFinite(input.angle)) p.angle = input.angle;
+        const target = this.enemies.find((e) => e.id === this.target && e.hp > 0);
+        if (target) p.angle = Math.atan2(target.x - p.x, target.z - p.z);
+        p.stamina -= 18;
+        p.regen = 1;
+        p.parryCooldown = 0.9;
+        p.blocking = false;
+        p.action = { kind: 'parry', time: 0, total: 0.65, hitAt: Infinity, hit: false };
+        this.emit('parryAttempt');
+        return true;
+      }
+      if (kind === 'critical') {
+        const choice = this.criticalTarget();
+        if (!choice || p.stamina < 32) return false;
+        const e = choice.enemy;
+        p.stamina -= 32;
+        p.regen = 1.1;
+        p.blocking = false;
+        p.angle = Math.atan2(e.x - p.x, e.z - p.z);
+        p.action = {
+          kind: choice.kind,
+          target: e.id,
+          time: 0,
+          total: 0.95,
+          hitAt: 0.38,
+          hit: false,
+          angle: p.angle,
+        };
+        p.inv = Math.max(p.inv, 0.95);
+        e.state = 'critical';
+        e.timer = 1.15;
+        e.criticalGuard = e.type === 'boss' ? 6 : 3;
+        this.emit('criticalStart', e.x, e.z);
+        return true;
+      }
       if (kind === 'light' || kind === 'heavy') {
         const cost = kind === 'heavy' ? 40 : 22;
         if (p.stamina < cost) return false;
@@ -316,10 +392,28 @@
       this.message = 'Powrót do Ogniska Backupu. Odzyskaj upuszczone runy.';
       return true;
     }
-    hurtPlayer(damage, x, z, unblockable = false) {
+    hurtPlayer(damage, x, z, unblockable = false, attacker = null) {
       const p = this.player;
       if (p.inv > 0 || p.hp <= 0) return false;
       const facing = Math.abs(angleDiff(Math.atan2(x - p.x, z - p.z), p.angle)) < 1.35;
+      // Only a real frontal melee strike can open a riposte; bolts and novas bypass parries.
+      if (
+        attacker &&
+        !unblockable &&
+        parryable(attacker) &&
+        p.action?.kind === 'parry' &&
+        p.action.time >= 0.08 &&
+        p.action.time <= 0.3 &&
+        Math.abs(angleDiff(Math.atan2(x - p.x, z - p.z), p.angle)) < 1.05
+      ) {
+        attacker.state = 'stunned';
+        attacker.timer = 1.65;
+        p.action = null;
+        p.inv = 0.18;
+        this.message = 'PAROWANIE! C z bliska: riposta. Odmowa dostępu do twojego życia.';
+        this.emit('parried', attacker.x, attacker.z);
+        return true;
+      }
       if (p.blocking && facing && !unblockable && p.stamina >= damage * 0.9) {
         p.stamina -= damage * 0.9;
         p.regen = 1.1;
@@ -388,6 +482,7 @@
       p.inv = Math.max(0, p.inv - dt);
       p.stagger = Math.max(0, p.stagger - dt);
       p.regen = Math.max(0, p.regen - dt);
+      p.parryCooldown = Math.max(0, p.parryCooldown - dt);
       p.blocking = !!input.block && !p.action && p.roll <= 0 && p.stagger <= 0 && p.stamina > 1;
       const target = this.enemies.find((e) => e.id === this.target && e.hp > 0);
       if (target && !p.action && p.roll <= 0) p.angle = Math.atan2(target.x - p.x, target.z - p.z);
@@ -403,7 +498,17 @@
           x /= len;
           z /= len;
           const sprint = input.sprint && !p.action && !p.blocking && p.stamina > 8;
-          const speed = (sprint ? 6.6 : 4.3) * (p.action ? 0.35 : p.blocking ? 0.52 : 1);
+          const speed =
+            (sprint ? 6.6 : 4.3) *
+            (p.action
+              ? p.action.kind === 'riposte' || p.action.kind === 'backstab'
+                ? 0
+                : p.action.kind === 'parry'
+                  ? 0.15
+                  : 0.35
+              : p.blocking
+                ? 0.52
+                : 1);
           move(p, x * speed * dt, z * speed * dt);
           if (sprint) {
             p.stamina = Math.max(0, p.stamina - dt * 10);
@@ -422,6 +527,25 @@
           if (a.kind === 'heal') {
             p.hp = Math.min(this.maxHp, p.hp + 75);
             this.emit('healed');
+          } else if (a.kind === 'riposte' || a.kind === 'backstab') {
+            const e = this.enemies.find((e) => e.id === a.target && e.hp > 0);
+            if (
+              e &&
+              e.state === 'critical' &&
+              Math.hypot(e.x - p.x, e.z - p.z) <= 2.6 &&
+              clearPath(p, e)
+            ) {
+              this.hurtEnemy(
+                e,
+                (a.kind === 'riposte' ? (e.type === 'boss' ? 140 : 110) : 100) +
+                  this.progress.level * 6,
+              );
+              this.emit(a.kind, e.x, e.z);
+              this.message =
+                a.kind === 'riposte'
+                  ? 'RIPOSTA · krytyczny rollback prosto w rekord.'
+                  : 'BACKSTAB · INSERT INTO plecy. Bez duplikatów.';
+            }
           } else {
             for (const e of this.enemies) {
               const d = Math.hypot(e.x - p.x, e.z - p.z),
@@ -474,6 +598,16 @@
         d = Math.hypot(dx, dz),
         phase = e.type === 'boss' ? (e.hp / e.maxHp > 0.6 ? 1 : e.hp / e.maxHp > 0.3 ? 2 : 3) : 1;
       e.flash = Math.max(0, e.flash - dt);
+      e.criticalGuard = Math.max(0, (e.criticalGuard || 0) - dt);
+      if (e.state === 'critical' || e.state === 'stunned') {
+        e.timer -= dt;
+        if (e.timer <= 0) {
+          e.state = 'recover';
+          e.timer = 0.8;
+          e.criticalGuard = Math.max(e.criticalGuard, e.type === 'boss' ? 3 : 1);
+        }
+        return;
+      }
       if (e.phase !== phase) {
         e.phase = phase;
         e.state = 'recover';
@@ -503,7 +637,7 @@
               e.attackKind === 'nova' ||
               Math.abs(angleDiff(angle, e.attackAngle)) < (e.type === 'boss' ? 1.5 : 1.3);
           if (d < e.attackRange + 0.35 && inside)
-            this.hurtPlayer(stats.damage + (phase - 1) * 5, e.x, e.z, e.attackKind === 'nova');
+            this.hurtPlayer(stats.damage + (phase - 1) * 5, e.x, e.z, e.attackKind === 'nova', e);
         }
         return;
       }
@@ -560,5 +694,7 @@
     readProgress,
     angleDiff,
     blocked,
+    clearPath,
+    parryable,
   };
 });

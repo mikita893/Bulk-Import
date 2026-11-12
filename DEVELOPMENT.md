@@ -1,6 +1,6 @@
 # Czytelne źródła Bulk Import
 
-Ta gałąź, `dev/readable-source`, zawiera tę samą grę v27 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
+Ta gałąź, `dev/readable-source`, zawiera tę samą grę v28 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
 
 ## Pierwsze uruchomienie
 
@@ -12,7 +12,7 @@ npm run build:client
 npm start
 ```
 
-Otwórz http://localhost:3000. Sam `Bulk-Import-v27.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
+Otwórz http://localhost:3000. Sam `Bulk-Import-v28.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
 
 ## Mapa modułów
 
@@ -205,3 +205,15 @@ Formaty wcześniejszych gier i wszystkie archiwalne HTML pozostają bez zmian. S
 Przed uzyskaniem przepustki (quest 0) usługi kowalki, nauczyciela i komendantki są zablokowane, także gdy gracz obejdzie obóz od północy. Chroni to skończoną rudę pierwszego zadania przed wydaniem jej przed oddaniem strażnikowi. Osobny test sprawdza odmowę usług przed przepustką i ich odblokowanie po oddaniu rudy.
 
 Ruda do przepustki może pochodzić także z łupów przeciwników. Nie wymagaj trzech wydobytych złóż w walidacji zapisu po uzyskaniu przepustki: model przyjmuje dowolne trzy bryły, a poprawny zapis ma zachować także tę legalną drogę. Osobny test obejmuje oddanie rudy z walki bez wydobywania i ponowne wczytanie takiego stanu.
+
+## v28: parowanie, riposta i backstab w Apex Souls
+
+Sterowanie: V to parowanie, C to kontekstowy cios krytyczny. J/LPM i K pozostają zwykłymi atakami. Parowanie kosztuje 18 wytrzymałości, działa od 0,08 do 0,30 s i odnawia się po 0,9 s. Wyłącznie `hurtPlayer(..., attacker)` wywołane przez rzeczywiste zwykłe cięcie może ogłuszyć wroga: frontalny kąt, aktywne okno i `parryable(attacker)` muszą jednocześnie przejść walidację. Pociski nie przekazują napastnika, nova ma `unblockable=true`.
+
+`Game.criticalTarget()` wybiera pojedynczy żywy cel: priorytet ma riposta (`stunned`, timer > 0,12 s, dystans ≤ 2,25), potem backstab (dystans ≤ 2, kąt za plecami > 2,35 rad, boss wykluczony). Obie akcje wymagają zwrócenia się ku celowi i `clearPath`; nie wiąż ich z namierzeniem tak, aby blokowało inne legalne cele. `action('critical')` kosztuje 32 wytrzymałości, zamraża przemieszczanie gracza, rezerwuje ID celu i uruchamia skończoną animację. Trafienie po 0,38 s ponownie sprawdza zasięg i przeszkody. Nie teleportuj aktorów ani nie przyznawaj obrażeń wszystkim w zasięgu miecza.
+
+`criticalGuard` i `parryCooldown` to stany przejściowe, zmniejszane tylko w aktywnej symulacji. Osobne `stunned` / `critical` odraczają ruch, ataki i zmianę fazy bossa do końca animacji; zmiana fazy musi się potem wykonać. `hurtEnemy` pozostaje jedyną drogą do nagród, śmierci i zwycięstwa. Respawn tworzy nowe pola. Nie dopisuj ich do schema 1 ani nie zmieniaj klucza zapisu.
+
+Renderer używa istniejącej geometrii pierścienia, stałej poświaty i puli cząstek: nie dodawaj geometrii w `render`. Błękitny stożek oznacza ostatnie 0,3 s parowalnego cięcia, a turkusowy znacznik odpowiada dokładnie `criticalTarget()`. HUD rozróżnia ripostę/backstab i brak wytrzymałości. Kontroler obsługuje klawiaturę i dotyk; efekty wyniku pochodzą ze zdarzeń `parried`, `riposte`, `backstab`, a dźwięk rozpoczęcia z zaakceptowanej akcji.
+
+Testy: `tests/souls.test.cjs` sprawdza sukcesy, porażki, timing, kierunek, cooldowny, koszt, filary, wygaśnięcie okna, pauzę, pojedynczy cel/nagrody i odporności/fazy bossa. `tests/runner-browser.cjs` wykonuje prawdziwe V/C i dotyk, sprawdza komunikaty/audio, budżet GPU, zapis, powrót i pełne zagnieżdżenie. `tests/pages-browser.cjs` weryfikuje statyczną publikację, pobranie oryginalnego HTML i localStorage po odświeżeniu. Szczegóły balansu: [DESIGN-v28.md](DESIGN-v28.md).

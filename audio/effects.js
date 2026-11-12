@@ -71,6 +71,14 @@
       } else if (name === 'greatsword') {
         this.node('noise', 0, 0.05, 0.2);
         this.node('triangle', 140, 0.07, 0.23, 0, 35);
+      } else if (name === 'parry') {
+        this.node('triangle', 1700, 0.055, 0.22, 0, 650);
+        this.node('sine', 2400, 0.035, 0.27, 0.03, 900);
+        this.node('noise', 0, 0.025, 0.06);
+      } else if (name === 'critical') {
+        this.node('noise', 0, 0.065, 0.18);
+        this.node('triangle', 180, 0.085, 0.28, 0, 35);
+        this.node('sine', 650, 0.03, 0.24, 0.1, 160);
       } else if (name === 'door') {
         this.node('noise', 0, 0.025, 0.08);
         this.node('triangle', 150, 0.045, 0.1, 0, 50);

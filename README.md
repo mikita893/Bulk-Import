@@ -1,12 +1,12 @@
-# Bulk Import: Wspólna Galaktyka — v27
+# Bulk Import: Wspólna Galaktyka — v28
 
 Historia zmian: [CHANGELOG.md](CHANGELOG.md) — aktualizowana przy każdym nowym wydaniu, począwszy od v16.
 
-**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v27.html](Bulk-Import-v27.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów**, **CSV Double**, **Sudoku**, **Metro Import 3D**, **Apex Souls 3D**, **Grand Theft CSV: Vice Import** i **Importic: Kolonia Legacy**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
+**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v28.html](Bulk-Import-v28.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów**, **CSV Double**, **Sudoku**, **Metro Import 3D**, **Apex Souls 3D**, **Grand Theft CSV: Vice Import** i **Importic: Kolonia Legacy**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
 
 ## Pobierz HTML i graj lokalnie
 
-Pobierz **Bulk-Import-v27.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce, CSV Double, Sudoku, Metro Import, Apex Souls, Vice Import i Importic są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
+Pobierz **Bulk-Import-v28.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce, CSV Double, Sudoku, Metro Import, Apex Souls, Vice Import i Importic są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
 
 Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo działa offline; Bird Game 3 i Gwintforce uruchomisz w terminalu na statku; CSV Double otworzysz wewnątrz Bird Game 3, a Sudoku wewnątrz CSV Double. Kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
 
@@ -26,6 +26,8 @@ npm start
 ```
 
 Otwórz `http://localhost:3000`. Serwer udostępnia ten sam HTML; po udanym połączeniu dostępne są również kooperacja i VS. HTTP i WebSocket `/ws` korzystają z jednego portu, ustawianego przez `PORT`. Gospodarz tworzy pokój i przekazuje znajomym link lub kod.
+
+- **Nowości v28:** Apex Souls: **V — parowanie**, **C — riposta / backstab**. Błękitny stożek oznacza końcówkę parowalnego cięcia; po sukcesie podejdź przed ogłuszonego wroga i użyj C. Podejście za plecy zwykłego strażnika daje backstab. Lord Legacy jest odporny na backstab, ale można parować jego cięcia; nova i pociski są nieparowalne. Krytyki kosztują wytrzymałość, mają własne animacje, dźwięki i podpowiedzi, również na telefonie. Zapisy bez zmian. Szczegóły: [DESIGN-v28.md](DESIGN-v28.md).
 
 - **Nowości v27:** **Importic: Kolonia Legacy** — minigra RPG 3D w stylu klasycznych kolonii fantasy. Wejście z Vice Import: portal przy starcie albo przycisk w pauzie/ekranie wejścia; nie wymaga ukończenia misji miasta. Trzy frakcje, dialogi z portretami i przychylnością, ruda, handel, nauka za PN, zadania, walka, magia i boss kopalni. Postęp zapisuje się osobno, a powrót zachowuje zatrzymane miasto. Szczegóły: [DESIGN-v27.md](DESIGN-v27.md).
 

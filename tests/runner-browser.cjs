@@ -270,12 +270,82 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await page.keyboard.down('KeyW');
     await page.waitForFunction(() => BulkUnified.souls.game.player.z < 7);
     await page.keyboard.up('KeyW');
+    // Real keyboard critical attacks reserve one target; parry timing uses a genuine enemy melee strike.
     await page.evaluate(() => {
       const g = BulkUnified.souls.game;
-      g.player.x = 0;
-      g.player.z = 0;
-      g.player.inv = 0;
-      g.enemies = [{ ...g.enemies[0], x: 0, z: -2, state: 'chase', timer: 10 }];
+      Object.assign(g.player, { x: 0, z: 0, angle: Math.PI, inv: 0, stamina: 100 });
+      g.enemies = [
+        {
+          ...g.enemies[0],
+          type: 'warden',
+          hp: 148,
+          maxHp: 148,
+          x: 0,
+          z: -1.8,
+          angle: Math.PI,
+          state: 'recover',
+          timer: 5,
+        },
+      ];
+      g.target = g.enemies[0].id;
+    });
+    await page.waitForFunction(() =>
+      document.querySelector('#souls-prompt').textContent.includes('BACKSTAB'),
+    );
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-souls-backstab.png' });
+    await page.keyboard.press('KeyC');
+    await page.waitForFunction(() => BulkUnified.souls.game.enemies[0].hp === 48);
+    assert.equal(await page.evaluate(() => BulkUnified.souls.game.player.x), 0);
+    await page.waitForFunction(() => !BulkUnified.souls.game.player.action);
+    await page.evaluate(() => {
+      const g = BulkUnified.souls.game,
+        e = g.enemies[0];
+      Object.assign(g.player, { hp: 120, stamina: 100, inv: 0, parryCooldown: 0 });
+      Object.assign(e, {
+        hp: 148,
+        angle: 0,
+        state: 'windup',
+        timer: 0.24,
+        windup: 0.8,
+        attackAngle: 0,
+        attackKind: 'slash',
+        attackRange: 3,
+        criticalGuard: 0,
+      });
+    });
+    await page.keyboard.press('KeyV');
+    await page.waitForFunction(() => BulkUnified.souls.game.enemies[0].state === 'stunned');
+    assert.equal(await page.evaluate(() => BulkUnified.souls.game.player.hp), 120);
+    await page.waitForFunction(() =>
+      document.querySelector('#souls-prompt').textContent.includes('RIPOSTA'),
+    );
+    await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-souls-riposte.png' });
+    await page.keyboard.press('KeyC');
+    await page.waitForFunction(() => BulkUnified.souls.game.enemies[0].hp === 38);
+    assert(
+      await page.evaluate(
+        () =>
+          BulkUnified.souls.effects.counts.parry > 0 &&
+          BulkUnified.souls.effects.counts.critical >= 2,
+      ),
+    );
+    await page.waitForFunction(() => !BulkUnified.souls.game.player.action);
+    await page.evaluate(() => {
+      const g = BulkUnified.souls.game;
+      Object.assign(g.player, { x: 0, z: 0, inv: 0, stamina: 100 });
+      g.enemies = [
+        {
+          ...g.enemies[0],
+          type: 'knight',
+          hp: 78,
+          maxHp: 78,
+          x: 0,
+          z: -2,
+          state: 'chase',
+          timer: 10,
+          criticalGuard: 0,
+        },
+      ];
       g.target = g.enemies[0].id;
     });
     await page.keyboard.press('KeyJ');
@@ -317,6 +387,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
     await page.locator('[data-souls-action="roll"]').tap();
     await page.waitForFunction(() => BulkUnified.souls.game.player.roll > 0);
+    await page.waitForFunction(() => BulkUnified.souls.game.player.roll === 0);
+    await page.locator('[data-souls-action="parry"]').tap();
+    await page.waitForFunction(() => BulkUnified.souls.game.player.action?.kind === 'parry');
     await page.screenshot({ path: '/tmp/bulk-v' + release.major + '-souls-mobile.png' });
     await page.setViewportSize({ width: 1440, height: 1050 });
     // Telegraphed boss states are rendered from the same radius/direction as simulation collisions.
@@ -760,7 +833,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.equal(await page.evaluate(() => BulkUnified.souls.game.state), 'victory');
     await page.locator('#unified-back').click();
     console.log(
-      'PASS 25,000-point CSV gate, automatic Apex Souls, real keyboard melee/roll, pause, bonfire upgrades, mobile touch, boss phases/telegraphs, GPU budget, death/rune retrieval, victory save and suspended parent cleanup.',
+      'PASS 25,000-point CSV gate, automatic Apex Souls, real keyboard melee/roll/parry/riposte/backstab, touch parry, pause, bonfire upgrades, mobile touch, boss phases/telegraphs, GPU budget, death/rune retrieval, victory save and suspended parent cleanup.',
       JSON.stringify(soulsBudget),
     );
     await page.evaluate(() => (window._formerRunner = BulkUnified.runner));

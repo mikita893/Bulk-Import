@@ -343,6 +343,9 @@ class BulkSoulsRenderer {
     this.lost = this.sprite(this.scene, 0x9df6d3, 0, 0.8, 0, 1.8);
     this.targetRing = this.mesh(this.scene, this.g.ring, this.basic(0xffe2a3, 0.9), 0, 0.1, 0);
     this.targetRing.rotation.x = -Math.PI / 2;
+    this.criticalRing = this.mesh(this.scene, this.g.ring, this.basic(0x8fffe0, 0.9), 0, 0.12, 0);
+    this.criticalRing.rotation.x = -Math.PI / 2;
+    this.parryGlow = this.sprite(this.scene, 0x8beaff, 0, 1.8, 0, 2.5);
   }
   environment(area) {
     this.area = area;
@@ -395,7 +398,13 @@ class BulkSoulsRenderer {
       angle = rolling ? Math.atan2(p.rollX, p.rollZ) : p.angle;
     model.root.position.set(p.x, 0, p.z);
     model.root.rotation.y = angle;
-    model.body.visible = !hero || p.inv <= 0 || rolling || Math.sin(time * 25) > -0.2;
+    model.body.visible =
+      !hero ||
+      p.inv <= 0 ||
+      rolling ||
+      p.action?.kind === 'riposte' ||
+      p.action?.kind === 'backstab' ||
+      Math.sin(time * 25) > -0.2;
     model.pivot.rotation.x = rolling ? -(1 - p.roll / 0.48) * Math.PI * 2 : 0;
     model.pivot.position.y = 1.3 + (rolling ? Math.sin((1 - p.roll / 0.48) * Math.PI) * 0.35 : 0);
     const moved = Math.hypot(p.x - (model.lastX ?? p.x), p.z - (model.lastZ ?? p.z));
@@ -414,9 +423,25 @@ class BulkSoulsRenderer {
           : 1.25 * (1 - (a.time - a.hitAt) / (a.total - a.hitAt));
     } else if (!hero && p.state === 'windup') swing = -0.8;
     else if (!hero && p.state === 'strike') swing = 1.3;
-    model.arms[1].rotation.x = swing;
-    model.arms[0].rotation.x =
-      hero && p.blocking ? -1.05 : walking ? Math.sin(model.walk) * 0.15 : 0;
+    const parrying = hero && p.action?.kind === 'parry',
+      critical = hero && (p.action?.kind === 'riposte' || p.action?.kind === 'backstab'),
+      stunned = !hero && (p.state === 'stunned' || p.state === 'critical');
+    model.body.rotation.x = stunned
+      ? 0.28
+      : critical
+        ? Math.sin(Math.min(1, p.action.time / p.action.total) * Math.PI) * 0.28
+        : 0;
+    model.arms[1].rotation.x = critical
+      ? -1.5 + Math.sin((Math.min(1, p.action.time / p.action.hitAt) * Math.PI) / 2) * 1.2
+      : swing;
+    model.arms[0].rotation.x = parrying
+      ? -1.35
+      : hero && p.blocking
+        ? -1.05
+        : walking
+          ? Math.sin(model.walk) * 0.15
+          : 0;
+    model.arms[0].rotation.z = parrying ? Math.sin((p.action.time / 0.65) * Math.PI) * -0.9 : 0;
     model.cape.rotation.x = 0.1 + Math.sin(time * 3 + model.walk) * 0.04;
     model.hp.quaternion
       .copy(this.camera.quaternion)
@@ -434,6 +459,7 @@ class BulkSoulsRenderer {
       model.line.visible = p.attackKind === 'bolt';
       model.wedge.scale.set(radius, radius, 1);
       model.circle.scale.set(radius, radius, 1);
+      model.markerMat.color.setHex(BulkSouls.parryable(p) && p.timer <= 0.3 ? 0x88e5ff : 0xff835f);
       model.markerMat.opacity = 0.2 + (1 - p.timer / p.windup) * 0.3;
     }
     if (model.type === 'boss') {
@@ -474,6 +500,21 @@ class BulkSoulsRenderer {
     }
     this.actorPose(this.hero, p, game.time, dt, true);
     this.hero.marker.visible = false;
+    const critical = game.criticalTarget();
+    this.criticalRing.visible = !!critical;
+    if (critical) {
+      this.criticalRing.position.set(critical.enemy.x, 0.12, critical.enemy.z);
+      this.criticalRing.scale.setScalar(critical.enemy.type === 'boss' ? 1.65 : 1.1);
+      this.criticalRing.material.opacity = 0.65 + Math.sin(game.time * 8) * 0.2;
+    }
+    this.parryGlow.visible =
+      p.action?.kind === 'parry' && p.action.time >= 0.08 && p.action.time <= 0.3;
+    if (this.parryGlow.visible)
+      this.parryGlow.position.set(
+        p.x + Math.sin(p.angle) * 0.7,
+        1.8,
+        p.z + Math.cos(p.angle) * 0.7,
+      );
     this.gateGlow.visible = game.area < 2;
     this.gateGlow.material.color.setHex(game.enemies.some((e) => e.hp > 0) ? 0xaa5b65 : 0x99efd1);
     const lost = game.progress.lost;
@@ -493,7 +534,19 @@ class BulkSoulsRenderer {
     for (const e of game.events) {
       if (e.id <= this.lastEvent) continue;
       this.lastEvent = e.id;
-      if (['enemyHit', 'hurt', 'victory', 'phase', 'enemyDead', 'healed'].includes(e.type))
+      if (
+        [
+          'enemyHit',
+          'hurt',
+          'victory',
+          'phase',
+          'enemyDead',
+          'healed',
+          'parried',
+          'riposte',
+          'backstab',
+        ].includes(e.type)
+      )
         for (let i = 0; i < 8; i++) {
           const s = this.sparks[this.sparkCursor++ % 40],
             a = (i * Math.PI) / 4;
@@ -503,7 +556,16 @@ class BulkSoulsRenderer {
           s.y = 1.3;
           s.vx = Math.sin(a) * 2;
           s.vz = Math.cos(a) * 2;
-          s.color = e.type === 'healed' ? 0x97ffcf : e.type === 'hurt' ? 0xe98379 : 0xffbd71;
+          s.color =
+            e.type === 'parried'
+              ? 0x8beaff
+              : e.type === 'riposte' || e.type === 'backstab'
+                ? 0x8fffe0
+                : e.type === 'healed'
+                  ? 0x97ffcf
+                  : e.type === 'hurt'
+                    ? 0xe98379
+                    : 0xffbd71;
         }
     }
     let n = 0;

@@ -23,7 +23,7 @@ class BulkSoulsGame {
     this.game = new BulkSouls.Game(progress);
     this.effects = new BulkEffects.Effects({ enabled: soundEnabled });
     host.innerHTML =
-      '<div class="souls-page"><canvas id="souls-world" aria-label="Apex Souls: trójwymiarowa walka rycerza w ruinach Legacy"></canvas><div class="souls-vignette"></div><div class="souls-top"><div><small>POZA OSTATNIM PRZYSTANKIEM / NOWA KLĄTWA</small><h1>APEX <em>SOULS</em></h1><p id="souls-area"></p></div><button data-souls-action="pause">Ⅱ Pauza</button></div><div class="souls-vitals"><label>ŻYCIE <b id="souls-hp"></b></label><div class="souls-track"><i id="souls-health"></i></div><label>WYTRZYMAŁOŚĆ</label><div class="souls-track stamina"><i id="souls-stamina"></i></div><div class="souls-currency"><span id="souls-runes"></span><span id="souls-flasks"></span></div></div><div id="souls-boss" class="souls-boss" hidden><div><span id="souls-boss-name"></span><small id="souls-boss-phase"></small></div><div class="souls-track"><i id="souls-boss-hp"></i></div></div><div class="souls-bottom"><p id="souls-message" role="status"></p><div id="souls-prompt"></div><small>WASD: ruch · J / LPM: atak · K: mocny atak · spacja: unik · F: blok · R: leczenie · E: interakcja · Q: namierz · P: pauza · PPM + ruch: kamera</small></div><div class="souls-touch"><div class="souls-pad"><button data-souls-hold="KeyW" aria-label="Ruch do przodu">↑</button><button data-souls-hold="KeyA" aria-label="Ruch w lewo">←</button><button data-souls-hold="KeyS" aria-label="Ruch do tyłu">↓</button><button data-souls-hold="KeyD" aria-label="Ruch w prawo">→</button></div><div class="souls-touch-actions"><button data-souls-action="light">Miecz</button><button data-souls-action="heavy">Mocny</button><button data-souls-action="roll">Unik</button><button data-souls-hold="KeyF">Blok</button><button data-souls-action="heal">Flakon</button><button data-souls-action="interact">E</button><button data-souls-action="lock">Cel</button></div></div><div id="souls-cover" class="souls-cover"></div></div>';
+      '<div class="souls-page"><canvas id="souls-world" aria-label="Apex Souls: trójwymiarowa walka rycerza w ruinach Legacy"></canvas><div class="souls-vignette"></div><div class="souls-top"><div><small>POZA OSTATNIM PRZYSTANKIEM / NOWA KLĄTWA</small><h1>APEX <em>SOULS</em></h1><p id="souls-area"></p></div><button data-souls-action="pause">Ⅱ Pauza</button></div><div class="souls-vitals"><label>ŻYCIE <b id="souls-hp"></b></label><div class="souls-track"><i id="souls-health"></i></div><label>WYTRZYMAŁOŚĆ</label><div class="souls-track stamina"><i id="souls-stamina"></i></div><div class="souls-currency"><span id="souls-runes"></span><span id="souls-flasks"></span></div></div><div id="souls-boss" class="souls-boss" hidden><div><span id="souls-boss-name"></span><small id="souls-boss-phase"></small></div><div class="souls-track"><i id="souls-boss-hp"></i></div></div><div class="souls-bottom"><p id="souls-message" role="status"></p><div id="souls-prompt"></div><small>WASD: ruch · J / LPM: atak · K: mocny atak · spacja: unik · F: blok · V: parowanie · C: riposta / backstab · R: leczenie · E: interakcja · Q: namierz · P: pauza · PPM + ruch: kamera</small></div><div class="souls-touch"><div class="souls-pad"><button data-souls-hold="KeyW" aria-label="Ruch do przodu">↑</button><button data-souls-hold="KeyA" aria-label="Ruch w lewo">←</button><button data-souls-hold="KeyS" aria-label="Ruch do tyłu">↓</button><button data-souls-hold="KeyD" aria-label="Ruch w prawo">→</button></div><div class="souls-touch-actions"><button data-souls-action="light">Miecz</button><button data-souls-action="heavy">Mocny</button><button data-souls-action="roll">Unik</button><button data-souls-hold="KeyF">Blok</button><button data-souls-action="parry">Paruj V</button><button data-souls-action="critical">Krytyk C</button><button data-souls-action="heal">Flakon</button><button data-souls-action="interact">E</button><button data-souls-action="lock">Cel</button></div></div><div id="souls-cover" class="souls-cover"></div></div>';
     try {
       this.view = new BulkSoulsRenderer(this.$('souls-world'));
     } catch (e) {
@@ -50,6 +50,8 @@ class BulkSoulsGame {
       const actions = {
           KeyJ: 'light',
           KeyK: 'heavy',
+          KeyV: 'parry',
+          KeyC: 'critical',
           Space: 'roll',
           KeyR: 'heal',
           KeyE: 'interact',
@@ -242,6 +244,8 @@ class BulkSoulsGame {
       const sound = {
         light: 'slash',
         heavy: 'greatsword',
+        parry: 'slash',
+        critical: 'greatsword',
         roll: 'dash',
         heal: 'click',
         lock: 'click',
@@ -256,9 +260,14 @@ class BulkSoulsGame {
       !this.game.player.action &&
       this.game.player.roll <= 0
     ) {
-      const cost = { light: 22, heavy: 40, roll: 28 }[kind];
+      const cost = { light: 22, heavy: 40, roll: 28, parry: 18, critical: 32 }[kind];
       if (cost && this.game.player.stamina < cost)
         this.game.message = 'Brak wytrzymałości. Odpuść na chwilę — nawet Apex ma limity.';
+      if (kind === 'critical' && !this.game.criticalTarget())
+        this.game.message =
+          'C: podejdź za plecy strażnika albo przed sparowanego wroga. Boss jest odporny na backstab.';
+      if (kind === 'parry' && this.game.player.parryCooldown > 0)
+        this.game.message = 'Parowanie odnawia się. Spam nie przechodzi walidacji.';
       if (kind === 'heal')
         this.game.message =
           this.game.player.flasks <= 0
@@ -293,11 +302,11 @@ class BulkSoulsGame {
     box.hidden = false;
     if (state === 'ready') {
       box.innerHTML =
-        '<div><div class="souls-eyebrow">25 000 PUNKTÓW ZA TOBĄ / KLĄTWA DOPIERO SIĘ ZACZYNA</div><h2>APEX <em>SOULS</em></h2><h3>Klątwa Legacy</h3><p>Trzy lokacje, miecz, tarcza i przeciwnicy, którzy telegrafują ataki. Zarządzaj wytrzymałością. Unik ma krótkie okno nietykalności. Ogniska odnawiają flakony i pozwalają kupować poziomy.</p><p>Po śmierci zostawiasz runy na ziemi. Lord Legacy czeka w katedrze — i nadal używa makr z 2007 roku.</p><button class="primary" data-souls-action="start">⚔ ' +
+        '<div><div class="souls-eyebrow">25 000 PUNKTÓW ZA TOBĄ / KLĄTWA DOPIERO SIĘ ZACZYNA</div><h2>APEX <em>SOULS</em></h2><h3>Klątwa Legacy</h3><p>Trzy lokacje, miecz, tarcza i przeciwnicy, którzy telegrafują ataki. Zarządzaj wytrzymałością. Unik ma krótkie okno nietykalności. Ogniska odnawiają flakony i pozwalają kupować poziomy.</p><p><b>V · parowanie:</b> naciśnij tuż przed zwykłym cięciem (błękitny stożek). Po sukcesie podejdź i wciśnij <b>C · riposta</b>. <b>C za plecami</b> strażnika wykonuje backstab. Potrzeba 32 wytrzymałości. Lorda Legacy można parować, ale nie dźgać w plecy; nova i pociski są nieparowalne.</p><p>Po śmierci zostawiasz runy na ziemi. Lord Legacy czeka w katedrze — i nadal używa makr z 2007 roku.</p><button class="primary" data-souls-action="start">⚔ ' +
         (g.area > 0 ? 'KONTYNUUJ WYPRAWĘ' : 'ROZPOCZNIJ WYPRAWĘ') +
         '</button>' +
         this.cityButton() +
-        '<button data-souls-action="exit">Wróć do Metro Import</button><small>J / LPM: cios · K: mocny cios · spacja: unik · F: blok · R: flakon · Q: namierz · E: ognisko/brama · P: pauza</small></div>';
+        '<button data-souls-action="exit">Wróć do Metro Import</button><small>J / LPM: cios · K: mocny cios · spacja: unik · F: blok · V: parowanie · C: cios krytyczny · R: flakon · Q: namierz · E: ognisko/brama · P: pauza</small></div>';
       return;
     }
     if (state === 'rest') {
@@ -398,6 +407,34 @@ class BulkSoulsGame {
         : g.target
           ? 'Q · NAMIERZANIE AKTYWNE'
           : 'Q · NAMIERZ NAJBLIŻSZEGO WROGA';
+    const critical = g.criticalTarget(),
+      parry = p.action?.kind === 'parry',
+      active = parry && p.action.time >= 0.08 && p.action.time <= 0.3;
+    const cue = this.$('souls-prompt');
+    cue.classList.toggle('souls-critical-ready', !!critical && p.stamina >= 32);
+    if (g.state === 'playing') {
+      if (critical)
+        cue.textContent =
+          'C / KRYTYK · ' +
+          (critical.kind === 'riposte' ? 'RIPOSTA' : 'BACKSTAB') +
+          (p.stamina < 32 ? ' · POTRZEBA 32 WYTRZYMAŁOŚCI' : ' · 32 WYTRZYMAŁOŚCI');
+      else if (parry)
+        cue.textContent = active
+          ? 'PAROWANIE · OKNO AKTYWNE'
+          : 'PAROWANIE · ' + (p.action.time < 0.08 ? 'PRZYGOTOWANIE' : 'ODZYSKIWANIE RÓWNOWAGI');
+      else if (g.enemies.some((e) => e.hp > 0 && e.state === 'stunned'))
+        cue.textContent = 'PODEJDŹ DO SPAROWANEGO WROGA · C: RIPOSTA';
+    }
+    for (const b of this.host.querySelectorAll('[data-souls-action="critical"]'))
+      b.disabled = !critical || p.stamina < 32;
+    for (const b of this.host.querySelectorAll('[data-souls-action="parry"]'))
+      b.disabled =
+        g.state !== 'playing' ||
+        !!p.action ||
+        p.roll > 0 ||
+        p.stagger > 0 ||
+        p.parryCooldown > 0 ||
+        p.stamina < 18;
     const boss = g.enemies.find((e) => e.type === 'boss' && e.hp > 0);
     this.$('souls-boss').hidden = !boss;
     if (boss) {
@@ -420,6 +457,9 @@ class BulkSoulsGame {
         roll: 'dash',
         flask: 'click',
         healed: 'heal',
+        parried: 'parry',
+        riposte: 'critical',
+        backstab: 'critical',
         block: 'shield',
         hurt: 'hit',
         enemyHit: 'kill',

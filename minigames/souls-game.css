@@ -354,3 +354,16 @@
     padding: 8px 6px;
   }
 }
+
+#souls-prompt.souls-critical-ready {
+  color: #95ffe2;
+  font-weight: 700;
+  text-shadow: 0 0 14px #67eac688;
+}
+.souls-touch-actions button:disabled {
+  opacity: 0.38;
+}
+.souls-touch-actions [data-souls-action='critical']:not(:disabled) {
+  border-color: #95ffe2;
+  color: #95ffe2;
+}
