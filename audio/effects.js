@@ -13,6 +13,8 @@
    if(name==='shot'){this.node('noise',0,.035,.065);this.node('triangle',190,.085,.1,0,40);this.node('sine',1600,.018,.075,.025,750);}
    else if(name==='slash'){this.node('noise',0,.028,.13);this.node('triangle',620,.025,.12,0,120);}
    else if(name==='greatsword'){this.node('noise',0,.05,.2);this.node('triangle',140,.07,.23,0,35);}
+   else if(name==='parry'){this.node('triangle',1700,.055,.22,0,650);this.node('sine',2400,.035,.27,.03,900);this.node('noise',0,.025,.06);}
+   else if(name==='critical'){this.node('noise',0,.065,.18);this.node('triangle',180,.085,.28,0,35);this.node('sine',650,.03,.24,.1,160);}
    else if(name==='door'){this.node('noise',0,.025,.08);this.node('triangle',150,.045,.1,0,50);}
    else if(name==='rotor'){this.node('sawtooth',85,.022,.35,0,65);this.node('noise',0,.012,.22);}
    else if(name==='payload'){this.node('triangle',780,.025,.2,0,140);this.node('noise',0,.025,.15);}

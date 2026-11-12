@@ -40,3 +40,39 @@ test('an unupgraded player can defeat every boss phase using only legal movement
 test('separate Souls saves validate corrupt input and snapshots do not alias live progress',()=>{
  for(const raw of ['bad','null','{}',JSON.stringify({...S.defaultProgress(),room:7}),JSON.stringify({...S.defaultProgress(),runes:-1}),JSON.stringify({...S.defaultProgress(),won:true})])assert.deepEqual(S.readProgress(raw),S.defaultProgress());const g=new S.Game();const snap=g.snapshot();snap.level=8;assert.equal(g.progress.level,0);assert(S.blocked(13,0));assert(S.blocked(7,5));
 });
+
+function incoming(g,{delay=.18,kind='slash',angle=Math.PI}={}){
+ const e=g.enemies[0];e.angle=angle;e.state='windup';e.timer=delay;e.windup=.8;e.attackAngle=angle;e.attackKind=kind;e.attackRange=3;g.player.angle=0;return e;
+}
+test('timed frontal melee parry opens a finite riposte window; critical hits are delayed and award runes once',()=>{
+ const g=duel('warden'),e=incoming(g);assert(g.action('parry'));assert.equal(g.player.stamina,82);assert(!g.action('parry'));advance(g,.2);assert.equal(g.player.hp,120);assert.equal(e.state,'stunned');assert.equal(g.player.action,null);assert.equal(g.criticalTarget().kind,'riposte');
+ assert(g.action('critical'));assert.equal(g.player.stamina,50);assert.equal(e.hp,148);advance(g,.3);assert.equal(e.hp,148);advance(g,.15);assert.equal(e.hp,38);assert(!g.action('critical'));advance(g,.65);assert.equal(e.hp,38);assert.equal(g.criticalTarget(),null);assert(S.validProgress(g.snapshot()));
+ g.hurtEnemy(e,1000);const reward=g.progress.runes;advance(g,1);assert.equal(g.progress.runes,reward);
+});
+test('early, late, rear and non-melee parries fail; attempts consume stamina and have recovery/cooldown',()=>{
+ for(const delay of [.02,.42]){const g=duel();incoming(g,{delay});g.action('parry');advance(g,delay+.03);assert.equal(g.player.hp,100);assert.notEqual(g.enemies[0].state,'stunned');}
+ const rear=duel();incoming(rear);rear.target=null;rear.player.angle=Math.PI;rear.action('parry');advance(rear,.2);assert.equal(rear.player.hp,100);
+ const nova=duel();incoming(nova,{kind:'nova'});nova.action('parry');advance(nova,.2);assert.equal(nova.player.hp,100);
+ const bolt=duel('scribe');incoming(bolt,{kind:'bolt'});bolt.action('parry');advance(bolt,.5);assert.equal(bolt.player.hp,102);assert.notEqual(bolt.enemies[0].state,'stunned');
+ const fail=duel();fail.enemies=[];assert(fail.action('parry'));advance(fail,.66);assert(!fail.player.action);assert(!fail.action('parry'));advance(fail,.25);assert(fail.action('parry'));assert.equal(fail.player.stamina,64);
+ const low=duel();low.player.stamina=17;assert(!low.action('parry'));assert.equal(low.player.stamina,17);
+});
+test('riposte expires, freezes on pause, and cannot be taken from too far or through a pillar',()=>{
+ const g=duel();incoming(g);g.action('parry');advance(g,.2);g.pause();const before=JSON.stringify(g);advance(g,4);assert.equal(JSON.stringify(g),before);assert(!g.action('critical'));g.resume();g.player.z=-2;assert.equal(g.criticalTarget(),null);g.player.z=0;advance(g,1.7);assert.equal(g.criticalTarget(),null);
+ const wall=duel(),e=wall.enemies[0];e.x=7;e.z=-5.9;e.angle=Math.PI;e.state='stunned';e.timer=1;wall.player.x=7;wall.player.z=-4.1;wall.player.angle=Math.PI;assert.equal(wall.criticalTarget(),null);assert(!wall.action('critical'));assert(!S.clearPath(wall.player,e));
+});
+test('backstab requires close rear position, facing and a clear path; it hits only its reserved target',()=>{
+ const g=duel('warden'),e=g.enemies[0];g.player.angle=0;e.angle=0;assert.equal(g.criticalTarget().kind,'backstab');const other={...e,id:'second',x:1};g.enemies.push(other);assert(g.action('critical'));const start={x:g.player.x,z:g.player.z};assert.equal(g.player.stamina,68);assert.equal(e.hp,148);advance(g,.4,{x:1,z:1});assert.equal(e.hp,48);assert.equal(other.hp,148);assert.deepEqual({x:g.player.x,z:g.player.z},start);advance(g,.6);assert.equal(e.hp,48);assert(!g.criticalTarget());
+ for(const setup of [(g,e)=>{e.angle=Math.PI;},(g,e)=>{g.player.x=2;},(g,e)=>{g.player.angle=Math.PI;},(g,e)=>{g.player.z=-1;}]){const a=duel();a.target=null;a.player.angle=0;setup(a,a.enemies[0]);assert.equal(a.criticalTarget(),null);assert(!a.action('critical'));assert.equal(a.player.stamina,100);}
+ const low=duel();low.player.angle=0;low.player.stamina=31;assert(!low.action('critical'));assert.equal(low.enemies[0].hp,78);
+});
+test('backstab can kill a guard once, critical strikes recheck geometry, and respawn clears transient combat state',()=>{
+ const g=duel();g.player.angle=0;g.action('critical');advance(g,.4);assert.equal(g.enemies[0].hp,0);assert.equal(g.progress.runes,35);advance(g,2);assert.equal(g.progress.runes,35);
+ const moved=duel();moved.player.angle=0;moved.action('critical');moved.enemies[0].z=8;advance(moved,.4);assert.equal(moved.enemies[0].hp,78);
+ const dead=duel();dead.action('parry');dead.player.inv=0;dead.hurtPlayer(999,0,2,true);dead.retry();assert.equal(dead.player.parryCooldown,0);assert.equal(dead.player.action,null);assert(dead.enemies.every(e=>e.criticalGuard===0));
+});
+test('boss cannot be backstabbed; parried slashes allow one bounded riposte and never suppress phase progression',()=>{
+ const g=duel('boss'),e=g.enemies[0];g.player.angle=0;e.angle=0;assert.equal(g.criticalTarget(),null);incoming(g);g.action('parry');advance(g,.2);assert.equal(g.criticalTarget().kind,'riposte');g.action('critical');advance(g,.4);assert.equal(e.hp,760);advance(g,.6);assert.equal(g.criticalTarget(),null);assert(!S.parryable(e));
+ incoming(g);g.player.stamina=100;g.player.inv=0;g.player.parryCooldown=0;g.action('parry');advance(g,.2);assert.equal(g.player.hp,86);assert.notEqual(e.state,'stunned');
+ e.hp=530;e.state='critical';e.timer=.2;advance(g,.25);assert.equal(e.phase,2);assert.equal(e.state,'recover');assert(!g.progress.won);
+});

@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v28.0.0 — 2026-11-12
+
+Plik gry: [Bulk-Import-v28.html](Bulk-Import-v28.html).
+
+- Apex Souls: parowanie V i potężna riposta C po udanym parowaniu.
+- Backstab C za plecami strażnika; Lord Legacy odporny na backstab, ale podatny na parowanie zwykłych cięć.
+- Podpowiedzi, znaczniki, animacje, efekty dźwiękowe i przyciski dotykowe ciosów krytycznych.
+- Zachowane wszystkie zapisy i jeden HTML; publiczne solo aktualizowane, alwaysdata nadal wstrzymane.
+
 ## v27.0.0 — 2026-11-06
 
 Plik gry: [Bulk-Import-v27.html](Bulk-Import-v27.html).

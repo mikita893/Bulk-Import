@@ -50,6 +50,7 @@ class BulkSoulsRenderer {
     const bonfire=new THREE.Group();bonfire.position.set(0,0,8);this.details.add(bonfire);this.mesh(bonfire,this.g.cylinder,this.m.dark,0,.14,0,1,.28,1);for(let i=0;i<4;i++){const log=this.box(bonfire,this.m.gold,0,.3,0,.15,.15,1.4);log.rotation.y=i*Math.PI/4;}this.fire=this.sprite(bonfire,0xff9a42,0,.85,0,2.6);this.flames.push(this.fire);
     this.mesh(bonfire,this.g.cone,this.m.ember,0,.63,0,.22,.9,.22);
     this.lost=this.sprite(this.scene,0x9df6d3,0,.8,0,1.8);this.targetRing=this.mesh(this.scene,this.g.ring,this.basic(0xffe2a3,.9),0,.1,0);this.targetRing.rotation.x=-Math.PI/2;
+    this.criticalRing=this.mesh(this.scene,this.g.ring,this.basic(0x8fffe0,.9),0,.12,0);this.criticalRing.rotation.x=-Math.PI/2;this.parryGlow=this.sprite(this.scene,0x8beaff,0,1.8,0,2.5);
   }
   environment(area){
     this.area=area;let n=0;const palettes=[[0x4d5b69,0x6c767c],[0x62594e,0x827060],[0x504c62,0x71637d]],palette=palettes[area];
@@ -61,13 +62,17 @@ class BulkSoulsRenderer {
   resize(){const c=this.renderer.domElement,w=Math.max(1,c.clientWidth),h=Math.max(1,c.clientHeight);this.renderer.setPixelRatio(Math.min(devicePixelRatio||1,1,Math.sqrt(900000/(w*h))));this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();}
   actorPose(model,actor,time,dt,hero=false){
     const p=actor,rolling=hero&&p.roll>0,angle=rolling?Math.atan2(p.rollX,p.rollZ):p.angle;model.root.position.set(p.x,0,p.z);model.root.rotation.y=angle;
-    model.body.visible=!hero||p.inv<=0||rolling||Math.sin(time*25)>-.2;model.pivot.rotation.x=rolling?-(1-p.roll/.48)*Math.PI*2:0;model.pivot.position.y=1.3+(rolling?Math.sin((1-p.roll/.48)*Math.PI)*.35:0);
+    model.body.visible=!hero||p.inv<=0||rolling||p.action?.kind==='riposte'||p.action?.kind==='backstab'||Math.sin(time*25)>-.2;model.pivot.rotation.x=rolling?-(1-p.roll/.48)*Math.PI*2:0;model.pivot.position.y=1.3+(rolling?Math.sin((1-p.roll/.48)*Math.PI)*.35:0);
     const moved=Math.hypot(p.x-(model.lastX??p.x),p.z-(model.lastZ??p.z));model.lastX=p.x;model.lastZ=p.z;model.walk=(model.walk||0)+Math.min(.5,moved)*3;
     const walking=moved>.001;for(let i=0;i<2;i++)model.legs[i].rotation.x=walking?Math.sin(model.walk+i*Math.PI)*.5:0;
     let swing=0;if(hero&&p.action){const a=p.action;swing=a.time<a.hitAt?-a.time/a.hitAt*.9:1.25*(1-(a.time-a.hitAt)/(a.total-a.hitAt));}else if(!hero&&p.state==='windup')swing=-.8;else if(!hero&&p.state==='strike')swing=1.3;
-    model.arms[1].rotation.x=swing;model.arms[0].rotation.x=hero&&p.blocking?-1.05:walking?Math.sin(model.walk)*.15:0;model.cape.rotation.x=.1+Math.sin(time*3+model.walk)*.04;model.hp.quaternion.copy(this.camera.quaternion).premultiply(this.inverseQuat.copy(model.root.quaternion).invert());
+    const parrying=hero&&p.action?.kind==='parry',critical=hero&&(p.action?.kind==='riposte'||p.action?.kind==='backstab'),stunned=!hero&&(p.state==='stunned'||p.state==='critical');
+    model.body.rotation.x=stunned?.28:critical?Math.sin(Math.min(1,p.action.time/p.action.total)*Math.PI)*.28:0;
+    model.arms[1].rotation.x=critical?-1.5+Math.sin(Math.min(1,p.action.time/p.action.hitAt)*Math.PI/2)*1.2:swing;
+    model.arms[0].rotation.x=parrying?-1.35:hero&&p.blocking?-1.05:walking?Math.sin(model.walk)*.15:0;
+    model.arms[0].rotation.z=parrying?Math.sin(p.action.time/.65*Math.PI)*-.9:0;model.cape.rotation.x=.1+Math.sin(time*3+model.walk)*.04;model.hp.quaternion.copy(this.camera.quaternion).premultiply(this.inverseQuat.copy(model.root.quaternion).invert());
     const pct=hero?p.hp/this.currentGame.maxHp:p.hp/p.maxHp;model.fill.scale.x=1.55*Math.max(0,pct);model.fill.position.x=(pct-1)*.775;
-    model.marker.visible=!hero&&p.hp>0&&p.state==='windup';if(model.marker.visible){const radius=p.attackRange+.35;model.marker.position.set(p.x,0,p.z);model.marker.rotation.y=p.attackAngle;model.wedge.visible=p.attackKind==='slash';model.circle.visible=p.attackKind==='nova';model.line.visible=p.attackKind==='bolt';model.wedge.scale.set(radius,radius,1);model.circle.scale.set(radius,radius,1);model.markerMat.opacity=.2+(1-p.timer/p.windup)*.3;}
+    model.marker.visible=!hero&&p.hp>0&&p.state==='windup';if(model.marker.visible){const radius=p.attackRange+.35;model.marker.position.set(p.x,0,p.z);model.marker.rotation.y=p.attackAngle;model.wedge.visible=p.attackKind==='slash';model.circle.visible=p.attackKind==='nova';model.line.visible=p.attackKind==='bolt';model.wedge.scale.set(radius,radius,1);model.circle.scale.set(radius,radius,1);model.markerMat.color.setHex(BulkSouls.parryable(p)&&p.timer<=.3?0x88e5ff:0xff835f);model.markerMat.opacity=.2+(1-p.timer/p.windup)*.3;}
     if(model.type==='boss'){model.glow.color.setHex(p.phase===3?0xff826b:0xffbd73);model.glow.emissive.copy(model.glow.color);}
   }
   render(game,dt,view){
@@ -78,12 +83,16 @@ class BulkSoulsRenderer {
     for(const model of this.models.values()){model.root.visible=false;model.marker.visible=false;}
     for(const e of game.enemies){if(e.hp<=0)continue;let model=this.models.get(e.id);if(!model){model=this.actor(e.type);this.models.set(e.id,model);this.scene.add(model.root);}model.root.visible=true;this.actorPose(model,e,game.time,dt);}
     this.actorPose(this.hero,p,game.time,dt,true);this.hero.marker.visible=false;
+    const critical=game.criticalTarget();this.criticalRing.visible=!!critical;
+    if(critical){this.criticalRing.position.set(critical.enemy.x,.12,critical.enemy.z);this.criticalRing.scale.setScalar(critical.enemy.type==='boss'?1.65:1.1);this.criticalRing.material.opacity=.65+Math.sin(game.time*8)*.2;}
+    this.parryGlow.visible=p.action?.kind==='parry'&&p.action.time>=.08&&p.action.time<=.30;
+    if(this.parryGlow.visible)this.parryGlow.position.set(p.x+Math.sin(p.angle)*.7,1.8,p.z+Math.cos(p.angle)*.7);
     this.gateGlow.visible=game.area<2;this.gateGlow.material.color.setHex(game.enemies.some(e=>e.hp>0)?0xaa5b65:0x99efd1);
     const lost=game.progress.lost;this.lost.visible=!!lost&&lost.room===game.area;if(this.lost.visible)this.lost.position.set(lost.x,.65+Math.sin(game.time*3)*.1,lost.z);
     this.targetRing.visible=!!target;if(target){this.targetRing.position.set(target.x,.09,target.z);this.targetRing.scale.setScalar(target.type==='boss'?1.5:.9);}
     this.flames.forEach((flame,i)=>{flame.material.opacity=.65+Math.sin(game.time*5+i)*.12;});
     game.bolts.forEach((b,i)=>this.set(this.bolts,i,b.x,1.1,b.z,.18,.18,.18));this.finish(this.bolts,game.bolts.length);
-    for(const e of game.events){if(e.id<=this.lastEvent)continue;this.lastEvent=e.id;if(['enemyHit','hurt','victory','phase','enemyDead','healed'].includes(e.type))for(let i=0;i<8;i++){const s=this.sparks[this.sparkCursor++%40],a=i*Math.PI/4;s.life=.5;s.x=e.x;s.z=e.z;s.y=1.3;s.vx=Math.sin(a)*2;s.vz=Math.cos(a)*2;s.color=e.type==='healed'?0x97ffcf:e.type==='hurt'?0xe98379:0xffbd71;}}
+    for(const e of game.events){if(e.id<=this.lastEvent)continue;this.lastEvent=e.id;if(['enemyHit','hurt','victory','phase','enemyDead','healed','parried','riposte','backstab'].includes(e.type))for(let i=0;i<8;i++){const s=this.sparks[this.sparkCursor++%40],a=i*Math.PI/4;s.life=.5;s.x=e.x;s.z=e.z;s.y=1.3;s.vx=Math.sin(a)*2;s.vz=Math.cos(a)*2;s.color=e.type==='parried'?0x8beaff:e.type==='riposte'||e.type==='backstab'?0x8fffe0:e.type==='healed'?0x97ffcf:e.type==='hurt'?0xe98379:0xffbd71;}}
     let n=0;for(const s of this.sparks){if(s.life<=0)continue;if(game.state==='playing'){s.life=Math.max(0,s.life-dt);s.x+=s.vx*dt;s.z+=s.vz*dt;s.y+=dt*.6;}if(s.life>0){this.set(this.sparkMesh,n,s.x,s.y,s.z,.08,.08,.08);this.sparkMesh.setColorAt(n++,this.color.setHex(s.color).multiplyScalar(s.life*2));}}this.finish(this.sparkMesh,n);
     this.renderer.render(this.scene,this.camera);
   }
