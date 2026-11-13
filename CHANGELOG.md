@@ -2,6 +2,15 @@
 
 Historia zmian gry. Każde nowe wydanie otrzymuje osobny wpis na początku tego pliku, z datą, nazwą HTML, nowymi funkcjami, poprawkami i informacją o zgodności zapisów.
 
+## v29.0.0 — 2026-11-13
+
+Plik gry: [Bulk-Import-v29.html](Bulk-Import-v29.html).
+
+- Cellule Obscure: Expédition #REF! po ukończeniu Importic.
+- Trzy starcia, drużyna, AP, mikstury i aktywne parowanie.
+- Malarka Formuł z fazą gniewu i malarska sceneria ruin.
+- Osobny zapis checkpointów; wcześniejsze zapisy zachowane.
+
 ## v28.0.0 — 2026-11-12
 
 Plik gry: [Bulk-Import-v28.html](Bulk-Import-v28.html).

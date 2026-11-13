@@ -1,12 +1,12 @@
-# Bulk Import: Wspólna Galaktyka — v28
+# Bulk Import: Wspólna Galaktyka — v29
 
 Historia zmian: [CHANGELOG.md](CHANGELOG.md) — aktualizowana przy każdym nowym wydaniu, począwszy od v16.
 
-**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v28.html](Bulk-Import-v28.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów**, **CSV Double**, **Sudoku**, **Metro Import 3D**, **Apex Souls 3D**, **Grand Theft CSV: Vice Import** i **Importic: Kolonia Legacy**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
+**Jedna gra, jeden plik, dwa sposoby uruchomienia:** [Bulk-Import-v29.html](Bulk-Import-v29.html). Nowa wspólna gałąź: [`feature/bulk-import-unified-v13`](https://github.com/mikita893/Bulk-Import/tree/feature/bulk-import-unified-v13). Zawiera pełną kampanię 3D, kooperację, Salesforce kontra Excel i minigry **Bird Game 3**, **Gwintforce: Wojna rekordów**, **CSV Double**, **Sudoku**, **Metro Import 3D**, **Apex Souls 3D**, **Grand Theft CSV: Vice Import** i **Importic: Kolonia Legacy**. Wcześniejsze wydania HTML i gałęzie pozostają zachowane.
 
 ## Pobierz HTML i graj lokalnie
 
-Pobierz **Bulk-Import-v28.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce, CSV Double, Sudoku, Metro Import, Apex Souls, Vice Import i Importic są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
+Pobierz **Bulk-Import-v29.html** i otwórz go w przeglądarce z WebGL. Wystarcza ten jeden plik: kampania, Three.js, grafika, dźwięki, Bird Game 3, Gwintforce, CSV Double, Sudoku, Metro Import, Apex Souls, Vice Import i Importic są osadzone. Nie potrzebujesz serwera, połączenia z Internetem ani pozostałych plików repozytorium.
 
 Menu automatycznie rozpoznaje uruchomienie z pliku. **Kampania solo działa offline; Bird Game 3 i Gwintforce uruchomisz w terminalu na statku; CSV Double otworzysz wewnątrz Bird Game 3, a Sudoku wewnątrz CSV Double. Kooperacja, VS oraz dołączanie do pokoju są wyszarzone.** Tryb lokalny nie otwiera WebSocketów i nie pobiera konfiguracji. Rekord minigry i kampania zapisują się w localStorage, jeżeli przeglądarka na to pozwala. Różne pliki mogą mieć odrębną pamięć: przed zmianą wydania wyeksportuj kampanię do JSON, a następnie ją zaimportuj.
 
@@ -106,3 +106,6 @@ npm run test:cloudflare
 Testy przeglądarkowe wymagają Playwright i Chromium; nie są potrzebne do grania. Sprawdzają samodzielny HTML, wygaszone opcje sieciowe, pełną kampanię i JSON, arcade na statku, rekord, pauzę, widok mobilny i rzeczywiste połączenia multiplayer. W zarządzanym Chromium na tym środowisku polityka administratora blokuje adresy `file://`; wtedy test ładuje zawartość samodzielnego pliku w pustym dokumencie bez sieci. Nie zmienia zasad bezpieczeństwa przeglądarki. Format i timingi kampanii są dodatkowo sprawdzane z payloadu rzeczywiście osadzonego w nowym HTML.
 
 Sudoku: [DESIGN-v20.md](DESIGN-v20.md). CSV Double multiplayer: [DESIGN-v19.md](DESIGN-v19.md). Opium Bird i reguły mrozu: [DESIGN-v18.md](DESIGN-v18.md). CSV Double i zagnieżdżona rekreacja: [DESIGN-v17.md](DESIGN-v17.md). Karcianka i poprawki ptasiej areny: [DESIGN-v16.md](DESIGN-v16.md). Integracja minigry z terminalem: [DESIGN-v15.md](DESIGN-v15.md). Opis ptasiej areny i źródła inspiracji: [DESIGN-v14.md](DESIGN-v14.md). Scalenie gry: [DESIGN-v13.md](DESIGN-v13.md). Mechaniki frakcji: [DESIGN-v12.md](DESIGN-v12.md); historia kampanii: [DESIGN-v10.md](DESIGN-v10.md).
+
+## v29: Cellule Obscure
+Po ukończeniu Importic wybierz Cellule Obscure na ekranie zwycięstwa lub pauzy. Trzy turowe starcia: atak odnawia AP, umiejętność wydaje 3 AP, osłona ogranicza obrażenia. Spacja lub przycisk paruje w złotym oknie. Checkpoint zapisuje każde wygrane starcie.
