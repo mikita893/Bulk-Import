@@ -1,6 +1,6 @@
 # Czytelne źródła Bulk Import
 
-Ta gałąź, `dev/readable-source`, zawiera tę samą grę v28 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
+Ta gałąź, `dev/readable-source`, zawiera tę samą grę v29 co `feature/bulk-import-unified-v13`, z sformatowanymi własnymi źródłami i dodatkową dokumentacją. Wygenerowany plik HTML pozostaje samodzielny; większa liczba białych znaków nie zmienia mechanik. Biblioteka Three.js i historyczne HTML nie są formatowane.
 
 ## Pierwsze uruchomienie
 
@@ -12,7 +12,7 @@ npm run build:client
 npm start
 ```
 
-Otwórz http://localhost:3000. Sam `Bulk-Import-v28.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
+Otwórz http://localhost:3000. Sam `Bulk-Import-v29.html` można też otworzyć lokalnie z dysku. Wtedy multiplayer jest wyszarzony. Minigry otwiera się w kampanii przez terminal przy hologramie (E). Nie dodawaj osobnych wejść w menu głównym.
 
 ## Mapa modułów
 
@@ -217,3 +217,7 @@ Sterowanie: V to parowanie, C to kontekstowy cios krytyczny. J/LPM i K pozostaj�
 Renderer używa istniejącej geometrii pierścienia, stałej poświaty i puli cząstek: nie dodawaj geometrii w `render`. Błękitny stożek oznacza ostatnie 0,3 s parowalnego cięcia, a turkusowy znacznik odpowiada dokładnie `criticalTarget()`. HUD rozróżnia ripostę/backstab i brak wytrzymałości. Kontroler obsługuje klawiaturę i dotyk; efekty wyniku pochodzą ze zdarzeń `parried`, `riposte`, `backstab`, a dźwięk rozpoczęcia z zaakceptowanej akcji.
 
 Testy: `tests/souls.test.cjs` sprawdza sukcesy, porażki, timing, kierunek, cooldowny, koszt, filary, wygaśnięcie okna, pauzę, pojedynczy cel/nagrody i odporności/fazy bossa. `tests/runner-browser.cjs` wykonuje prawdziwe V/C i dotyk, sprawdza komunikaty/audio, budżet GPU, zapis, powrót i pełne zagnieżdżenie. `tests/pages-browser.cjs` weryfikuje statyczną publikację, pobranie oryginalnego HTML i localStorage po odświeżeniu. Szczegóły balansu: [DESIGN-v28.md](DESIGN-v28.md).
+
+## v29: Cellule Obscure
+
+`obscure-game.js/css` to samodzielna turowa wyprawa Canvas. Importic otwiera ją po wins > 0, zatrzymując RAF i wejście rodzica. Checkpoint stage 0–3 ma osobny klucz bulk-import-cellule-v1. `action`, `tick`, `ui` i `draw` rozdzielają wejście, zegar walki i prezentację. Parowanie jest jednorazowe w turze, działa w oknie 0,74–1,02 s. Zapisuj tylko ukończone starcia. Test: node tests/obscure-browser.cjs.

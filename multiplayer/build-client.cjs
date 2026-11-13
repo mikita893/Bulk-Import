@@ -77,6 +77,7 @@ const app =
     'minigames/city-game.js',
     'minigames/colony-sim.js',
     'minigames/colony-render.js',
+    'minigames/obscure-game.js',
     'minigames/colony-game.js',
     'multiplayer/unified.js',
     'multiplayer/render.js',
@@ -99,6 +100,7 @@ const output = versioned(read('multiplayer/client-shell.html'))
         'minigames/souls-game.css',
         'minigames/city-game.css',
         'minigames/colony-game.css',
+        'minigames/obscure-game.css',
       ]
         .map(read)
         .join('\n') + cardArtStyle,

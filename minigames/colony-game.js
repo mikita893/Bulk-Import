@@ -48,6 +48,7 @@ class BulkColonyGame {
     this.onKey = (e) => {
       if (
         this.dead ||
+        this.obscure ||
         e.ctrlKey ||
         e.metaKey ||
         e.altKey ||
@@ -92,7 +93,9 @@ class BulkColonyGame {
     this.onHidden = () => {
       if (document.hidden) this.pause();
     };
-    this.onResize = () => this.view?.resize();
+    this.onResize = () => {
+      if (!this.obscure) this.view?.resize();
+    };
     this.onDown = (e) => {
       const b = e.target.closest('[data-col-hold]');
       if (b && this.game.state === 'playing') {
@@ -181,6 +184,29 @@ class BulkColonyGame {
     };
   }
   action(kind) {
+    if (this.obscure) return;
+    if (kind === 'obscure' && this.game.progress.wins > 0) {
+      this.game.pause();
+      this.clear();
+      this.effects.stop();
+      cancelAnimationFrame(this.raf);
+      const child = document.createElement('div');
+      this.host.append(child);
+      this.obscure = new BulkObscureGame(
+        child,
+        this.storage,
+        () => {
+          this.obscure.destroy();
+          this.obscure = null;
+          this.last = performance.now();
+          this.cover();
+          this.raf = requestAnimationFrame(this.frame);
+        },
+        this.effects,
+      );
+      return;
+    }
+
     if (this.dead) return;
     if (kind === 'exit') {
       this.onExit?.();
@@ -478,6 +504,9 @@ class BulkColonyGame {
       (dead ? '↻ POWRÓT DO BEZPIECZNEGO PUNKTU' : won ? '▶ ZWIEDZAJ KOLONIĘ' : '▶ WZNÓW WYPRAWĘ') +
       '</button>' +
       (won ? '<button data-col-action="new">Nowa wyprawa</button>' : '') +
+      (p.wins > 0
+        ? '<button data-col-action="obscure">Cellule Obscure: Expédition #REF!</button>'
+        : '') +
       '<button data-col-action="exit">Wróć do Vice Import</button></div>';
   }
   hud() {
@@ -552,7 +581,7 @@ class BulkColonyGame {
     p.restore();
   }
   frame(now) {
-    if (this.dead) return;
+    if (this.dead || this.obscure) return;
     this.raf = requestAnimationFrame(this.frame);
     const dt = Math.min(0.1, Math.max(0, (now - this.last) / 1000));
     this.last = now;
@@ -597,6 +626,7 @@ class BulkColonyGame {
   }
   destroy() {
     if (this.dead) return;
+    this.obscure?.destroy();
     this.persist();
     this.dead = true;
     cancelAnimationFrame(this.raf);
